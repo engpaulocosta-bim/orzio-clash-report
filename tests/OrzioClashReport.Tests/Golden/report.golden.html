@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OrzioClashReport</title>
+<style>
+body{font-family:Segoe UI,Arial,sans-serif;background:#fff;color:#212121;margin:2rem;}
+.report-header{border-bottom:2px solid #212121;padding-bottom:1rem;margin-bottom:1.5rem;}
+.report-header h1{margin:0 0 .25rem 0;}
+.summary{font-size:1.1rem;font-weight:600;}
+.source{color:#616161;font-size:.9rem;}
+.group{margin-bottom:2rem;}
+.group h2{font-size:1.1rem;margin-bottom:.25rem;}
+.badge{color:#fff;border-radius:.75rem;padding:.15rem .6rem;font-size:.85rem;}
+.level{color:#616161;font-weight:normal;font-size:.9rem;}
+.group-count{color:#616161;margin:.25rem 0 .5rem 0;}
+table{border-collapse:collapse;width:100%;}
+th,td{border:1px solid #e0e0e0;padding:.4rem .6rem;text-align:left;font-size:.9rem;}
+th{background:#fafafa;}
+</style>
+</head>
+<body>
+<header class="report-header">
+<h1>OrzioClashReport</h1>
+<p class="source">Source: sample.nwd</p>
+<p class="summary">2 raw clashes &rarr; 2 groups</p>
+</header>
+<section class="group">
+<h2><span class="badge" style="background:#1565c0">Architecture</span> &times; <span class="badge" style="background:#2e7d32">AVAC</span> <span class="level">L1</span></h2>
+<p class="group-count">1 clash(es)</p>
+<table>
+<thead><tr><th>Name</th><th>Status</th><th>Distance</th><th>Point</th><th>Element A</th><th>Element B</th></tr></thead>
+<tbody>
+<tr><td>Clash1</td><td>New</td><td>-0.007</td><td>1.234, 2.345, -3.456</td><td>avac-1</td><td>arch-1</td></tr>
+</tbody>
+</table>
+</section>
+<section class="group">
+<h2><span class="badge" style="background:#2e7d32">AVAC</span> &times; <span class="badge" style="background:#ef6c00">Structure</span> <span class="level">L2</span></h2>
+<p class="group-count">1 clash(es)</p>
+<table>
+<thead><tr><th>Name</th><th>Status</th><th>Distance</th><th>Point</th><th>Element A</th><th>Element B</th></tr></thead>
+<tbody>
+<tr><td>Clash2</td><td>Approved</td><td>0.050</td><td>&mdash;</td><td>avac-2</td><td>struct-2</td></tr>
+</tbody>
+</table>
+</section>
+</body>
+</html>

@@ -1,0 +1,1325 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<exchange xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" units="m" filename="CRISAL_001.26_EXE_ESP_AVAC_PD_R01 _MODELO FEDERADO.nwd" filepath="Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\00 - Modelo Federado">
+  <batchtest name="Report" internal_name="Report" units="m">
+    <clashtests>
+      <clashtest name="Teste 01" test_type="hard" status="ok" tolerance="0.001" merge_composites="1">
+        <default_assignee display_name=""/>
+        <linkage mode="none"/>
+        <rules/>
+        <summary total="5" new="5" active="0" reviewed="0" approved="0" resolved="0">
+          <testtype>Hard</testtype>
+          <teststatus>OK</teststatus>
+        </summary>
+        <clashresults>
+          <clashresult name="Clash1" guid="25a478d0-9ee6-4faa-a947-dc19d04cfb1b" href="Teste 01_files\cd000001.jpg" status="new" distance="-0.007">
+            <resultstatus>New</resultstatus>
+            <clashpoint>
+              <pos3f x="2810.456" y="1869.841" z="-3.426"/>
+            </clashpoint>
+            <createddate>
+              <date year="2026" month="7" day="9" hour="12" minute="37" second="2"/>
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>e8e7574e-19ad-4796-8341-64386d639236</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>RIG_Cobre(1)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>PrismMetal</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>e8e7574e-19ad-4796-8341-64386d639236</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>e8e7574e-19ad-4796-8341-64386d63908b</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>Generic(12)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>Generic</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>e8e7574e-19ad-4796-8341-64386d63908b</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash2" guid="c9806111-692a-41e4-ab4c-fa44a0c09930" href="Teste 01_files\cd000002.jpg" status="new" distance="-0.005">
+            <resultstatus>New</resultstatus>
+            <clashpoint>
+              <pos3f x="2816.145" y="1870.232" z="-3.578"/>
+            </clashpoint>
+            <createddate>
+              <date year="2026" month="7" day="9" hour="12" minute="37" second="2"/>
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>64ed1a00-806d-49b3-a269-5e4383dce73b</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>RIG_Cobre(1)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>PrismMetal</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>64ed1a00-806d-49b3-a269-5e4383dce73b</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>ce9bcc07-0190-4b77-841f-77d040f50b6c</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>Generic(13)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>Generic</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>ce9bcc07-0190-4b77-841f-77d040f50b6c</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>RAL (255,0,0)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>RAL (255,0,0)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>RAL (255,0,0)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash3" guid="db9e4690-9816-4774-9567-7fc360dd8b73" href="Teste 01_files\cd000003.jpg" status="new" distance="-0.005">
+            <resultstatus>New</resultstatus>
+            <clashpoint>
+              <pos3f x="2810.842" y="1871.477" z="-3.574"/>
+            </clashpoint>
+            <createddate>
+              <date year="2026" month="7" day="9" hour="12" minute="37" second="2"/>
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>a519f320-e0f3-43af-98a8-c4b99946dac1</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>RIG_Cobre(1)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>PrismMetal</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>a519f320-e0f3-43af-98a8-c4b99946dac1</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>be016b3f-8c1b-47a0-9fe4-235790143d26</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>Generic(12)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>Generic</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>be016b3f-8c1b-47a0-9fe4-235790143d26</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash4" guid="7f28d351-24ea-45c0-885a-819a4dfb66c5" href="Teste 01_files\cd000004.jpg" status="new" distance="-0.004">
+            <resultstatus>New</resultstatus>
+            <clashpoint>
+              <pos3f x="2810.998" y="1871.443" z="-3.597"/>
+            </clashpoint>
+            <createddate>
+              <date year="2026" month="7" day="9" hour="12" minute="37" second="2"/>
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>31d35553-7d6b-4cf4-ba6c-feec5cfd2234</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>RIG_Cobre(1)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>PrismMetal</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>31d35553-7d6b-4cf4-ba6c-feec5cfd2234</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>be016b3f-8c1b-47a0-9fe4-235790143d26</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>Generic(12)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>Generic</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>be016b3f-8c1b-47a0-9fe4-235790143d26</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash5" guid="adee185d-b0d5-4ce2-844a-bf1d4b07a2cc" href="Teste 01_files\cd000005.jpg" status="new" distance="-0.002">
+            <resultstatus>New</resultstatus>
+            <clashpoint>
+              <pos3f x="2810.482" y="1869.846" z="-3.417"/>
+            </clashpoint>
+            <createddate>
+              <date year="2026" month="7" day="9" hour="12" minute="37" second="2"/>
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>e8e7574e-19ad-4796-8341-64386d639238</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>RIG_Cobre(1)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>PrismMetal</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>e8e7574e-19ad-4796-8341-64386d639238</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>e8e7574e-19ad-4796-8341-64386d63908b</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>Generic(12)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>Generic</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>e8e7574e-19ad-4796-8341-64386d63908b</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+        </clashresults>
+      </clashtest>
+    </clashtests>
+    <selectionsets/>
+  </batchtest>
+</exchange>

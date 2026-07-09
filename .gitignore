@@ -33,3 +33,12 @@ x86/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Navisworks raw export byproducts (viewpoint images, HTML/TXT reports) -
+# only the anonymized *.xml fixtures under samples/ are meant to be versioned.
+samples/*_files/
+samples/*.html
+samples/*.txt
+
+# Ad hoc report output generated while demoing the renderer locally.
+/demo-report.html

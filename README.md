@@ -172,6 +172,30 @@ snapshot.
    lifecycle status ainda não existem — ficam para um futuro run comparer.
 8. A CLI ainda não usa o matcher.
 
+## Conservative pairwise matcher
+
+`ConservativeClashMatcher` (`src/OrzioClashReport.Core/Matching/ConservativeClashMatcher.cs`)
+é a primeira implementação concreta de `IClashMatcher`.
+
+1. Ele exige três sinais obrigatórios ao mesmo tempo: mesmo `ClashTestName` (ordinal,
+   ignorando case), mesmo par revision-free de `ModelIdentity`, e o par de `ElementId`
+   alinhado a esses modelos.
+2. Revisões (`ModelRevision.Revision`, `SourceFileName`, `SourceFilePath`, `ContentHash`,
+   `PublishedAt`) são completamente ignoradas no matching — o candidato sobrevive a `R03 → R04`.
+3. Inversão A/B entre exports é aceita: os dois modelos podem trocar de lado entre a rodada
+   anterior e a atual, desde que os elementos acompanhem a mesma troca.
+4. `ElementId` e o GUID da fonte são tratados como identificadores opacos e comparados com
+   `StringComparison.Ordinal` (case-sensitive) — nunca `OrdinalIgnoreCase`.
+5. O GUID da fonte é evidência suplementar: um GUID igual eleva a confiança de `Medium` para
+   `High`; um GUID diferente ou ausente **não** cria nem destrói um candidato.
+6. Resultado `High` exige os três sinais obrigatórios **e** GUID igual; `Medium` ocorre
+   quando os três sinais passam mas o GUID está ausente ou contradiz.
+7. Este matcher nunca produz `Low` — ele só aceita quando os três sinais obrigatórios são
+   favoráveis; candidatos fracos ficam para uma estratégia futura.
+8. Ainda não existe comparação entre rodadas completas nem lifecycle status — isso pertence
+   a um futuro run comparer.
+9. A CLI ainda não usa este matcher.
+
 ## Backlog (fora do MVP)
 
 Esta seção existe para registrar pedidos que não entram no MVP.

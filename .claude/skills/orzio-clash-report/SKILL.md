@@ -149,6 +149,19 @@ and must not be treated as false. Unmatched does not mean `New` or `Resolved` an
 have alternative candidates. The greedy policy is deterministic but not globally optimal;
 lifecycle classification remains out of scope.
 
+## Conservative clash lifecycle
+
+`ConservativeClashLifecycleClassifier` consumes an existing `ClashRunMatchResult` and never
+reruns matching. Selected `Medium`/`High` without competing alternatives becomes
+`StillOpen`; `Low` or competing alternatives becomes `Unverifiable`. Unmatched previous
+becomes `Resolved` only when it has no alternative candidate and both revision-free model
+identities plus the clash test are observed in the current run. Unmatched current becomes
+`New` only under the symmetric conditions in the previous run. A clash test is currently
+considered observed only when at least one occurrence with the same name exists in that
+run; zero-result test execution cannot yet be proven and therefore remains `Unverifiable`.
+Raw `ClashStatus` never drives lifecycle. `Reopened` requires longer history and is out of
+scope.
+
 ## Anti-patterns that fail review
 
 - Core with a `using System.Xml.Linq`, a Navisworks reference, or any HTML string.

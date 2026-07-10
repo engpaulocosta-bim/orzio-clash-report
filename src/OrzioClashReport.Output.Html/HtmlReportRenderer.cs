@@ -89,6 +89,10 @@ namespace OrzioClashReport.Output.Html
             html.Append(" <span class=\"level\">").Append(Encode(group.Level ?? "(no level)")).Append("</span>");
             html.Append("</h2>\n");
 
+            html.Append("<p class=\"clash-test\">Clash test: ")
+                .Append(Encode(group.ClashTestName ?? "(unnamed test)"))
+                .Append("</p>\n");
+
             html.Append("<p class=\"group-count\">")
                 .Append(group.Members.Count.ToString(CultureInfo.InvariantCulture))
                 .Append(" clash(es)</p>\n");
@@ -145,6 +149,7 @@ body{font-family:Segoe UI,Arial,sans-serif;background:#fff;color:#212121;margin:
 .group h2{font-size:1.1rem;margin-bottom:.25rem;}
 .badge{color:#fff;border-radius:.75rem;padding:.15rem .6rem;font-size:.85rem;}
 .level{color:#616161;font-weight:normal;font-size:.9rem;}
+.clash-test{color:#616161;margin:.25rem 0 0 0;font-size:.9rem;}
 .group-count{color:#616161;margin:.25rem 0 .5rem 0;}
 table{border-collapse:collapse;width:100%;}
 th,td{border:1px solid #e0e0e0;padding:.4rem .6rem;text-align:left;font-size:.9rem;}

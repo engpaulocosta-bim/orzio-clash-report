@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<exchange xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" units="m" filename="CRISAL_001.26_EXE_ESP_AVAC_PD_R01 _MODELO FEDERADO.nwd" filepath="Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\00 - Modelo Federado">
+<exchange xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" units="m" filename="Project_A_HVAC_PD_R01_Federated_Model.nwd" filepath="C:\BIM\SyntheticProject\00-FederatedModel">
   <batchtest name="Report" internal_name="Report" units="m">
     <clashtests>
       <clashtest name="Teste 01" test_type="hard" status="ok" tolerance="0.001" merge_composites="1">
@@ -12,7 +12,7 @@
           <teststatus>OK</teststatus>
         </summary>
         <clashresults>
-          <clashresult name="Clash1" guid="25a478d0-9ee6-4faa-a947-dc19d04cfb1b" href="Teste 01_files\cd000001.jpg" status="new" distance="-0.007">
+          <clashresult name="Clash1" guid="e37d5d4a-2bd1-2ea4-0694-6f2b9d7479ed" href="Teste 01_files\cd000001.jpg" status="new" distance="-0.007">
             <resultstatus>New</resultstatus>
             <clashpoint>
               <pos3f x="2810.456" y="1869.841" z="-3.426"/>
@@ -24,7 +24,7 @@
               <clashobject>
                 <objectattribute>
                   <name>GUID</name>
-                  <value>e8e7574e-19ad-4796-8341-64386d639236</value>
+                  <value>48b67dfa-ecf5-541d-fa9d-88e56fc0aa4e</value>
                 </objectattribute>
                 <layer>Nivel +0</layer>
                 <smarttags>
@@ -42,7 +42,7 @@
                   </smarttag>
                   <smarttag>
                     <name>Item GUID</name>
-                    <value>e8e7574e-19ad-4796-8341-64386d639236</value>
+                    <value>48b67dfa-ecf5-541d-fa9d-88e56fc0aa4e</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Hidden</name>
@@ -70,11 +70,11 @@
                   </smarttag>
                   <smarttag>
                     <name>Item Source File</name>
-                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Source File Name</name>
-                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Type</name>
@@ -149,7 +149,7 @@
               <clashobject>
                 <objectattribute>
                   <name>GUID</name>
-                  <value>e8e7574e-19ad-4796-8341-64386d63908b</value>
+                  <value>a06455ac-491b-9ab2-40d9-e2930ea5eb33</value>
                 </objectattribute>
                 <layer>Nivel +0</layer>
                 <smarttags>
@@ -167,7 +167,7 @@
                   </smarttag>
                   <smarttag>
                     <name>Item GUID</name>
-                    <value>e8e7574e-19ad-4796-8341-64386d63908b</value>
+                    <value>a06455ac-491b-9ab2-40d9-e2930ea5eb33</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Hidden</name>
@@ -195,11 +195,11 @@
                   </smarttag>
                   <smarttag>
                     <name>Item Source File</name>
-                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Source File Name</name>
-                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Type</name>
@@ -273,7 +273,7 @@
               </clashobject>
             </clashobjects>
           </clashresult>
-          <clashresult name="Clash2" guid="c9806111-692a-41e4-ab4c-fa44a0c09930" href="Teste 01_files\cd000002.jpg" status="new" distance="-0.005">
+          <clashresult name="Clash2" guid="fa2cd0de-3499-593b-7a73-75a205496314" href="Teste 01_files\cd000002.jpg" status="new" distance="-0.005">
             <resultstatus>New</resultstatus>
             <clashpoint>
               <pos3f x="2816.145" y="1870.232" z="-3.578"/>
@@ -285,7 +285,7 @@
               <clashobject>
                 <objectattribute>
                   <name>GUID</name>
-                  <value>64ed1a00-806d-49b3-a269-5e4383dce73b</value>
+                  <value>022e9d8e-4cea-94bb-40fb-b019da77f6b9</value>
                 </objectattribute>
                 <layer>Nivel +0</layer>
                 <smarttags>
@@ -303,7 +303,7 @@
                   </smarttag>
                   <smarttag>
                     <name>Item GUID</name>
-                    <value>64ed1a00-806d-49b3-a269-5e4383dce73b</value>
+                    <value>022e9d8e-4cea-94bb-40fb-b019da77f6b9</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Hidden</name>
@@ -331,11 +331,11 @@
                   </smarttag>
                   <smarttag>
                     <name>Item Source File</name>
-                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Source File Name</name>
-                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Type</name>
@@ -410,7 +410,7 @@
               <clashobject>
                 <objectattribute>
                   <name>GUID</name>
-                  <value>ce9bcc07-0190-4b77-841f-77d040f50b6c</value>
+                  <value>20b64ae2-2b58-fdba-2a62-c4c2a99d2013</value>
                 </objectattribute>
                 <layer>Nivel +0</layer>
                 <smarttags>
@@ -428,7 +428,7 @@
                   </smarttag>
                   <smarttag>
                     <name>Item GUID</name>
-                    <value>ce9bcc07-0190-4b77-841f-77d040f50b6c</value>
+                    <value>20b64ae2-2b58-fdba-2a62-c4c2a99d2013</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Hidden</name>
@@ -456,11 +456,11 @@
                   </smarttag>
                   <smarttag>
                     <name>Item Source File</name>
-                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Source File Name</name>
-                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>C:\BIM\SyntheticProject\HVAC\Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Type</name>
@@ -534,7 +534,7 @@
               </clashobject>
             </clashobjects>
           </clashresult>
-          <clashresult name="Clash3" guid="db9e4690-9816-4774-9567-7fc360dd8b73" href="Teste 01_files\cd000003.jpg" status="new" distance="-0.005">
+          <clashresult name="Clash3" guid="62a630ec-a994-3ff9-ed8a-8fefdea66f37" href="Teste 01_files\cd000003.jpg" status="new" distance="-0.005">
             <resultstatus>New</resultstatus>
             <clashpoint>
               <pos3f x="2810.842" y="1871.477" z="-3.574"/>
@@ -546,7 +546,7 @@
               <clashobject>
                 <objectattribute>
                   <name>GUID</name>
-                  <value>a519f320-e0f3-43af-98a8-c4b99946dac1</value>
+                  <value>9ac3e0b4-ec43-cb88-d8c3-f24f909fb937</value>
                 </objectattribute>
                 <layer>Nivel +0</layer>
                 <smarttags>
@@ -564,7 +564,7 @@
                   </smarttag>
                   <smarttag>
                     <name>Item GUID</name>
-                    <value>a519f320-e0f3-43af-98a8-c4b99946dac1</value>
+                    <value>9ac3e0b4-ec43-cb88-d8c3-f24f909fb937</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Hidden</name>
@@ -592,11 +592,11 @@
                   </smarttag>
                   <smarttag>
                     <name>Item Source File</name>
-                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Source File Name</name>
-                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Type</name>
@@ -671,7 +671,7 @@
               <clashobject>
                 <objectattribute>
                   <name>GUID</name>
-                  <value>be016b3f-8c1b-47a0-9fe4-235790143d26</value>
+                  <value>19e7f5f3-3096-94a3-8dd7-a1392d5107a6</value>
                 </objectattribute>
                 <layer>Nivel +0</layer>
                 <smarttags>
@@ -689,7 +689,7 @@
                   </smarttag>
                   <smarttag>
                     <name>Item GUID</name>
-                    <value>be016b3f-8c1b-47a0-9fe4-235790143d26</value>
+                    <value>19e7f5f3-3096-94a3-8dd7-a1392d5107a6</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Hidden</name>
@@ -717,11 +717,11 @@
                   </smarttag>
                   <smarttag>
                     <name>Item Source File</name>
-                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Source File Name</name>
-                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Type</name>
@@ -795,7 +795,7 @@
               </clashobject>
             </clashobjects>
           </clashresult>
-          <clashresult name="Clash4" guid="7f28d351-24ea-45c0-885a-819a4dfb66c5" href="Teste 01_files\cd000004.jpg" status="new" distance="-0.004">
+          <clashresult name="Clash4" guid="e594c0f7-94db-7ee8-3637-fac1577635a5" href="Teste 01_files\cd000004.jpg" status="new" distance="-0.004">
             <resultstatus>New</resultstatus>
             <clashpoint>
               <pos3f x="2810.998" y="1871.443" z="-3.597"/>
@@ -807,7 +807,7 @@
               <clashobject>
                 <objectattribute>
                   <name>GUID</name>
-                  <value>31d35553-7d6b-4cf4-ba6c-feec5cfd2234</value>
+                  <value>6809df44-1847-7fc6-136a-37f6f2d5ea87</value>
                 </objectattribute>
                 <layer>Nivel +0</layer>
                 <smarttags>
@@ -825,7 +825,7 @@
                   </smarttag>
                   <smarttag>
                     <name>Item GUID</name>
-                    <value>31d35553-7d6b-4cf4-ba6c-feec5cfd2234</value>
+                    <value>6809df44-1847-7fc6-136a-37f6f2d5ea87</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Hidden</name>
@@ -853,11 +853,11 @@
                   </smarttag>
                   <smarttag>
                     <name>Item Source File</name>
-                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Source File Name</name>
-                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Type</name>
@@ -932,7 +932,7 @@
               <clashobject>
                 <objectattribute>
                   <name>GUID</name>
-                  <value>be016b3f-8c1b-47a0-9fe4-235790143d26</value>
+                  <value>19e7f5f3-3096-94a3-8dd7-a1392d5107a6</value>
                 </objectattribute>
                 <layer>Nivel +0</layer>
                 <smarttags>
@@ -950,7 +950,7 @@
                   </smarttag>
                   <smarttag>
                     <name>Item GUID</name>
-                    <value>be016b3f-8c1b-47a0-9fe4-235790143d26</value>
+                    <value>19e7f5f3-3096-94a3-8dd7-a1392d5107a6</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Hidden</name>
@@ -978,11 +978,11 @@
                   </smarttag>
                   <smarttag>
                     <name>Item Source File</name>
-                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Source File Name</name>
-                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Type</name>
@@ -1056,7 +1056,7 @@
               </clashobject>
             </clashobjects>
           </clashresult>
-          <clashresult name="Clash5" guid="adee185d-b0d5-4ce2-844a-bf1d4b07a2cc" href="Teste 01_files\cd000005.jpg" status="new" distance="-0.002">
+          <clashresult name="Clash5" guid="e84fcc00-330e-b6d9-b7ec-4c00e8862de4" href="Teste 01_files\cd000005.jpg" status="new" distance="-0.002">
             <resultstatus>New</resultstatus>
             <clashpoint>
               <pos3f x="2810.482" y="1869.846" z="-3.417"/>
@@ -1068,7 +1068,7 @@
               <clashobject>
                 <objectattribute>
                   <name>GUID</name>
-                  <value>e8e7574e-19ad-4796-8341-64386d639238</value>
+                  <value>4262653a-76a0-a341-4ae9-1df9b5d3cd9d</value>
                 </objectattribute>
                 <layer>Nivel +0</layer>
                 <smarttags>
@@ -1086,7 +1086,7 @@
                   </smarttag>
                   <smarttag>
                     <name>Item GUID</name>
-                    <value>e8e7574e-19ad-4796-8341-64386d639238</value>
+                    <value>4262653a-76a0-a341-4ae9-1df9b5d3cd9d</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Hidden</name>
@@ -1114,11 +1114,11 @@
                   </smarttag>
                   <smarttag>
                     <name>Item Source File</name>
-                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Source File Name</name>
-                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Type</name>
@@ -1193,7 +1193,7 @@
               <clashobject>
                 <objectattribute>
                   <name>GUID</name>
-                  <value>e8e7574e-19ad-4796-8341-64386d63908b</value>
+                  <value>a06455ac-491b-9ab2-40d9-e2930ea5eb33</value>
                 </objectattribute>
                 <layer>Nivel +0</layer>
                 <smarttags>
@@ -1211,7 +1211,7 @@
                   </smarttag>
                   <smarttag>
                     <name>Item GUID</name>
-                    <value>e8e7574e-19ad-4796-8341-64386d63908b</value>
+                    <value>a06455ac-491b-9ab2-40d9-e2930ea5eb33</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Hidden</name>
@@ -1239,11 +1239,11 @@
                   </smarttag>
                   <smarttag>
                     <name>Item Source File</name>
-                    <value>CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Source File Name</name>
-                    <value>Z:\01-Projectos\35 - ESCRITORIOS - CRISAL\02 - Especialidades\AVAC\CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt</value>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
                   </smarttag>
                   <smarttag>
                     <name>Item Type</name>

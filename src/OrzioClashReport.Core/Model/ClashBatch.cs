@@ -14,7 +14,7 @@ namespace OrzioClashReport.Core.Model
         {
             Name = name;
             Tolerance = tolerance;
-            Clashes = clashes ?? Array.Empty<ClashResult>();
+            Clashes = clashes == null ? Array.Empty<ClashResult>() : new List<ClashResult>(clashes).AsReadOnly();
         }
     }
 }

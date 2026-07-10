@@ -14,7 +14,7 @@ namespace OrzioClashReport.Core.Model
         {
             SourceName = sourceName;
             ExportedAt = exportedAt;
-            Batches = batches ?? Array.Empty<ClashBatch>();
+            Batches = batches == null ? Array.Empty<ClashBatch>() : new List<ClashBatch>(batches).AsReadOnly();
         }
     }
 }

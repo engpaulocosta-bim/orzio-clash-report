@@ -22,7 +22,7 @@ namespace OrzioClashReport.Tests
         {
             var document = ReadSample();
 
-            Assert.Equal("CRISAL_001.26_EXE_ESP_AVAC_PD_R01 _MODELO FEDERADO.nwd", document.SourceName);
+            Assert.Equal("Project_A_HVAC_PD_R01_Federated_Model.nwd", document.SourceName);
         }
 
         [Fact]
@@ -43,7 +43,7 @@ namespace OrzioClashReport.Tests
             var clash = document.Batches[0].Clashes[0];
 
             Assert.Equal("Clash1", clash.Name);
-            Assert.Equal("25a478d0-9ee6-4faa-a947-dc19d04cfb1b", clash.Guid);
+            Assert.Equal("e37d5d4a-2bd1-2ea4-0694-6f2b9d7479ed", clash.Guid);
             Assert.Equal(ClashStatus.New, clash.Status);
             Assert.Equal(-0.007, clash.Distance);
 
@@ -59,9 +59,9 @@ namespace OrzioClashReport.Tests
             var document = ReadSample();
             var clash = document.Batches[0].Clashes[0];
 
-            Assert.Equal("e8e7574e-19ad-4796-8341-64386d639236", clash.ElementA.ElementId);
+            Assert.Equal("48b67dfa-ecf5-541d-fa9d-88e56fc0aa4e", clash.ElementA.ElementId);
             Assert.Equal("Nivel +0", clash.ElementA.Level);
-            Assert.Equal("e8e7574e-19ad-4796-8341-64386d63908b", clash.ElementB.ElementId);
+            Assert.Equal("a06455ac-491b-9ab2-40d9-e2930ea5eb33", clash.ElementB.ElementId);
         }
 
         [Fact]
@@ -80,7 +80,7 @@ namespace OrzioClashReport.Tests
             var document = ReadSample();
             var elementA = document.Batches[0].Clashes[0].ElementA;
 
-            Assert.Equal("CRISAL_001.26_EXE_ESP_AVAC_PD_R00.rvt", elementA.Properties["Item Source File"]);
+            Assert.Equal("Project_A_HVAC_PD_R00.rvt", elementA.Properties["Item Source File"]);
         }
     }
 }

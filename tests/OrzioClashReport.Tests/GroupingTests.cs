@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using OrzioClashReport.Core.Grouping;
 using OrzioClashReport.Core.Model;
 
@@ -149,6 +150,56 @@ namespace OrzioClashReport.Tests
 
             var group = Assert.Single(report.Groups);
             Assert.Equal(2, group.Members.Count);
+        }
+
+        [Fact]
+        public void Group_DoesNotMixClashesFromDifferentClashTestsWithSameDisciplinePairAndLevel()
+        {
+            var avac1 = MakeObject("avac-1", "L1");
+            var arch1 = MakeObject("arch-1", "L1");
+            var avac2 = MakeObject("avac-2", "L1");
+            var arch2 = MakeObject("arch-2", "L1");
+
+            var clash1 = MakeClash("Clash1", "g1", avac1, arch1);
+            var clash2 = MakeClash("Clash2", "g2", avac2, arch2);
+
+            var disciplines = new Dictionary<string, string>
+            {
+                ["avac-1"] = "AVAC", ["arch-1"] = "Architecture",
+                ["avac-2"] = "AVAC", ["arch-2"] = "Architecture"
+            };
+
+            var document = new ClashReportDocument(
+                "doc",
+                null,
+                new[]
+                {
+                    new ClashBatch("Test A", null, new[] { clash1 }),
+                    new ClashBatch("Test B", null, new[] { clash2 })
+                });
+
+            var report = MakeGrouper(disciplines).Group(document);
+
+            Assert.Equal(2, report.GroupCount);
+            Assert.Equal(new[] { "Test A", "Test B" }, report.Groups.Select(g => g.ClashTestName).OrderBy(n => n));
+        }
+
+        [Fact]
+        public void Group_SetsClashTestNameOnGroup()
+        {
+            var avac = MakeObject("avac-1", "L1");
+            var arch = MakeObject("arch-1", "L1");
+            var clash = MakeClash("Clash1", "g1", avac, arch);
+
+            var disciplines = new Dictionary<string, string> { ["avac-1"] = "AVAC", ["arch-1"] = "Architecture" };
+
+            var document = new ClashReportDocument(
+                "doc", null, new[] { new ClashBatch("Teste 01", null, new[] { clash }) });
+
+            var report = MakeGrouper(disciplines).Group(document);
+
+            var group = Assert.Single(report.Groups);
+            Assert.Equal("Teste 01", group.ClashTestName);
         }
 
         [Fact]

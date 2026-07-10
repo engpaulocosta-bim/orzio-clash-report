@@ -36,8 +36,8 @@ namespace OrzioClashReport.Tests
 
             var groups = new List<ClashGroup>
             {
-                new ClashGroup("Architecture", "AVAC", "L1", new[] { clash1 }),
-                new ClashGroup("AVAC", "Structure", "L2", new[] { clash2 })
+                new ClashGroup("Test 1", "Architecture", "AVAC", "L1", new[] { clash1 }),
+                new ClashGroup("Test 1", "AVAC", "Structure", "L2", new[] { clash2 })
             };
 
             return new GroupedClashReport(document, groups, rawCount: 2);
@@ -53,6 +53,32 @@ namespace OrzioClashReport.Tests
             string second = renderer.Render(report);
 
             Assert.Equal(first, second, StringComparer.Ordinal);
+        }
+
+        [Fact]
+        public void Render_EncodesDynamicContentInsteadOfEmittingRawHtml()
+        {
+            var elementA = new ClashObject("a", null, "Level <01>", null, null, null);
+            var elementB = new ClashObject("b", null, "Level <01>", null, null, null);
+
+            var clash = new ClashResult(
+                "<script>alert('x')</script>", ClashStatus.New, null, null, null,
+                elementA, elementB, "33333333-3333-3333-3333-333333333333");
+
+            var document = new ClashReportDocument(
+                "<script>alert('x')</script>", null, new[] { new ClashBatch("Test 1", null, new[] { clash }) });
+
+            var group = new ClashGroup(
+                "<script>alert('x')</script>", "Model & Structure", "AVAC", "Level <01>", new[] { clash });
+
+            var report = new GroupedClashReport(document, new[] { group }, rawCount: 1);
+
+            string html = new HtmlReportRenderer().Render(report);
+
+            Assert.DoesNotContain("<script>alert('x')</script>", html);
+            Assert.Contains("&lt;script&gt;alert(&#39;x&#39;)&lt;/script&gt;", html);
+            Assert.Contains("Model &amp; Structure", html);
+            Assert.Contains("Level &lt;01&gt;", html);
         }
 
         [Fact]

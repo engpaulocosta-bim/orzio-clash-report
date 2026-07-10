@@ -38,8 +38,8 @@ namespace OrzioClashReport.Tests
                 new[]
                 {
                     "File",
-                    "CRISAL_001.26_EXE_ESP_AVAC_PD_R01 _MODELO FEDERADO.nwd",
-                    "CRISAL_001.26_EXE_ESP_AVAC_PD_R01_ARCHITETURE.nwd",
+                    "Project_A_HVAC_PD_R01_Federated_Model.nwd",
+                    "Project_A_Architecture_PD_R01.nwd",
                     "Nivel +0",
                     "Walls",
                     "Basic Wall",
@@ -53,8 +53,8 @@ namespace OrzioClashReport.Tests
                 new[]
                 {
                     "File",
-                    "CRISAL_001.26_EXE_ESP_AVAC_PD_R01 _MODELO FEDERADO.nwd",
-                    "CRISAL_001.26_EXE_ESP_AVAC_PD_R01_CEILLING.nwd",
+                    "Project_A_HVAC_PD_R01_Federated_Model.nwd",
+                    "Project_A_Ceiling_PD_R01.nwd",
                     "Nivel +0",
                     "Ceilings",
                     "Compound Ceiling",

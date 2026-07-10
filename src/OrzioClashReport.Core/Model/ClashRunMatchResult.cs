@@ -67,6 +67,10 @@ namespace OrzioClashReport.Core.Model
             var unmatchedPreviousCopy = CopyNonNull(unmatchedPrevious, nameof(unmatchedPrevious));
             var unmatchedCurrentCopy = CopyNonNull(unmatchedCurrent, nameof(unmatchedCurrent));
 
+            ValidateUniqueReferences(candidatesCopy, nameof(candidates), "Candidates cannot contain the same candidate reference more than once.");
+            ValidateUniqueReferences(selectedCopy, nameof(selectedMatches), "Selected matches cannot contain the same candidate reference more than once.");
+            ValidateUniqueReferences(alternativeCopy, nameof(alternativeCandidates), "Alternative candidates cannot contain the same candidate reference more than once.");
+
             foreach (var candidate in candidatesCopy)
             {
                 ValidateCandidateAgainstRuns(candidate, previousRun, currentRun, nameof(candidates));
@@ -96,6 +100,19 @@ namespace OrzioClashReport.Core.Model
                 }
             }
 
+            foreach (var candidate in candidatesCopy)
+            {
+                bool isSelected = ContainsByReference(selectedCopy, candidate);
+                bool isAlternative = ContainsByReference(alternativeCopy, candidate);
+
+                if (isSelected == isAlternative)
+                {
+                    throw new ArgumentException(
+                        "Every candidate must appear in exactly one of SelectedMatches or AlternativeCandidates.",
+                        nameof(candidates));
+                }
+            }
+
             var usedPreviousIndexes = new HashSet<int>();
             var usedCurrentIndexes = new HashSet<int>();
             foreach (var selected in selectedCopy)
@@ -112,6 +129,20 @@ namespace OrzioClashReport.Core.Model
                         $"Current index {selected.CurrentIndex} is selected in more than one match.", nameof(selectedMatches));
                 }
             }
+
+            ValidateUnmatchedSequence(
+                previousRun.Occurrences,
+                usedPreviousIndexes,
+                unmatchedPreviousCopy,
+                nameof(unmatchedPrevious),
+                "previous");
+
+            ValidateUnmatchedSequence(
+                currentRun.Occurrences,
+                usedCurrentIndexes,
+                unmatchedCurrentCopy,
+                nameof(unmatchedCurrent),
+                "current");
 
             Candidates = candidatesCopy.AsReadOnly();
             SelectedMatches = selectedCopy.AsReadOnly();
@@ -134,6 +165,20 @@ namespace OrzioClashReport.Core.Model
             return copy;
         }
 
+        private static void ValidateUniqueReferences<T>(IReadOnlyList<T> list, string paramName, string message) where T : class
+        {
+            for (int i = 0; i < list.Count; i++)
+            {
+                for (int j = i + 1; j < list.Count; j++)
+                {
+                    if (ReferenceEquals(list[i], list[j]))
+                    {
+                        throw new ArgumentException(message, paramName);
+                    }
+                }
+            }
+        }
+
         private static bool ContainsByReference(IReadOnlyList<ClashRunMatchCandidate> list, ClashRunMatchCandidate item)
         {
             foreach (var candidate in list)
@@ -146,6 +191,43 @@ namespace OrzioClashReport.Core.Model
 
             return false;
         }
+
+        private static void ValidateUnmatchedSequence(
+            IReadOnlyList<ClashOccurrence> runOccurrences,
+            HashSet<int> selectedIndexes,
+            IReadOnlyList<ClashOccurrence> actualUnmatched,
+            string paramName,
+            string runLabel)
+        {
+            var expectedUnmatched = new List<ClashOccurrence>();
+            for (int index = 0; index < runOccurrences.Count; index++)
+            {
+                if (!selectedIndexes.Contains(index))
+                {
+                    expectedUnmatched.Add(runOccurrences[index]);
+                }
+            }
+
+            if (actualUnmatched.Count != expectedUnmatched.Count)
+            {
+                throw new ArgumentException(
+                    $"Unmatched{Capitalize(runLabel)} must contain exactly the unselected {runLabel} occurrences in slot order.",
+                    paramName);
+            }
+
+            for (int index = 0; index < expectedUnmatched.Count; index++)
+            {
+                if (!ReferenceEquals(actualUnmatched[index], expectedUnmatched[index]))
+                {
+                    throw new ArgumentException(
+                        $"Unmatched{Capitalize(runLabel)} must contain exactly the unselected {runLabel} occurrences in slot order.",
+                        paramName);
+                }
+            }
+        }
+
+        private static string Capitalize(string value) =>
+            string.IsNullOrEmpty(value) ? value : char.ToUpperInvariant(value[0]) + value.Substring(1);
 
         private static void ValidateCandidateAgainstRuns(
             ClashRunMatchCandidate candidate, CoordinationRun previousRun, CoordinationRun currentRun, string paramName)

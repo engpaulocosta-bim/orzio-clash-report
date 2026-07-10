@@ -128,6 +128,14 @@ paths, XML, Forma, or ACC. `schemaVersion` belongs to the JSON adapter, not the 
 `RunManifest` contains at most one `ModelRevision` per stable `ModelIdentity`. The CLI does
 not consume the manifest until a later step.
 
+## Coordination run snapshot
+
+`ClashOccurrence` is run-specific evidence, not cross-run identity. It preserves source A/B
+order and references exact `ModelRevision` values. `CoordinationRun` is an immutable
+snapshot of `RunManifest` plus ordered occurrences. Every occurrence revision must be
+declared exactly in the manifest. Do not create fingerprints, matching, deduplication, or
+source-model inference in these types.
+
 ## Language
 
 Code, identifiers, comments, and commit messages in **English**. Conversation with the

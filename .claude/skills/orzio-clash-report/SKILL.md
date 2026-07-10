@@ -109,6 +109,15 @@ snapshot of `RunManifest` plus ordered occurrences. Every occurrence revision mu
 declared exactly in the manifest. Do not create fingerprints, matching, deduplication, or
 source-model inference in these types.
 
+## Matching vocabulary
+
+Match contracts describe a candidate relationship; they do not prove identity.
+`ClashMatchConfidence` has `Low`, `Medium`, and `High` only. `High` is not `Exact` or
+human-confirmed. `MatchEvidence` records `Supports`, `Contradicts`, or `Unavailable`
+signals. Source clash GUID is evidence only until stability is validated on sequential real
+exports. Do not compute scores, thresholds, fingerprints, lifecycle statuses, or automatic
+actions in the match contract types.
+
 ## Anti-patterns that fail review
 
 - Core with a `using System.Xml.Linq`, a Navisworks reference, or any HTML string.

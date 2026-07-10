@@ -118,6 +118,15 @@ signals. Source clash GUID is evidence only until stability is validated on sequ
 exports. Do not compute scores, thresholds, fingerprints, lifecycle statuses, or automatic
 actions in the match contract types.
 
+## Pairwise clash matcher port
+
+`IClashMatcher` is a pairwise Core port. It assesses one ordered previous/current
+`ClashOccurrence` pair. A non-null result is a candidate `ClashMatchAssessment`; `null` means
+no candidate assessment. `Low` is not the same as `null`, and `Unavailable` is an evidence
+verdict, not a matcher result. The matcher must preserve the exact input occurrence
+references. Run traversal, one-to-one conflict resolution, lifecycle classification, and
+verifiability guards belong to a future run comparer.
+
 ## Anti-patterns that fail review
 
 - Core with a `using System.Xml.Linq`, a Navisworks reference, or any HTML string.

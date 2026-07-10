@@ -155,6 +155,23 @@ snapshot.
    contratos.
 6. A CLI ainda não usa esses contratos.
 
+## Pairwise matcher port
+
+1. `IClashMatcher` (`src/OrzioClashReport.Core/Abstractions/IClashMatcher.cs`) avalia um par
+   ordenado anterior/atual de `ClashOccurrence` — nada mais.
+2. Um retorno não nulo (`ClashMatchAssessment`) é uma avaliação candidata, com confiança e
+   evidências auditáveis.
+3. `null` significa que o matcher não produziu nenhum candidato para aquele par (evidência
+   insuficiente, sinais incompatíveis, ou pré-condição da estratégia não satisfeita).
+4. `Low` **não** equivale a `null` — `Low` é uma avaliação candidata real, com pelo menos uma
+   evidência; `null` é a ausência de avaliação.
+5. O port não implementa nenhum algoritmo de matching — nesta etapa não existe nenhuma
+   implementação concreta em produção, só fakes de teste.
+6. O port não compara rodadas (`CoordinationRun`) completas nem recebe listas de ocorrências.
+7. Seleção um-para-um entre candidatos concorrentes, resolução de conflitos e qualquer
+   lifecycle status ainda não existem — ficam para um futuro run comparer.
+8. A CLI ainda não usa o matcher.
+
 ## Backlog (fora do MVP)
 
 Esta seção existe para registrar pedidos que não entram no MVP.

@@ -14,7 +14,7 @@ namespace OrzioClashReport.Core.Model
         public GroupedClashReport(ClashReportDocument document, IReadOnlyList<ClashGroup>? groups, int rawCount)
         {
             Document = document ?? throw new ArgumentNullException(nameof(document));
-            Groups = groups ?? Array.Empty<ClashGroup>();
+            Groups = groups == null ? Array.Empty<ClashGroup>() : new List<ClashGroup>(groups).AsReadOnly();
             RawCount = rawCount;
         }
     }

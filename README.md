@@ -196,6 +196,29 @@ snapshot.
    a um futuro run comparer.
 9. A CLI ainda não usa este matcher.
 
+## Deterministic run comparer
+
+`DeterministicClashRunComparer` (`src/OrzioClashReport.Core/Matching/DeterministicClashRunComparer.cs`)
+implementa `IClashRunComparer`, o primeiro orquestrador entre duas `CoordinationRun`.
+
+1. Recebe explicitamente `previousRun` e `currentRun` — nunca infere qual é qual por
+   `CreatedAt` ou `RunId`.
+2. Avalia todos os pares (previous × current) através de um `IClashMatcher` injetado.
+3. Preserva todos os candidatos gerados (`Candidates`), mesmo os não selecionados.
+4. Seleciona um subconjunto um-para-um (`SelectedMatches`): nenhum índice anterior ou atual
+   repete entre os selecionados.
+5. Precedência de seleção: `High > Medium > Low`.
+6. Desempate por `PreviousIndex` crescente, depois `CurrentIndex` crescente.
+7. Candidatos não selecionados continuam visíveis e auditáveis em `AlternativeCandidates` —
+   nunca são tratados como falsos.
+8. `UnmatchedPrevious`/`UnmatchedCurrent` **não é lifecycle status** — uma ocorrência sem
+   match selecionado ainda pode ter candidatos alternativos.
+9. A política é **greedy e não é globalmente ótima**: uma seleção feita cedo pode bloquear
+   dois candidatos que uma atribuição ótima teria conseguido parear. Isso é aceitável nesta
+   etapa porque a política é determinística, a precedência é explícita, e nenhuma
+   classificação de lifecycle é produzida a partir do resultado.
+10. A CLI ainda não usa este comparer.
+
 ## Backlog (fora do MVP)
 
 Esta seção existe para registrar pedidos que não entram no MVP.

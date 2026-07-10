@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace OrzioClashReport.Core.Model
 {
@@ -25,8 +26,23 @@ namespace OrzioClashReport.Core.Model
             ElementName = elementName;
             Level = level;
             SourceModel = sourceModel;
-            PathHierarchy = pathHierarchy ?? Array.Empty<string>();
-            Properties = properties ?? new Dictionary<string, string>();
+            PathHierarchy = pathHierarchy == null
+                ? Array.Empty<string>()
+                : new List<string>(pathHierarchy).AsReadOnly();
+            Properties = properties == null
+                ? new Dictionary<string, string>()
+                : new ReadOnlyDictionary<string, string>(CopyProperties(properties));
+        }
+
+        private static Dictionary<string, string> CopyProperties(IReadOnlyDictionary<string, string> source)
+        {
+            var copy = new Dictionary<string, string>(source.Count);
+            foreach (var pair in source)
+            {
+                copy[pair.Key] = pair.Value;
+            }
+
+            return copy;
         }
     }
 }

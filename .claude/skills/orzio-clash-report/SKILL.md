@@ -138,6 +138,17 @@ destroy a candidate. Element identifiers and source GUIDs are compared ordinally
 case-sensitively. The matcher does not use spatial position, metadata, scores, fingerprints,
 or lifecycle status.
 
+## Deterministic run comparer
+
+`IClashRunComparer` compares explicit previous/current `CoordinationRun` roles and never
+infers order from timestamps or run ids. `DeterministicClashRunComparer` evaluates every
+pair through `IClashMatcher`, preserves all candidates, and greedily selects a one-to-one
+subset by `High > Medium > Low`, previous index, then current index. Candidates are indexed
+because duplicate occurrence references are allowed. Alternative candidates remain auditable
+and must not be treated as false. Unmatched does not mean `New` or `Resolved` and may still
+have alternative candidates. The greedy policy is deterministic but not globally optimal;
+lifecycle classification remains out of scope.
+
 ## Anti-patterns that fail review
 
 - Core with a `using System.Xml.Linq`, a Navisworks reference, or any HTML string.

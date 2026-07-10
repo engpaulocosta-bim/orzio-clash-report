@@ -121,6 +121,13 @@ revision-specific metadata. Revision, file path, content hash, run id, and times
 never enter `ModelIdentity` equality or `StableKey`. No automatic revision extraction in the
 MVP.
 
+## Run manifest
+
+The run manifest is an explicit input contract. Do not infer revisions from filenames,
+paths, XML, Forma, or ACC. `schemaVersion` belongs to the JSON adapter, not the Core. A
+`RunManifest` contains at most one `ModelRevision` per stable `ModelIdentity`. The CLI does
+not consume the manifest until a later step.
+
 ## Language
 
 Code, identifiers, comments, and commit messages in **English**. Conversation with the

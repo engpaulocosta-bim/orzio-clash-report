@@ -122,6 +122,23 @@ constrói `RunManifest`/`ModelRevision`/`ModelIdentity` do Core. **A CLI ainda n
 manifesto nesta etapa** — este é apenas o contrato de entrada, isolado no Core e em um
 adapter dedicado.
 
+## Coordination run snapshot
+
+1. `RunManifest` declara quais revisões de modelo participam de uma rodada (ver seção
+   acima).
+2. `ClashOccurrence` vincula um `ClashResult` bruto (do XML) às revisões exatas dos modelos
+   dos lados A e B dentro de um clash test específico.
+3. `CoordinationRun` forma o snapshot imutável: o `RunManifest` mais a lista ordenada de
+   `ClashOccurrence`s observadas. Toda revisão usada por uma ocorrência precisa estar
+   declarada exatamente no manifesto (mesma `ModelIdentity` com revisão diferente é
+   rejeitada).
+
+Nenhum matching ou comparação entre rodadas existe ainda — `CoordinationRun` é só o
+snapshot de uma rodada isolada. A associação automática entre elementos do XML e as
+revisões do manifesto (`ClashObject.SourceModel` → `ModelRevision`) também ainda não foi
+implementada; hoje `ClashOccurrence` é construída explicitamente. A CLI ainda não cria esse
+snapshot.
+
 ## Backlog (fora do MVP)
 
 Esta seção existe para registrar pedidos que não entram no MVP.

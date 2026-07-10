@@ -23,6 +23,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\OrzioClashReport.Core\OrzioClashReport.Core.csproj" />
     <ProjectReference Include="..\..\src\OrzioClashReport.Input.NavisworksXml\OrzioClashReport.Input.NavisworksXml.csproj" />
+    <ProjectReference Include="..\..\src\OrzioClashReport.Input.RunManifestJson\OrzioClashReport.Input.RunManifestJson.csproj" />
     <ProjectReference Include="..\..\src\OrzioClashReport.Output.Html\OrzioClashReport.Output.Html.csproj" />
   </ItemGroup>
 
@@ -34,6 +35,10 @@
     <None Include="..\..\samples\sample-clash2.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>samples\sample-clash2.xml</Link>
+    </None>
+    <None Include="..\..\samples\run-manifest.sample.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>samples\run-manifest.sample.json</Link>
     </None>
     <None Include="Golden\report.golden.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

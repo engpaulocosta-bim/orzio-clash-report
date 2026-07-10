@@ -219,6 +219,34 @@ implementa `IClashRunComparer`, o primeiro orquestrador entre duas `Coordination
    classificação de lifecycle é produzida a partir do resultado.
 10. A CLI ainda não usa este comparer.
 
+## Conservative lifecycle classification
+
+`ConservativeClashLifecycleClassifier` (`src/OrzioClashReport.Core/Lifecycle/ConservativeClashLifecycleClassifier.cs`)
+implementa `IClashLifecycleClassifier`: classifica cada slot de um `ClashRunMatchResult` já
+produzido, sem nunca reexecutar `IClashMatcher` ou `IClashRunComparer`.
+
+1. **`StillOpen`**: um match selecionado com confiança `Medium` ou `High` **e** nenhum
+   candidato alternativo compartilhando seu `PreviousIndex` ou `CurrentIndex`.
+2. **`Resolved`**: uma ocorrência anterior sem match selecionado, **sem** candidato
+   alternativo referenciando seu índice, com ambos os `ModelIdentity` (revision-free) e o
+   clash test observados na rodada atual.
+3. **`New`**: regra simétrica — uma ocorrência atual sem match selecionado, sem
+   alternativa, com modelos e clash test observados na rodada anterior.
+4. **`Unverifiable`**: qualquer coisa que não satisfaça as condições acima — confiança
+   `Low`, candidato alternativo concorrente, modelo ausente, ou clash test não observado.
+5. Cobertura é sempre revision-free: `ModelRevision.Revision`, `SourceFileName`,
+   `SourceFilePath`, `ContentHash` e `PublishedAt` nunca participam da verificação.
+6. Um clash test só é considerado **observado** numa rodada quando existe pelo menos uma
+   `ClashOccurrence` com o mesmo nome nela (comparação ordinal, ignorando case). O snapshot
+   atual não consegue provar que um test rodou e retornou zero clashes — por isso, a
+   ausência de ocorrências desse test permanece `Unverifiable`, nunca `Resolved`/`New`
+   automático.
+7. O `ClashStatus` bruto (vindo do Clash Detective) nunca participa da decisão de
+   lifecycle.
+8. Não existe `Reopened` — distinguir um clash genuinamente novo de um que reabriu exige
+   histórico de mais de duas rodadas, fora do escopo desta etapa.
+9. A CLI ainda não usa esse classificador.
+
 ## Backlog (fora do MVP)
 
 Esta seção existe para registrar pedidos que não entram no MVP.

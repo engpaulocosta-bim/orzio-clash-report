@@ -154,6 +154,17 @@ verdict, not a matcher result. The matcher must preserve the exact input occurre
 references. Run traversal, one-to-one conflict resolution, lifecycle classification, and
 verifiability guards belong to a future run comparer.
 
+## Conservative clash matcher
+
+`ConservativeClashMatcher` requires matching clash-test name, revision-free model pair, and
+model-aligned opaque element-id pair. Model revisions and file metadata never participate in
+matching. The matcher accepts direct or swapped A/B model alignment and handles self-clash
+element pairs without mutating occurrences. Source clash GUID is supplemental evidence only:
+equal GUID can raise `Medium` to `High`, but unequal or missing GUID does not create or
+destroy a candidate. Element identifiers and source GUIDs are compared ordinally and
+case-sensitively. The matcher does not use spatial position, metadata, scores, fingerprints,
+or lifecycle status.
+
 ## Language
 
 Code, identifiers, comments, and commit messages in **English**. Conversation with the

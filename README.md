@@ -82,6 +82,46 @@ para os testes de parsing e agrupamento. Veja [samples/README.md](samples/README
 `.github/workflows/ci.yml` roda `dotnet build` e `dotnet test` em Release a cada push e pull
 request, usando o SDK fixado em `global.json`.
 
+## Run manifest
+
+O manifesto de rodada (`RunManifest`) é uma declaração explícita e auditável de quais
+modelos e revisões participaram de uma rodada de coordenação. Ele não é inferido a partir
+de nome de arquivo, caminho, XML do Navisworks, Autodesk Forma ou ACC — nesta etapa do
+projeto, essa informação é sempre declarada manualmente.
+
+Exemplo (`samples/run-manifest.sample.json`):
+
+```json
+{
+  "schemaVersion": 1,
+  "runId": "coordination-2026-07-10-0900",
+  "createdAt": "2026-07-10T09:00:00+01:00",
+  "models": [
+    {
+      "company": "Sigma",
+      "discipline": "Structure",
+      "modelName": "Sigma_Structure",
+      "revision": "R04",
+      "sourceFileName": "Sigma_Structure_R04.nwc"
+    }
+  ]
+}
+```
+
+Campos obrigatórios de cada item em `models`: `company`, `discipline`, `modelName`,
+`revision`, `sourceFileName`. Campos opcionais: `sourceFilePath`, `contentHash`,
+`publishedAt`.
+
+A revisão (`revision`) é sempre declarada manualmente — nunca extraída automaticamente do
+nome do arquivo ou de qualquer convenção. Dentro da mesma rodada, cada `ModelIdentity`
+(company + discipline + modelName, ignorando case) pode ter no máximo uma revisão; um
+manifesto que declare duas revisões para a mesma identidade é rejeitado.
+
+O parser (`OrzioClashReport.Input.RunManifestJson`) valida a estrutura e o schema do JSON e
+constrói `RunManifest`/`ModelRevision`/`ModelIdentity` do Core. **A CLI ainda não consome o
+manifesto nesta etapa** — este é apenas o contrato de entrada, isolado no Core e em um
+adapter dedicado.
+
 ## Backlog (fora do MVP)
 
 Esta seção existe para registrar pedidos que não entram no MVP.

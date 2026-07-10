@@ -114,6 +114,13 @@ An agent can claim the first two. Only the human can claim the third.
 - Building the API adapter, images, or licensing before the MVP is validated on a real model.
 - Inventing XML element/attribute names not present in `samples/sample-clash.xml`.
 
+## Model identity vs. revision
+
+`ModelIdentity` is stable and revision-free. `ModelRevision` composes `ModelIdentity` plus
+revision-specific metadata. Revision, file path, content hash, run id, and timestamp must
+never enter `ModelIdentity` equality or `StableKey`. No automatic revision extraction in the
+MVP.
+
 ## Language
 
 Code, identifiers, comments, and commit messages in **English**. Conversation with the

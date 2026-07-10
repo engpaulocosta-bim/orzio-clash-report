@@ -87,6 +87,13 @@ Three different claims. Never conflate them, and never report a higher one than 
 An agent can claim the first two. Only the human can claim the third. When reporting done,
 state exactly what was verified and what remains unverified.
 
+## Model identity vs. revision
+
+`ModelIdentity` is stable and revision-free. `ModelRevision` composes `ModelIdentity` plus
+revision-specific metadata. Revision, file path, content hash, run id, and timestamp must
+never enter `ModelIdentity` equality or `StableKey`. No automatic revision extraction in the
+MVP.
+
 ## Anti-patterns that fail review
 
 - Core with a `using System.Xml.Linq`, a Navisworks reference, or any HTML string.

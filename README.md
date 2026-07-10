@@ -139,6 +139,22 @@ revisões do manifesto (`ClashObject.SourceModel` → `ModelRevision`) também a
 implementada; hoje `ClashOccurrence` é construída explicitamente. A CLI ainda não cria esse
 snapshot.
 
+## Matching vocabulary
+
+1. Os contratos `ClashMatchConfidence`, `MatchEvidence` e `ClashMatchAssessment` ainda não
+   executam nenhum matching — são apenas o vocabulário que uma futura implementação usará
+   para registrar e justificar uma avaliação.
+2. `ClashMatchConfidence.High` **não** significa "exato" nem "confirmado por um humano"; é
+   apenas o nível mais alto de corroboração por evidências.
+3. O GUID do clash reportado pela fonte (`MatchEvidenceKind.SourceClashGuid`) é apenas mais
+   uma evidência — ainda não foi provado estável entre exports sequenciais reais.
+4. Cada `MatchEvidence` tem um veredito (`Supports`, `Contradicts` ou `Unavailable`);
+   `ClashMatchAssessment` permite vereditos mistos e não recalcula a confiança a partir
+   deles.
+5. Não há score numérico, threshold, lifecycle status ou decisão automática nestes
+   contratos.
+6. A CLI ainda não usa esses contratos.
+
 ## Backlog (fora do MVP)
 
 Esta seção existe para registrar pedidos que não entram no MVP.

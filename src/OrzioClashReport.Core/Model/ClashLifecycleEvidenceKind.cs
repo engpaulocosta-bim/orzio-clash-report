@@ -15,7 +15,7 @@ namespace OrzioClashReport.Core.Model
         /// <summary>Whether a revision-free <see cref="ModelIdentity"/> is declared in the other run.</summary>
         ModelIdentityPresence,
 
-        /// <summary>Whether the clash test name is observed (has at least one occurrence) in the other run.</summary>
+        /// <summary>Whether the clash test and revision-free model pair are explicitly declared as executed in the other run's manifest.</summary>
         ClashTestPresence
     }
 }

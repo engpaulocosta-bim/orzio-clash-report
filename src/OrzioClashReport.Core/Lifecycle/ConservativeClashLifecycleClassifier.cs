@@ -19,11 +19,13 @@ namespace OrzioClashReport.Core.Lifecycle
     /// condition against the previous run. Anything else is <see cref="ClashLifecycleStatus.Unverifiable"/>.
     ///
     /// <para>
-    /// A clash test is considered "observed" in a run only when at least one occurrence with the same name
-    /// (ordinal, case-insensitive) exists in that run. A run with zero occurrences for a test cannot currently
-    /// be distinguished from a test that was never executed there, so that case remains
-    /// <see cref="ClashLifecycleStatus.Unverifiable"/> until a future manifest can declare which clash tests
-    /// were actually run.
+    /// A clash test is considered "observed" in a run only when that run's
+    /// <see cref="RunManifest.ExecutedClashTests"/> explicitly declares a test with the same name (ordinal,
+    /// case-insensitive) and the same revision-free model pair, direct or A/B-swapped -- never by scanning
+    /// that run's occurrences. This is what lets a run prove it executed a test and got zero results: the
+    /// declaration alone is sufficient evidence, so an unmatched clash can be classified
+    /// <see cref="ClashLifecycleStatus.Resolved"/> or <see cref="ClashLifecycleStatus.New"/> even when the
+    /// other run has no occurrence at all for that test and model pair.
     /// </para>
     /// </summary>
     public sealed class ConservativeClashLifecycleClassifier : IClashLifecycleClassifier
@@ -155,14 +157,15 @@ namespace OrzioClashReport.Core.Lifecycle
             evidence.Add(BuildModelIdentityPresenceEvidence("ModelA", occurrence.ModelA.Identity, otherRun));
             evidence.Add(BuildModelIdentityPresenceEvidence("ModelB", occurrence.ModelB.Identity, otherRun));
 
-            bool testObserved = IsClashTestObserved(occurrence.ClashTestName, otherRun);
+            bool testDeclared = IsClashTestDeclaredExecuted(occurrence, otherRun);
             evidence.Add(new ClashLifecycleEvidence(
                 ClashLifecycleEvidenceKind.ClashTestPresence,
-                testObserved ? ClashLifecycleEvidenceVerdict.SupportsClassification : ClashLifecycleEvidenceVerdict.BlocksClassification,
-                testObserved
-                    ? $"Clash test '{occurrence.ClashTestName}' has at least one occurrence in the other run."
-                    : $"Clash test '{occurrence.ClashTestName}' has no occurrence in the other run. Absence of occurrences "
-                      + "does not distinguish a test that was not executed from one that was executed with zero results."));
+                testDeclared ? ClashLifecycleEvidenceVerdict.SupportsClassification : ClashLifecycleEvidenceVerdict.BlocksClassification,
+                testDeclared
+                    ? $"Clash test '{occurrence.ClashTestName}' is explicitly declared as executed for this "
+                      + "revision-free model pair in the other run's manifest."
+                    : $"The manifest does not declare clash test '{occurrence.ClashTestName}' as executed for "
+                      + "this model pair in the other run."));
 
             evidence.Add(new ClashLifecycleEvidence(
                 ClashLifecycleEvidenceKind.SelectedMatch,
@@ -184,8 +187,11 @@ namespace OrzioClashReport.Core.Lifecycle
                     : $"{sideLabel} identity '{identity}' is not declared in the other run's manifest.");
         }
 
-        private static bool IsClashTestObserved(string clashTestName, CoordinationRun run) =>
-            run.Occurrences.Any(o => string.Equals(o.ClashTestName, clashTestName, StringComparison.OrdinalIgnoreCase));
+        private static bool IsClashTestDeclaredExecuted(ClashOccurrence occurrence, CoordinationRun run) =>
+            run.ExecutedClashTests.Any(test =>
+                string.Equals(test.Name, occurrence.ClashTestName, StringComparison.OrdinalIgnoreCase)
+                && ((test.ModelA.Equals(occurrence.ModelA.Identity) && test.ModelB.Equals(occurrence.ModelB.Identity))
+                    || (test.ModelA.Equals(occurrence.ModelB.Identity) && test.ModelB.Equals(occurrence.ModelA.Identity))));
 
         private static bool HasBlocker(IEnumerable<ClashLifecycleEvidence> evidence) =>
             evidence.Any(e => e.Verdict == ClashLifecycleEvidenceVerdict.BlocksClassification);

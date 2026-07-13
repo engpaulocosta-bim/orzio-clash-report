@@ -82,5 +82,15 @@ namespace OrzioClashReport.Tests
 
             Assert.Equal("Project_A_HVAC_PD_R00.rvt", elementA.Properties["Item Source File"]);
         }
+
+        [Fact]
+        public void Read_ParsesSourceModelFromItemSourceFile()
+        {
+            var document = ReadSample();
+            var elementA = document.Batches[0].Clashes[0].ElementA;
+
+            Assert.Equal("Project_A_HVAC_PD_R00.rvt", elementA.SourceModel);
+            Assert.Equal("Project_A_HVAC_PD_R00.rvt", elementA.Properties["Item Source File"]);
+        }
     }
 }

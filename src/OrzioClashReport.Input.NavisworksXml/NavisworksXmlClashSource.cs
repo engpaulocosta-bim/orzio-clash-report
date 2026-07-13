@@ -144,7 +144,30 @@ namespace OrzioClashReport.Input.NavisworksXml
                 .ToDictionary(g => g.Key, g => g.First().Value ?? string.Empty)
                 ?? new Dictionary<string, string>();
 
-            return new ClashObject(elementId!, null, level, null, pathHierarchy, properties);
+            string? sourceModel = ResolveSourceModel(properties);
+
+            return new ClashObject(elementId!, null, level, sourceModel, pathHierarchy, properties);
+        }
+
+        /// <summary>
+        /// Resolves the raw source-model token from the parsed smarttags: "Item Source File" wins when
+        /// non-blank, falling back to "Item Source File Name", falling back to null. Exact key lookup only,
+        /// no fuzzy matching. The value is preserved verbatim -- no path normalization, extension stripping,
+        /// or identity/revision extraction; that is the future assembler's job, not the parser's.
+        /// </summary>
+        private static string? ResolveSourceModel(IReadOnlyDictionary<string, string> properties)
+        {
+            if (properties.TryGetValue("Item Source File", out var itemSourceFile) && !string.IsNullOrWhiteSpace(itemSourceFile))
+            {
+                return itemSourceFile;
+            }
+
+            if (properties.TryGetValue("Item Source File Name", out var itemSourceFileName) && !string.IsNullOrWhiteSpace(itemSourceFileName))
+            {
+                return itemSourceFileName;
+            }
+
+            return null;
         }
 
         private ClashStatus ParseStatus(string? statusText)

@@ -23,5 +23,8 @@ namespace OrzioClashReport.Input.RunManifestJson
 
         [JsonPropertyName("models")]
         public List<ModelRevisionDto?>? Models { get; set; }
+
+        [JsonPropertyName("executedClashTests")]
+        public List<ExecutedClashTestDto?>? ExecutedClashTests { get; set; }
     }
 }

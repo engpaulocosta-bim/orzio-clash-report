@@ -41,6 +41,33 @@ namespace OrzioClashReport.Tests
                 <layer>L1</layer>
               </clashobject>";
 
+        /// <summary>Builds a clashobject with optional "Item Source File"/"Item Source File Name" smarttags; a null argument omits that smarttag entirely, distinct from an empty/whitespace value.</summary>
+        private static string ClashObjectWithSourceSmartTags(string guid, string? itemSourceFile, string? itemSourceFileName)
+        {
+            string itemSourceFileTag = itemSourceFile == null ? string.Empty : $@"
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>{itemSourceFile}</value>
+                  </smarttag>";
+
+            string itemSourceFileNameTag = itemSourceFileName == null ? string.Empty : $@"
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>{itemSourceFileName}</value>
+                  </smarttag>";
+
+            return $@"
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>{guid}</value>
+                </objectattribute>
+                <layer>L1</layer>
+                <smarttags>{itemSourceFileTag}{itemSourceFileNameTag}
+                </smarttags>
+              </clashobject>";
+        }
+
         private string BuildExchange(string clashResultBody, string clashResultAttributes = "guid=\"g1\"") => $@"<?xml version=""1.0"" encoding=""UTF-8"" ?>
 <exchange filename=""test.nwd"">
   <batchtest name=""Report"">
@@ -153,6 +180,83 @@ namespace OrzioClashReport.Tests
 
             var ex = Assert.Throws<InvalidOperationException>(() => source.Read());
             Assert.Contains("GUID", ex.Message);
+        }
+
+        // --- SourceModel precedence: "Item Source File" wins, then "Item Source File Name", then null ---
+
+        [Fact]
+        public void Read_SourceModel_ItemSourceFileWinsWhenBothPresent()
+        {
+            string xml = BuildExchange($@"
+            <resultstatus>New</resultstatus>
+            <clashobjects>
+              {ClashObjectWithSourceSmartTags("guid-a", itemSourceFile: "Model_A.rvt", itemSourceFileName: @"C:\Models\Model_A.rvt")}
+              {ClashObject("guid-b")}
+            </clashobjects>");
+            var document = ReadXml(xml, out _);
+
+            var clash = document.Batches[0].Clashes[0];
+            Assert.Equal("Model_A.rvt", clash.ElementA.SourceModel);
+        }
+
+        [Fact]
+        public void Read_SourceModel_FallsBackToItemSourceFileNameWhenItemSourceFileAbsent()
+        {
+            string xml = BuildExchange($@"
+            <resultstatus>New</resultstatus>
+            <clashobjects>
+              {ClashObjectWithSourceSmartTags("guid-a", itemSourceFile: null, itemSourceFileName: @"C:\Models\Model_A.rvt")}
+              {ClashObject("guid-b")}
+            </clashobjects>");
+            var document = ReadXml(xml, out _);
+
+            var clash = document.Batches[0].Clashes[0];
+            Assert.Equal(@"C:\Models\Model_A.rvt", clash.ElementA.SourceModel);
+        }
+
+        [Fact]
+        public void Read_SourceModel_FallsBackToItemSourceFileNameWhenItemSourceFileIsWhitespace()
+        {
+            string xml = BuildExchange($@"
+            <resultstatus>New</resultstatus>
+            <clashobjects>
+              {ClashObjectWithSourceSmartTags("guid-a", itemSourceFile: "   ", itemSourceFileName: @"C:\Models\Model_A.rvt")}
+              {ClashObject("guid-b")}
+            </clashobjects>");
+            var document = ReadXml(xml, out _);
+
+            var clash = document.Batches[0].Clashes[0];
+            Assert.Equal(@"C:\Models\Model_A.rvt", clash.ElementA.SourceModel);
+        }
+
+        [Fact]
+        public void Read_SourceModel_IsNullWhenBothSmartTagsAbsent()
+        {
+            string xml = BuildExchange($@"
+            <resultstatus>New</resultstatus>
+            <clashobjects>
+              {ClashObjectWithSourceSmartTags("guid-a", itemSourceFile: null, itemSourceFileName: null)}
+              {ClashObject("guid-b")}
+            </clashobjects>");
+            var document = ReadXml(xml, out _);
+
+            var clash = document.Batches[0].Clashes[0];
+            Assert.Null(clash.ElementA.SourceModel);
+        }
+
+        [Fact]
+        public void Read_SourceModel_IsNullWhenBothSmartTagsAreWhitespace()
+        {
+            string xml = BuildExchange($@"
+            <resultstatus>New</resultstatus>
+            <clashobjects>
+              {ClashObjectWithSourceSmartTags("guid-a", itemSourceFile: "   ", itemSourceFileName: "   ")}
+              {ClashObject("guid-b")}
+            </clashobjects>");
+            var document = ReadXml(xml, out _);
+
+            var clash = document.Batches[0].Clashes[0];
+            Assert.Null(clash.ElementA.SourceModel);
         }
     }
 }

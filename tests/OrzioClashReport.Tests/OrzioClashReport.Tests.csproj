@@ -40,6 +40,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <Link>samples\run-manifest.sample.json</Link>
     </None>
+    <None Include="..\..\samples\sample-clash.run-manifest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>samples\sample-clash.run-manifest.json</Link>
+    </None>
     <None Include="Golden\report.golden.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

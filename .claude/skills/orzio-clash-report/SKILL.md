@@ -177,6 +177,25 @@ it for the same revision-free model pair (direct or A/B-swapped); this is what l
 occurrence declared test still support `Resolved`/`New`. Raw `ClashStatus` never drives
 lifecycle. `Reopened` requires longer history and is out of scope.
 
+## Coordination run assembly
+
+`ICoordinationRunAssembler` converts an already-parsed `ClashReportDocument` plus a
+declared `RunManifest` into `CoordinationRun`. `ExactSourceModelCoordinationRunAssembler`
+resolves each `ClashObject.SourceModel` only by trimmed `OrdinalIgnoreCase` equality against
+`ModelRevision.SourceFileName` or `SourceFilePath`. No basename extraction, extension
+removal, path normalization, revision parsing, fuzzy matching, or first-match fallback is
+allowed. Zero matches and multiple distinct manifest-model matches are assembly failures.
+The exact `ModelRevision` instances from `RunManifest.Models` and exact `ClashResult`
+references from the source document are preserved. Batch order, clash order, duplicates,
+and A/B orientation are preserved. `CoordinationRun` remains the final authority for
+executed-test coverage. The XML and JSON adapters remain independent; the assembler lives
+in Core and performs no I/O.
+
+`NavisworksXmlClashSource` populates `ClashObject.SourceModel` from the parsed smarttags
+(`Item Source File`, falling back to `Item Source File Name`). `samples/sample-clash.run-manifest.json`
+is the companion manifest for `samples/sample-clash.xml`, so the real XML → JSON → assembler
+pipeline is exercised end to end in tests.
+
 ## Anti-patterns that fail review
 
 - Core with a `using System.Xml.Linq`, a Navisworks reference, or any HTML string.

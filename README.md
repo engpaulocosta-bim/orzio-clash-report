@@ -294,6 +294,58 @@ produzido, sem nunca reexecutar `IClashMatcher` ou `IClashRunComparer`.
    histórico de mais de duas rodadas, fora do escopo desta etapa.
 9. A CLI ainda não usa esse classificador.
 
+## Coordination run assembly
+
+`ExactSourceModelCoordinationRunAssembler` (`src/OrzioClashReport.Core/Assembly/ExactSourceModelCoordinationRunAssembler.cs`)
+implementa `ICoordinationRunAssembler`: o primeiro assembler que conecta os dois adapters
+já existentes, produzindo um `CoordinationRun` a partir de um `ClashReportDocument` (parser
+XML) e um `RunManifest` (adapter JSON).
+
+1. O parser XML produz `ClashReportDocument`; o adapter JSON do manifesto produz
+   `RunManifest`. `ExactSourceModelCoordinationRunAssembler` combina os dois — nenhum dos
+   dois adapters depende do outro, e o assembler vive inteiramente no Core, sem I/O.
+2. Cada lado do clash (`ClashResult.ElementA`/`ElementB`) é resolvido exclusivamente via
+   `ClashObject.SourceModel`, comparado contra `ModelRevision.SourceFileName` ou
+   `SourceFilePath` de cada modelo declarado no manifesto.
+3. A única normalização permitida é `Trim()`; a comparação é
+   `StringComparison.OrdinalIgnoreCase`. Nenhuma heurística de nome de arquivo é aplicada:
+   sem `Path.GetFileName`, sem remoção de extensão, sem normalização de separador de
+   diretório, sem substring/prefix/suffix, sem regex, sem fuzzy matching, sem inferência de
+   revisão/disciplina/empresa a partir do token.
+4. Zero modelo correspondente no manifesto é falha (`CoordinationRunAssemblyException`).
+5. Mais de um `ModelRevision` distinto correspondendo ao mesmo `SourceModel` também é falha
+   — ambiguidade nunca é resolvida por "primeiro candidato" ou qualquer outro critério
+   automático.
+6. A ordem documental (batch-major, clash-minor) e a orientação A/B são sempre preservadas;
+   duplicidades no documento viram `ClashOccurrence`s duplicadas, nunca deduplicadas.
+7. `CoordinationRun` continua sendo a autoridade final para validar cobertura de
+   `ExecutedClashTest` — o assembler não duplica essa regra, apenas deixa que a construção
+   final de `CoordinationRun` a aplique.
+8. Existe um manifesto companion sintético vinculado ao fixture XML real
+   (`samples/sample-clash.run-manifest.json`, para `samples/sample-clash.xml`) — ver a seção
+   abaixo.
+9. A CLI ainda não executa esse pipeline revision-aware.
+10. Ainda não foi validado em modelo real sequencial.
+
+### Companion manifest para `sample-clash.xml`
+
+`samples/sample-clash.run-manifest.json` declara manualmente os modelos e clash tests
+necessários para o `NavisworksXmlClashSource` real conseguir montar um `CoordinationRun` a
+partir de `samples/sample-clash.xml`, usando `ExactSourceModelCoordinationRunAssembler`. A
+inspeção do fixture (via o parser já corrigido) mostrou:
+
+- 1 batch: `"Teste 01"`, com 5 clashes.
+- **1 único token distinto de `SourceModel`** em todos os 5 clashes, nos dois lados:
+  `"Project_A_HVAC_PD_R00.rvt"` — ou seja, o fixture é um cenário de **self-clash** (o
+  mesmo modelo contra si mesmo).
+
+O manifesto declara `ModelRevision.SourceFileName = "Project_A_HVAC_PD_R00.rvt"` (igual ao
+token exato produzido pelo parser) e um `ExecutedClashTest` self-clash para `"Teste 01"`. Um
+segundo modelo sintético (`Beta_Architecture_R10.nwc`) e um `ExecutedClashTest` de zero
+occurrences entre ele e o modelo do HVAC também estão declarados, apenas para ilustrar a
+funcionalidade de zero-result introduzida na Etapa 10 — nenhum dos dois é necessário para o
+binding do fixture real (ver `samples/README.md`).
+
 ## Backlog (fora do MVP)
 
 Esta seção existe para registrar pedidos que não entram no MVP.

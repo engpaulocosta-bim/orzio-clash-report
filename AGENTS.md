@@ -202,6 +202,27 @@ clash test is "observed" in the other run. Manifest JSON `schemaVersion` 2 is re
 coverage, and silently treating it as declaring zero tests would be indistinguishable from
 "we don't know what ran."
 
+## Coordination run assembly
+
+`ICoordinationRunAssembler` converts an already-parsed `ClashReportDocument` plus a
+declared `RunManifest` into `CoordinationRun`. `ExactSourceModelCoordinationRunAssembler`
+resolves each `ClashObject.SourceModel` only by trimmed `OrdinalIgnoreCase` equality against
+`ModelRevision.SourceFileName` or `SourceFilePath`. No basename extraction, extension
+removal, path normalization, revision parsing, fuzzy matching, or first-match fallback is
+allowed. Zero matches and multiple distinct manifest-model matches are assembly failures.
+The exact `ModelRevision` instances from `RunManifest.Models` and exact `ClashResult`
+references from the source document are preserved. Batch order, clash order, duplicates,
+and A/B orientation are preserved. `CoordinationRun` remains the final authority for
+executed-test coverage. The XML and JSON adapters remain independent; the assembler lives
+in Core and performs no I/O.
+
+`NavisworksXmlClashSource` now populates `ClashObject.SourceModel` (see the "Explicit
+executed clash test coverage" adapter and the `Item Source File` / `Item Source File Name`
+precedence documented at the parser). `samples/sample-clash.run-manifest.json` is the
+companion manifest for `samples/sample-clash.xml`, letting the full real pipeline
+(`NavisworksXmlClashSource` → `JsonRunManifestSource` → `ExactSourceModelCoordinationRunAssembler`)
+run end to end in tests.
+
 ## Language
 
 Code, identifiers, comments, and commit messages in **English**. Conversation with the

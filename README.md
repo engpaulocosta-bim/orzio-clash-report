@@ -85,15 +85,16 @@ request, usando o SDK fixado em `global.json`.
 ## Run manifest
 
 O manifesto de rodada (`RunManifest`) é uma declaração explícita e auditável de quais
-modelos e revisões participaram de uma rodada de coordenação. Ele não é inferido a partir
-de nome de arquivo, caminho, XML do Navisworks, Autodesk Forma ou ACC — nesta etapa do
-projeto, essa informação é sempre declarada manualmente.
+modelos e revisões participaram de uma rodada de coordenação, e de quais clash tests foram
+executados nela. Ele não é inferido a partir de nome de arquivo, caminho, XML do
+Navisworks, Autodesk Forma ou ACC — nesta etapa do projeto, essa informação é sempre
+declarada manualmente.
 
-Exemplo (`samples/run-manifest.sample.json`):
+Exemplo (`samples/run-manifest.sample.json`, schema v2):
 
 ```json
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "runId": "coordination-2026-07-10-0900",
   "createdAt": "2026-07-10T09:00:00+01:00",
   "models": [
@@ -103,6 +104,20 @@ Exemplo (`samples/run-manifest.sample.json`):
       "modelName": "Sigma_Structure",
       "revision": "R04",
       "sourceFileName": "Sigma_Structure_R04.nwc"
+    },
+    {
+      "company": "Alfa",
+      "discipline": "HVAC",
+      "modelName": "Alfa_HVAC",
+      "revision": "R07",
+      "sourceFileName": "Alfa_HVAC_R07.nwc"
+    }
+  ],
+  "executedClashTests": [
+    {
+      "name": "HVAC vs Structure",
+      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+      "modelB": { "company": "Alfa", "discipline": "HVAC", "modelName": "Alfa_HVAC" }
     }
   ]
 }
@@ -117,21 +132,51 @@ nome do arquivo ou de qualquer convenção. Dentro da mesma rodada, cada `ModelI
 (company + discipline + modelName, ignorando case) pode ter no máximo uma revisão; um
 manifesto que declare duas revisões para a mesma identidade é rejeitado.
 
+### Cobertura explícita de clash tests executados
+
+`executedClashTests` é uma declaração **manual** de quais clash tests rodaram nesta rodada,
+distinta e independente das ocorrências de clash observadas:
+
+1. Cada item tem `name` (nome do clash test) e um par ordenado `modelA`/`modelB`, cada um
+   com `company`/`discipline`/`modelName` — sem revisão, sem arquivo de origem, sem hash.
+   O par é sempre **revision-free**: a mesma declaração cobre qualquer revisão futura desses
+   modelos.
+2. O par declarado é comparado como **não ordenado** por quem consome a cobertura (A/B
+   invertido representa a mesma cobertura), mas o objeto bruto preserva a ordem A/B
+   exatamente como declarada.
+3. Toda `ClashOccurrence` de um `CoordinationRun` precisa corresponder a um
+   `executedClashTests` declarado (mesmo nome, ignorando case, e mesmo par de modelos,
+   direto ou invertido); uma ocorrência sem cobertura declarada é rejeitada.
+4. Uma declaração pode existir **sem nenhuma occurrence correspondente** — isso é válido e
+   é o que permite provar que um clash test rodou e retornou zero clashes, em vez de nunca
+   ter rodado. Essa é a funcionalidade principal desta etapa.
+5. O lifecycle classifier (abaixo) usa **somente** essa declaração explícita para decidir se
+   um clash test foi observado na outra rodada — nunca varre as ocorrências.
+
 O parser (`OrzioClashReport.Input.RunManifestJson`) valida a estrutura e o schema do JSON e
-constrói `RunManifest`/`ModelRevision`/`ModelIdentity` do Core. **A CLI ainda não consome o
-manifesto nesta etapa** — este é apenas o contrato de entrada, isolado no Core e em um
-adapter dedicado.
+constrói `RunManifest`/`ModelRevision`/`ModelIdentity`/`ExecutedClashTest` do Core. **A CLI
+ainda não consome o manifesto nesta etapa** — este é apenas o contrato de entrada, isolado
+no Core e em um adapter dedicado.
+
+### Schema v2 substitui v1
+
+O schema v2 (`schemaVersion: 2`) é a única versão aceita. O schema v1 (`schemaVersion: 1`)
+não declarava `executedClashTests` e é **intencionalmente rejeitado**, com uma mensagem
+clara indicando que a versão suportada é 2 — não há migração automática nem modo legado.
+Migrar silenciosamente um manifesto v1 para uma lista `executedClashTests` vazia
+confundiria "nenhum test foi executado" com "não sabemos quais tests foram executados", que
+são fatos completamente diferentes.
 
 ## Coordination run snapshot
 
-1. `RunManifest` declara quais revisões de modelo participam de uma rodada (ver seção
-   acima).
+1. `RunManifest` declara quais revisões de modelo participam de uma rodada e quais clash
+   tests foram executados nela (ver seções acima).
 2. `ClashOccurrence` vincula um `ClashResult` bruto (do XML) às revisões exatas dos modelos
    dos lados A e B dentro de um clash test específico.
 3. `CoordinationRun` forma o snapshot imutável: o `RunManifest` mais a lista ordenada de
    `ClashOccurrence`s observadas. Toda revisão usada por uma ocorrência precisa estar
    declarada exatamente no manifesto (mesma `ModelIdentity` com revisão diferente é
-   rejeitada).
+   rejeitada), e toda ocorrência precisa corresponder a um `executedClashTests` declarado.
 
 Nenhum matching ou comparação entre rodadas existe ainda — `CoordinationRun` é só o
 snapshot de uma rodada isolada. A associação automática entre elementos do XML e as
@@ -236,11 +281,13 @@ produzido, sem nunca reexecutar `IClashMatcher` ou `IClashRunComparer`.
    `Low`, candidato alternativo concorrente, modelo ausente, ou clash test não observado.
 5. Cobertura é sempre revision-free: `ModelRevision.Revision`, `SourceFileName`,
    `SourceFilePath`, `ContentHash` e `PublishedAt` nunca participam da verificação.
-6. Um clash test só é considerado **observado** numa rodada quando existe pelo menos uma
-   `ClashOccurrence` com o mesmo nome nela (comparação ordinal, ignorando case). O snapshot
-   atual não consegue provar que um test rodou e retornou zero clashes — por isso, a
-   ausência de ocorrências desse test permanece `Unverifiable`, nunca `Resolved`/`New`
-   automático.
+6. Um clash test só é considerado **observado** numa rodada quando o
+   `RunManifest.ExecutedClashTests` **dessa rodada** declara explicitamente esse nome
+   (comparação ordinal, ignorando case) para o mesmo par de `ModelIdentity`, direto ou
+   invertido — nunca varrendo `CoordinationRun.Occurrences`. Isso é o que permite provar que
+   um test rodou e retornou zero clashes: uma rodada pode declarar um `ExecutedClashTest`
+   sem nenhuma `ClashOccurrence` correspondente, e essa declaração sozinha já é evidência
+   suficiente para `Resolved`/`New` no lado oposto.
 7. O `ClashStatus` bruto (vindo do Clash Detective) nunca participa da decisão de
    lifecycle.
 8. Não existe `Reopened` — distinguir um clash genuinamente novo de um que reabriu exige

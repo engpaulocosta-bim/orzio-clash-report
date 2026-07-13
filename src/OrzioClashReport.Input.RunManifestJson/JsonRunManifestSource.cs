@@ -8,16 +8,18 @@ using OrzioClashReport.Core.Model;
 namespace OrzioClashReport.Input.RunManifestJson
 {
     /// <summary>
-    /// Parses a run manifest JSON document (contract: schemaVersion, runId, createdAt, models) into a
-    /// validated <see cref="RunManifest"/>. JSON property names are matched case-sensitively and
-    /// deliberately: the contract is exact camelCase, with no aliases, no legacy names, and no typo
-    /// tolerance. Unmapped properties are rejected at both the root and each model entry, and a repeated
-    /// property name within the same JSON object is rejected rather than left to the deserializer's
-    /// last-value-wins behavior.
+    /// Parses a run manifest JSON document (contract: schemaVersion, runId, createdAt, models,
+    /// executedClashTests) into a validated <see cref="RunManifest"/>. JSON property names are matched
+    /// case-sensitively and deliberately: the contract is exact camelCase, with no aliases, no legacy names,
+    /// and no typo tolerance. Unmapped properties are rejected at the root, each model entry, and each
+    /// executed clash test entry (including its nested "modelA"/"modelB"), and a repeated property name
+    /// within the same JSON object is rejected rather than left to the deserializer's last-value-wins
+    /// behavior. Only schemaVersion 2 is accepted: schemaVersion 1 did not declare executed clash test
+    /// coverage, so it is rejected rather than silently migrated or treated as declaring zero tests.
     /// </summary>
     public sealed class JsonRunManifestSource
     {
-        private const int SupportedSchemaVersion = 1;
+        private const int SupportedSchemaVersion = 2;
 
         private static readonly JsonSerializerOptions SerializerOptions = CreateSerializerOptions();
 
@@ -104,15 +106,26 @@ namespace OrzioClashReport.Input.RunManifestJson
                 throw new RunManifestFormatException("Field 'models' is required and must be a non-empty array.");
             }
 
+            if (dto.ExecutedClashTests == null)
+            {
+                throw new RunManifestFormatException("Field 'executedClashTests' is required and must be an array (an empty array is allowed).");
+            }
+
             var modelRevisions = new List<ModelRevision>(dto.Models.Count);
             for (int i = 0; i < dto.Models.Count; i++)
             {
                 modelRevisions.Add(BuildModelRevision(dto.Models[i], i));
             }
 
+            var executedClashTests = new List<ExecutedClashTest>(dto.ExecutedClashTests.Count);
+            for (int i = 0; i < dto.ExecutedClashTests.Count; i++)
+            {
+                executedClashTests.Add(BuildExecutedClashTest(dto.ExecutedClashTests[i], i));
+            }
+
             try
             {
-                return new RunManifest(dto.RunId!, dto.CreatedAt.Value, modelRevisions);
+                return new RunManifest(dto.RunId!, dto.CreatedAt.Value, modelRevisions, executedClashTests);
             }
             catch (ArgumentException ex)
             {
@@ -152,6 +165,47 @@ namespace OrzioClashReport.Input.RunManifestJson
             {
                 throw new RunManifestFormatException(
                     $"Model at index {index} is invalid: {FormatArgumentExceptionMessage(ex)}", ex);
+            }
+        }
+
+        private static ExecutedClashTest BuildExecutedClashTest(ExecutedClashTestDto? testDto, int index)
+        {
+            string path = $"executedClashTests[{index}]";
+
+            if (testDto == null)
+            {
+                throw new RunManifestFormatException($"Executed clash test at {path} cannot be null.");
+            }
+
+            var modelA = BuildModelIdentity(testDto.ModelA, $"{path}.modelA");
+            var modelB = BuildModelIdentity(testDto.ModelB, $"{path}.modelB");
+
+            try
+            {
+                return new ExecutedClashTest(testDto.Name!, modelA, modelB);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new RunManifestFormatException(
+                    $"Executed clash test at {path} is invalid: {FormatArgumentExceptionMessage(ex)}", ex);
+            }
+        }
+
+        private static ModelIdentity BuildModelIdentity(ModelIdentityDto? identityDto, string path)
+        {
+            if (identityDto == null)
+            {
+                throw new RunManifestFormatException($"Field '{path}' is required.");
+            }
+
+            try
+            {
+                return new ModelIdentity(identityDto.Company!, identityDto.Discipline!, identityDto.ModelName!);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new RunManifestFormatException(
+                    $"Field '{path}' is invalid: {FormatArgumentExceptionMessage(ex)}", ex);
             }
         }
 

@@ -19,7 +19,7 @@ namespace OrzioClashReport.Tests
 
         private static string ValidSingleModelJson() => """
             {
-              "schemaVersion": 1,
+              "schemaVersion": 2,
               "runId": "run-1",
               "createdAt": "2026-07-10T09:00:00+01:00",
               "models": [
@@ -29,6 +29,26 @@ namespace OrzioClashReport.Tests
                   "modelName": "Sigma_Structure",
                   "revision": "R04",
                   "sourceFileName": "Sigma_Structure_R04.nwc"
+                }
+              ],
+              "executedClashTests": []
+            }
+            """;
+
+        private static string ValidTwoModelJsonWithTest() => """
+            {
+              "schemaVersion": 2,
+              "runId": "run-1",
+              "createdAt": "2026-07-10T09:00:00+01:00",
+              "models": [
+                { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" },
+                { "company": "Alfa", "discipline": "HVAC", "modelName": "Alfa_HVAC", "revision": "R07", "sourceFileName": "Alfa_HVAC_R07.nwc" }
+              ],
+              "executedClashTests": [
+                {
+                  "name": "HVAC vs Structure",
+                  "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                  "modelB": { "company": "Alfa", "discipline": "HVAC", "modelName": "Alfa_HVAC" }
                 }
               ]
             }
@@ -44,6 +64,7 @@ namespace OrzioClashReport.Tests
             var model = Assert.Single(manifest.Models);
             Assert.Equal("Sigma", model.Identity.Company);
             Assert.Equal("R04", model.Revision);
+            Assert.Empty(manifest.ExecutedClashTests);
         }
 
         [Fact]
@@ -58,6 +79,7 @@ namespace OrzioClashReport.Tests
             Assert.Equal("Sigma_Structure", manifest.Models[0].Identity.ModelName);
             Assert.Equal("Beta_Architecture", manifest.Models[1].Identity.ModelName);
             Assert.Equal("Alfa_Piping", manifest.Models[2].Identity.ModelName);
+            Assert.Equal(3, manifest.ExecutedClashTests.Count);
         }
 
         [Fact]
@@ -69,7 +91,8 @@ namespace OrzioClashReport.Tests
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -78,11 +101,11 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
-        public void Parse_UnsupportedSchemaVersion_Fails()
+        public void Parse_SchemaVersion1_Fails()
         {
             const string json = """
                 {
-                  "schemaVersion": 2,
+                  "schemaVersion": 1,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "models": [
@@ -92,8 +115,28 @@ namespace OrzioClashReport.Tests
                 """;
 
             var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
-            Assert.Contains("2", ex.Message);
             Assert.Contains("1", ex.Message);
+            Assert.Contains("2", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_UnsupportedSchemaVersion3_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 3,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": []
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("3", ex.Message);
+            Assert.Contains("2", ex.Message);
         }
 
         [Fact]
@@ -101,11 +144,12 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -118,11 +162,12 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -135,9 +180,10 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
-                  "createdAt": "2026-07-10T09:00:00+01:00"
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "executedClashTests": []
                 }
                 """;
 
@@ -150,10 +196,11 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
-                  "models": null
+                  "models": null,
+                  "executedClashTests": []
                 }
                 """;
 
@@ -166,10 +213,11 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
-                  "models": []
+                  "models": [],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -181,10 +229,11 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
-                  "models": [ null ]
+                  "models": [ null ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -197,12 +246,13 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "sourceFileName": "Sigma_Structure_R04.nwc" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -216,13 +266,14 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "unexpected": true,
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -234,12 +285,13 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc", "revison": "typo" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -249,7 +301,7 @@ namespace OrzioClashReport.Tests
         [Fact]
         public void Parse_MalformedJson_FailsWithContext()
         {
-            const string json = "{ \"schemaVersion\": 1, \"runId\": ";
+            const string json = "{ \"schemaVersion\": 2, \"runId\": ";
 
             var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
             Assert.Contains("line", ex.Message, StringComparison.OrdinalIgnoreCase);
@@ -260,12 +312,13 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -277,12 +330,13 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc", "publishedAt": "2026-07-10T09:00:00" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -294,12 +348,13 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T08:00:00Z",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -332,12 +387,13 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc", "sourceFilePath": "   ", "contentHash": "   " }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -353,13 +409,14 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Main", "revision": "R03", "sourceFileName": "Main_R03.nwc" },
                     { "company": "sigma", "discipline": "structure", "modelName": "main", "revision": "R04", "sourceFileName": "Main_R04.nwc" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -371,12 +428,13 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "ISSUE-A", "sourceFileName": "Sigma_Structure_R99.nwc" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -392,12 +450,13 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -444,13 +503,14 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -465,13 +525,14 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "runId": "run-2",
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -486,13 +547,14 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "createdAt": "2026-07-11T09:00:00+01:00",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -507,7 +569,7 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "models": [
@@ -515,7 +577,8 @@ namespace OrzioClashReport.Tests
                   ],
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R05", "sourceFileName": "Sigma_Structure_R05.nwc" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -526,16 +589,39 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
+        public void Parse_DuplicateExecutedClashTestsAtRoot_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [],
+                  "executedClashTests": []
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("Duplicate", ex.Message);
+            Assert.Contains("executedClashTests", ex.Message);
+            Assert.Contains("root", ex.Message);
+        }
+
+        [Fact]
         public void Parse_DuplicateRevisionInsideModel_Fails()
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "revision": "R05", "sourceFileName": "Sigma_Structure_R04.nwc" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -550,12 +636,13 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc", "sourceFileName": "Sigma_Structure_R04b.nwc" }
-                  ]
+                  ],
+                  "executedClashTests": []
                 }
                 """;
 
@@ -570,9 +657,30 @@ namespace OrzioClashReport.Tests
         {
             const string json = """
                 {
-                  "schemaVersion": 1,
+                  "schemaVersion": 2,
                   "runId": "run-1",
                   "RunId": "run-1-again",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": []
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.DoesNotContain("Duplicate", ex.Message);
+        }
+
+        // --- executedClashTests: presence and shape ---
+
+        [Fact]
+        public void Parse_MissingExecutedClashTests_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
                   "createdAt": "2026-07-10T09:00:00+01:00",
                   "models": [
                     { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
@@ -581,7 +689,717 @@ namespace OrzioClashReport.Tests
                 """;
 
             var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("executedClashTests", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_NullExecutedClashTests_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": null
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("executedClashTests", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_EmptyExecutedClashTestsArray_IsAccepted()
+        {
+            var manifest = new JsonRunManifestSource().Parse(ValidSingleModelJson());
+
+            Assert.Empty(manifest.ExecutedClashTests);
+        }
+
+        [Fact]
+        public void Parse_NullExecutedClashTestItem_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [ null ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("executedClashTests[0]", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestMissingName_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("executedClashTests[0]", ex.Message);
+            Assert.Contains("name", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestNullName_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": null,
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("name", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestEmptyName_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "   ",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestMissingModelA_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Self Clash",
+                      "modelB": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("executedClashTests[0].modelA", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestNullModelA_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Self Clash",
+                      "modelA": null,
+                      "modelB": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("executedClashTests[0].modelA", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestMissingModelB_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Self Clash",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("executedClashTests[0].modelB", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestNullModelB_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Self Clash",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": null
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("executedClashTests[0].modelB", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestModelA_MissingCompany_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Self Clash",
+                      "modelA": { "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("executedClashTests[0].modelA", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestModelA_MissingDiscipline_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Self Clash",
+                      "modelA": { "company": "Sigma", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("executedClashTests[0].modelA", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestModelA_MissingModelName_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Self Clash",
+                      "modelA": { "company": "Sigma", "discipline": "Structure" },
+                      "modelB": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("executedClashTests[0].modelA", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestModelB_MissingCompany_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Self Clash",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "discipline": "Structure", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("executedClashTests[0].modelB", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestModelB_MissingDiscipline_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Self Clash",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Sigma", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("executedClashTests[0].modelB", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestModelB_MissingModelName_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Self Clash",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Sigma", "discipline": "Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("executedClashTests[0].modelB", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestUnknownProperty_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Self Clash",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "unexpected": true
+                    }
+                  ]
+                }
+                """;
+
+            Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestModelA_UnknownProperty_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Self Clash",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04" },
+                      "modelB": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestModelB_UnknownProperty_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Self Clash",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "sourceFileName": "x.nwc" }
+                    }
+                  ]
+                }
+                """;
+
+            Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestDuplicatePropertyInItem_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Self Clash",
+                      "name": "Self Clash Again",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("Duplicate", ex.Message);
+            Assert.Contains("name", ex.Message);
+            Assert.Contains("executedClashTests[0]", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestDuplicateNestedPropertyInModelA_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Self Clash",
+                      "modelA": { "company": "Sigma", "company": "Sigma2", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("Duplicate", ex.Message);
+            Assert.Contains("company", ex.Message);
+            Assert.Contains("executedClashTests[0].modelA", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTestDuplicateNestedPropertyInModelB_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Self Clash",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Sigma", "discipline": "Structure", "discipline": "Structure2", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("Duplicate", ex.Message);
+            Assert.Contains("discipline", ex.Message);
+            Assert.Contains("executedClashTests[0].modelB", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_ExecutedClashTest_WrongCaseProperty_FailsAsUnknown()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "Name": "Self Clash",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
             Assert.DoesNotContain("Duplicate", ex.Message);
+        }
+
+        // --- executedClashTests: Core validation surfaced through the adapter ---
+
+        [Fact]
+        public void Parse_ExecutedClashTest_ReferencingUndeclaredModel_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "HVAC vs Structure",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Alfa", "discipline": "HVAC", "modelName": "Alfa_HVAC" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("not declared", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_DuplicateExecutedClashTest_DirectPair_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" },
+                    { "company": "Alfa", "discipline": "HVAC", "modelName": "Alfa_HVAC", "revision": "R07", "sourceFileName": "Alfa_HVAC_R07.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "HVAC vs Structure",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Alfa", "discipline": "HVAC", "modelName": "Alfa_HVAC" }
+                    },
+                    {
+                      "name": "HVAC vs Structure",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Alfa", "discipline": "HVAC", "modelName": "Alfa_HVAC" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("Duplicate executed clash test", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_DuplicateExecutedClashTest_InvertedPair_Fails()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" },
+                    { "company": "Alfa", "discipline": "HVAC", "modelName": "Alfa_HVAC", "revision": "R07", "sourceFileName": "Alfa_HVAC_R07.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "HVAC vs Structure",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Alfa", "discipline": "HVAC", "modelName": "Alfa_HVAC" }
+                    },
+                    {
+                      "name": "HVAC vs Structure",
+                      "modelA": { "company": "Alfa", "discipline": "HVAC", "modelName": "Alfa_HVAC" },
+                      "modelB": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            var ex = Assert.Throws<RunManifestFormatException>(() => new JsonRunManifestSource().Parse(json));
+            Assert.Contains("Duplicate executed clash test", ex.Message);
+        }
+
+        [Fact]
+        public void Parse_SelfClashExecutedClashTest_IsValid()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Self Clash",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" }
+                    }
+                  ]
+                }
+                """;
+
+            var manifest = new JsonRunManifestSource().Parse(json);
+
+            var test = Assert.Single(manifest.ExecutedClashTests);
+            Assert.Equal(test.ModelA, test.ModelB);
+        }
+
+        [Fact]
+        public void Parse_PreservesDeclaredOrderOfExecutedClashTests()
+        {
+            const string json = """
+                {
+                  "schemaVersion": 2,
+                  "runId": "run-1",
+                  "createdAt": "2026-07-10T09:00:00+01:00",
+                  "models": [
+                    { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure", "revision": "R04", "sourceFileName": "Sigma_Structure_R04.nwc" },
+                    { "company": "Alfa", "discipline": "HVAC", "modelName": "Alfa_HVAC", "revision": "R07", "sourceFileName": "Alfa_HVAC_R07.nwc" }
+                  ],
+                  "executedClashTests": [
+                    {
+                      "name": "Second Test",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Alfa", "discipline": "HVAC", "modelName": "Alfa_HVAC" }
+                    },
+                    {
+                      "name": "First Test",
+                      "modelA": { "company": "Sigma", "discipline": "Structure", "modelName": "Sigma_Structure" },
+                      "modelB": { "company": "Alfa", "discipline": "HVAC", "modelName": "Alfa_HVAC" }
+                    }
+                  ]
+                }
+                """;
+
+            var manifest = new JsonRunManifestSource().Parse(json);
+
+            Assert.Equal("Second Test", manifest.ExecutedClashTests[0].Name);
+            Assert.Equal("First Test", manifest.ExecutedClashTests[1].Name);
+        }
+
+        [Fact]
+        public void Parse_BuildsExecutedClashTestsCorrectly()
+        {
+            var manifest = new JsonRunManifestSource().Parse(ValidTwoModelJsonWithTest());
+
+            var test = Assert.Single(manifest.ExecutedClashTests);
+            Assert.Equal("HVAC vs Structure", test.Name);
+            Assert.Equal("Sigma", test.ModelA.Company);
+            Assert.Equal("Structure", test.ModelA.Discipline);
+            Assert.Equal("Alfa", test.ModelB.Company);
+            Assert.Equal("HVAC", test.ModelB.Discipline);
         }
     }
 }

@@ -106,8 +106,23 @@ not consume the manifest until a later step.
 `ClashOccurrence` is run-specific evidence, not cross-run identity. It preserves source A/B
 order and references exact `ModelRevision` values. `CoordinationRun` is an immutable
 snapshot of `RunManifest` plus ordered occurrences. Every occurrence revision must be
-declared exactly in the manifest. Do not create fingerprints, matching, deduplication, or
-source-model inference in these types.
+declared exactly in the manifest. Every occurrence must also correspond to a declared
+executed test and model pair -- see "Explicit executed clash test coverage" below. Do not
+create fingerprints, matching, deduplication, or source-model inference in these types.
+
+## Explicit executed clash test coverage
+
+`RunManifest` explicitly declares `ExecutedClashTests`. Each declaration contains a test
+name and an ordered pair of revision-free `ModelIdentity` values. Coverage lookup is
+case-insensitive by test name and unordered by model pair, while the declaration preserves
+A/B order. Every `ClashOccurrence` in a `CoordinationRun` must correspond to a declared
+executed test and model pair. An executed test may have zero occurrences -- that is how a
+run proves it executed a test and got zero results, rather than never running it at all.
+Lifecycle test coverage must come only from the explicit manifest declaration, never from
+observed occurrences. Manifest JSON `schemaVersion` 2 is required; `schemaVersion` 1 is
+intentionally rejected: it never declared executed-test coverage, and silently migrating it
+to an empty `executedClashTests` list would conflate "no test ran" with "we don't know what
+ran."
 
 ## Matching vocabulary
 
@@ -156,11 +171,11 @@ reruns matching. Selected `Medium`/`High` without competing alternatives becomes
 `StillOpen`; `Low` or competing alternatives becomes `Unverifiable`. Unmatched previous
 becomes `Resolved` only when it has no alternative candidate and both revision-free model
 identities plus the clash test are observed in the current run. Unmatched current becomes
-`New` only under the symmetric conditions in the previous run. A clash test is currently
-considered observed only when at least one occurrence with the same name exists in that
-run; zero-result test execution cannot yet be proven and therefore remains `Unverifiable`.
-Raw `ClashStatus` never drives lifecycle. `Reopened` requires longer history and is out of
-scope.
+`New` only under the symmetric conditions in the previous run. A clash test is considered
+observed in a run only when that run's `RunManifest.ExecutedClashTests` explicitly declares
+it for the same revision-free model pair (direct or A/B-swapped); this is what lets a zero-
+occurrence declared test still support `Resolved`/`New`. Raw `ClashStatus` never drives
+lifecycle. `Reopened` requires longer history and is out of scope.
 
 ## Anti-patterns that fail review
 

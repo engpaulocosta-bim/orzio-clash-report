@@ -183,11 +183,24 @@ reruns matching. Selected `Medium`/`High` without competing alternatives becomes
 `StillOpen`; `Low` or competing alternatives becomes `Unverifiable`. Unmatched previous
 becomes `Resolved` only when it has no alternative candidate and both revision-free model
 identities plus the clash test are observed in the current run. Unmatched current becomes
-`New` only under the symmetric conditions in the previous run. A clash test is currently
-considered observed only when at least one occurrence with the same name exists in that
-run; zero-result test execution cannot yet be proven and therefore remains `Unverifiable`.
-Raw `ClashStatus` never drives lifecycle. `Reopened` requires longer history and is out of
-scope.
+`New` only under the symmetric conditions in the previous run. Raw `ClashStatus` never
+drives lifecycle. `Reopened` requires longer history and is out of scope.
+
+## Explicit executed clash test coverage
+
+`RunManifest` explicitly declares `ExecutedClashTests`. Each declaration contains a test
+name and an ordered pair of revision-free `ModelIdentity` values. Coverage lookup is
+case-insensitive by test name and unordered by model pair, while the declaration preserves
+A/B order. Every `ClashOccurrence` in a `CoordinationRun` must correspond to a declared
+executed test and model pair. An executed test may have zero occurrences -- that is how a
+run proves it executed a test and got zero results, rather than never running it at all.
+Lifecycle test coverage must come only from the explicit manifest declaration, never from
+observed occurrences: `ConservativeClashLifecycleClassifier` consults
+`RunManifest.ExecutedClashTests`, not `CoordinationRun.Occurrences`, to decide whether a
+clash test is "observed" in the other run. Manifest JSON `schemaVersion` 2 is required;
+`schemaVersion` 1 is intentionally rejected because it never declared executed-test
+coverage, and silently treating it as declaring zero tests would be indistinguishable from
+"we don't know what ran."
 
 ## Language
 

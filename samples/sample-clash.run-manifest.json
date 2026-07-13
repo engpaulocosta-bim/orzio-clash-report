@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 2,
+  "runId": "coordination-sample-clash-xml",
+  "createdAt": "2026-07-10T09:00:00+01:00",
+  "models": [
+    {
+      "company": "ProjectA",
+      "discipline": "HVAC",
+      "modelName": "Project_A_HVAC_PD",
+      "revision": "R00",
+      "sourceFileName": "Project_A_HVAC_PD_R00.rvt"
+    },
+    {
+      "company": "Beta",
+      "discipline": "Architecture",
+      "modelName": "Beta_Architecture",
+      "revision": "R10",
+      "sourceFileName": "Beta_Architecture_R10.nwc"
+    }
+  ],
+  "executedClashTests": [
+    {
+      "name": "Teste 01",
+      "modelA": {
+        "company": "ProjectA",
+        "discipline": "HVAC",
+        "modelName": "Project_A_HVAC_PD"
+      },
+      "modelB": {
+        "company": "ProjectA",
+        "discipline": "HVAC",
+        "modelName": "Project_A_HVAC_PD"
+      }
+    },
+    {
+      "name": "Synthetic Zero-Result Test",
+      "modelA": {
+        "company": "ProjectA",
+        "discipline": "HVAC",
+        "modelName": "Project_A_HVAC_PD"
+      },
+      "modelB": {
+        "company": "Beta",
+        "discipline": "Architecture",
+        "modelName": "Beta_Architecture"
+      }
+    }
+  ]
+}

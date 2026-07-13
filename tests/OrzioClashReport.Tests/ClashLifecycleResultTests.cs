@@ -90,8 +90,10 @@ namespace OrzioClashReport.Tests
                 new ClashResult(clashTestName, ClashStatus.New, null, null, null, MakeObject(elementIdA), MakeObject(elementIdB), "g1"),
                 Sigma, Sigma);
 
+        private static readonly ExecutedClashTest Test1ForSigma = new ExecutedClashTest("Test 1", Sigma.Identity, Sigma.Identity);
+
         private static RunManifest MakeManifest(string runId) =>
-            new RunManifest(runId, new DateTimeOffset(2026, 7, 10, 9, 0, 0, TimeSpan.Zero), new[] { Sigma });
+            new RunManifest(runId, new DateTimeOffset(2026, 7, 10, 9, 0, 0, TimeSpan.Zero), new[] { Sigma }, new[] { Test1ForSigma });
 
         private static CoordinationRun MakeRun(string runId, params ClashOccurrence[] occurrences) =>
             new CoordinationRun(MakeManifest(runId), occurrences);

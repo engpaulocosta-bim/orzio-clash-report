@@ -15,7 +15,7 @@ namespace OrzioClashReport.Tests
             new ModelRevision(new ModelIdentity(company, discipline, modelName), revision, $"{modelName}_{revision}.nwc", null, null, null);
 
         private static RunManifest MakeManifest(string runId, params ModelRevision[] models) =>
-            new RunManifest(runId, new DateTimeOffset(2026, 7, 10, 9, 0, 0, TimeSpan.Zero), models);
+            new RunManifest(runId, new DateTimeOffset(2026, 7, 10, 9, 0, 0, TimeSpan.Zero), models, Array.Empty<ExecutedClashTest>());
 
         private static CoordinationRun MakeEmptyRun(string runId) =>
             new CoordinationRun(MakeManifest(runId, MakeRevision("Sigma", "Structure", "Main", "R04")), Array.Empty<ClashOccurrence>());

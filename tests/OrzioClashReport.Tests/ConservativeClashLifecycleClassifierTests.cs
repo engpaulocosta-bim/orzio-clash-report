@@ -11,8 +11,9 @@ namespace OrzioClashReport.Tests
     /// <summary>
     /// Tests for ConservativeClashLifecycleClassifier: selected-match classification (StillOpen/Unverifiable),
     /// unmatched-previous classification (Resolved/Unverifiable), unmatched-current classification
-    /// (New/Unverifiable), empty runs, duplicate slot handling, determinism, and end-to-end integration with
-    /// the real ConservativeClashMatcher and DeterministicClashRunComparer.
+    /// (New/Unverifiable), empty runs, duplicate slot handling, determinism, explicit executed-clash-test
+    /// coverage (including zero-occurrence declarations), and end-to-end integration with the real
+    /// ConservativeClashMatcher and DeterministicClashRunComparer.
     /// </summary>
     public class ConservativeClashLifecycleClassifierTests
     {
@@ -27,6 +28,7 @@ namespace OrzioClashReport.Tests
 
         private static readonly ModelRevision Sigma = MakeRevision("Sigma", "Structure", "Main", "R04");
         private static readonly ModelRevision Alfa = MakeRevision("Alfa", "HVAC", "Main", "R07");
+        private static readonly ModelRevision Beta = MakeRevision("Beta", "Architecture", "Main", "R10");
 
         private static ClashOccurrence MakeOccurrence(
             string clashTestName, ModelRevision modelA, ModelRevision modelB,
@@ -36,11 +38,18 @@ namespace OrzioClashReport.Tests
                 new ClashResult(clashTestName, rawStatus, null, null, null, MakeObject(elementIdA), MakeObject(elementIdB), guid),
                 modelA, modelB);
 
-        private static RunManifest MakeManifest(string runId, params ModelRevision[] models) =>
-            new RunManifest(runId, new DateTimeOffset(2026, 7, 10, 9, 0, 0, TimeSpan.Zero), models);
+        private static ExecutedClashTest TestFor(string name, ModelRevision modelA, ModelRevision modelB) =>
+            new ExecutedClashTest(name, modelA.Identity, modelB.Identity);
 
-        private static CoordinationRun MakeRun(string runId, ModelRevision[] models, params ClashOccurrence[] occurrences) =>
-            new CoordinationRun(MakeManifest(runId, models), occurrences);
+        private static readonly ExecutedClashTest StandardTest = TestFor("Test 1", Sigma, Alfa);
+        private static readonly ExecutedClashTest SelfClashTest = TestFor("Test 1", Sigma, Sigma);
+
+        private static RunManifest MakeManifest(string runId, ModelRevision[] models, ExecutedClashTest[] executedClashTests) =>
+            new RunManifest(runId, new DateTimeOffset(2026, 7, 10, 9, 0, 0, TimeSpan.Zero), models, executedClashTests);
+
+        private static CoordinationRun MakeRun(
+            string runId, ModelRevision[] models, ExecutedClashTest[] executedClashTests, params ClashOccurrence[] occurrences) =>
+            new CoordinationRun(MakeManifest(runId, models, executedClashTests), occurrences);
 
         private static ClashMatchAssessment MakeAssessment(
             ClashOccurrence previous, ClashOccurrence current, ClashMatchConfidence confidence) =>
@@ -91,7 +100,10 @@ namespace OrzioClashReport.Tests
             var matcher = new ConfigurableClashMatcher();
             matcher.RespondWith(p, c, MakeAssessment(p, c, ClashMatchConfidence.High));
 
-            var result = ClassifyWith(matcher, MakeRun("run-1", new[] { Sigma, Alfa }, p), MakeRun("run-2", new[] { Sigma, Alfa }, c));
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, p),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, c));
 
             var entry = Assert.Single(result.Entries);
             Assert.Equal(ClashLifecycleStatus.StillOpen, entry.Status);
@@ -105,7 +117,10 @@ namespace OrzioClashReport.Tests
             var matcher = new ConfigurableClashMatcher();
             matcher.RespondWith(p, c, MakeAssessment(p, c, ClashMatchConfidence.Medium));
 
-            var result = ClassifyWith(matcher, MakeRun("run-1", new[] { Sigma, Alfa }, p), MakeRun("run-2", new[] { Sigma, Alfa }, c));
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, p),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, c));
 
             var entry = Assert.Single(result.Entries);
             Assert.Equal(ClashLifecycleStatus.StillOpen, entry.Status);
@@ -119,7 +134,10 @@ namespace OrzioClashReport.Tests
             var matcher = new ConfigurableClashMatcher();
             matcher.RespondWith(p, c, MakeAssessment(p, c, ClashMatchConfidence.Low));
 
-            var result = ClassifyWith(matcher, MakeRun("run-1", new[] { Sigma, Alfa }, p), MakeRun("run-2", new[] { Sigma, Alfa }, c));
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, p),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, c));
 
             var entry = Assert.Single(result.Entries);
             Assert.Equal(ClashLifecycleStatus.Unverifiable, entry.Status);
@@ -137,7 +155,10 @@ namespace OrzioClashReport.Tests
             matcher.RespondWith(p0, c0, MakeAssessment(p0, c0, ClashMatchConfidence.High));
             matcher.RespondWith(p0, c1, MakeAssessment(p0, c1, ClashMatchConfidence.Medium));
 
-            var result = ClassifyWith(matcher, MakeRun("run-1", new[] { Sigma, Alfa }, p0), MakeRun("run-2", new[] { Sigma, Alfa }, c0, c1));
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, p0),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, c0, c1));
 
             var selectedEntry = result.Entries.Single(e => e.SelectedMatch != null);
             Assert.Equal(0, selectedEntry.CurrentIndex);
@@ -156,7 +177,10 @@ namespace OrzioClashReport.Tests
             matcher.RespondWith(p0, c0, MakeAssessment(p0, c0, ClashMatchConfidence.High));
             matcher.RespondWith(p1, c0, MakeAssessment(p1, c0, ClashMatchConfidence.Medium));
 
-            var result = ClassifyWith(matcher, MakeRun("run-1", new[] { Sigma, Alfa }, p0, p1), MakeRun("run-2", new[] { Sigma, Alfa }, c0));
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, p0, p1),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, c0));
 
             var selectedEntry = result.Entries.Single(e => e.SelectedMatch != null);
             Assert.Equal(0, selectedEntry.PreviousIndex);
@@ -177,7 +201,9 @@ namespace OrzioClashReport.Tests
             matcher.RespondWith(p2, c1, MakeAssessment(p2, c1, ClashMatchConfidence.High));
 
             var result = ClassifyWith(
-                matcher, MakeRun("run-1", new[] { Sigma, Alfa }, p0, p1, p2), MakeRun("run-2", new[] { Sigma, Alfa }, c0, c1));
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, p0, p1, p2),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, c0, c1));
 
             // p0-c0 is selected and shares no index with the p2-c1 alternative (which lost to p1-c1).
             var targetEntry = result.Entries.Single(e => e.SelectedMatch != null && e.PreviousIndex == 0);
@@ -192,7 +218,10 @@ namespace OrzioClashReport.Tests
             var matcher = new ConfigurableClashMatcher();
             matcher.RespondWith(p, c, MakeAssessment(p, c, ClashMatchConfidence.High));
 
-            var result = ClassifyWith(matcher, MakeRun("run-1", new[] { Sigma, Alfa }, p), MakeRun("run-2", new[] { Sigma, Alfa }, c));
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, p),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, c));
 
             var entry = Assert.Single(result.Entries);
             Assert.Equal(3, entry.Evidence.Count);
@@ -209,7 +238,10 @@ namespace OrzioClashReport.Tests
             var matcher = new ConfigurableClashMatcher();
             matcher.RespondWith(p, c, MakeAssessment(p, c, ClashMatchConfidence.High));
 
-            var result = ClassifyWith(matcher, MakeRun("run-1", new[] { Sigma, Alfa }, p), MakeRun("run-2", new[] { Sigma, Alfa }, c));
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, p),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, c));
 
             Assert.Contains("High", result.Entries[0].Evidence[1].Description);
         }
@@ -224,7 +256,10 @@ namespace OrzioClashReport.Tests
             matcher.RespondWith(p0, c0, MakeAssessment(p0, c0, ClashMatchConfidence.High));
             matcher.RespondWith(p1, c0, MakeAssessment(p1, c0, ClashMatchConfidence.Medium));
 
-            var result = ClassifyWith(matcher, MakeRun("run-1", new[] { Sigma, Alfa }, p0, p1), MakeRun("run-2", new[] { Sigma, Alfa }, c0));
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, p0, p1),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, c0));
 
             var selectedEntry = result.Entries.Single(e => e.SelectedMatch != null);
             Assert.Contains("1", selectedEntry.Evidence[2].Description);
@@ -239,7 +274,8 @@ namespace OrzioClashReport.Tests
             matcher.RespondWith(p, c, MakeAssessment(p, c, ClashMatchConfidence.High));
 
             var matchResult = new DeterministicClashRunComparer(matcher).Compare(
-                MakeRun("run-1", new[] { Sigma, Alfa }, p), MakeRun("run-2", new[] { Sigma, Alfa }, c));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, p),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, c));
             var result = Classifier.Classify(matchResult);
 
             var entry = Assert.Single(result.Entries);
@@ -259,8 +295,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Sigma, Alfa }, previousOccurrence),
-                MakeRun("run-2", new[] { Sigma, Alfa }, currentTestPresence));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousOccurrence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, currentTestPresence));
 
             var entry = result.Entries.Single(e => e.PreviousOccurrence == previousOccurrence);
             Assert.Equal(ClashLifecycleStatus.Resolved, entry.Status);
@@ -275,8 +311,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Sigma, Alfa }, previousOccurrence),
-                MakeRun("run-2", new[] { Alfa }, currentTestPresence));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousOccurrence),
+                MakeRun("run-2", new[] { Alfa }, new[] { TestFor("Test 1", Alfa, Alfa) }, currentTestPresence));
 
             var entry = result.Entries.Single(e => e.PreviousOccurrence == previousOccurrence);
             Assert.Equal(ClashLifecycleStatus.Unverifiable, entry.Status);
@@ -291,8 +327,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Sigma, Alfa }, previousOccurrence),
-                MakeRun("run-2", new[] { Sigma }, currentTestPresence));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousOccurrence),
+                MakeRun("run-2", new[] { Sigma }, new[] { SelfClashTest }, currentTestPresence));
 
             var entry = result.Entries.Single(e => e.PreviousOccurrence == previousOccurrence);
             Assert.Equal(ClashLifecycleStatus.Unverifiable, entry.Status);
@@ -307,8 +343,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Sigma, Alfa }, previousOccurrence),
-                MakeRun("run-2", new[] { Sigma, Alfa }, currentOtherTest));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousOccurrence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { TestFor("Test 2", Sigma, Alfa) }, currentOtherTest));
 
             var entry = result.Entries.Single(e => e.PreviousOccurrence == previousOccurrence);
             Assert.Equal(ClashLifecycleStatus.Unverifiable, entry.Status);
@@ -325,7 +361,10 @@ namespace OrzioClashReport.Tests
             matcher.RespondWith(p0, c0, MakeAssessment(p0, c0, ClashMatchConfidence.Medium));
             matcher.RespondWith(p1, c0, MakeAssessment(p1, c0, ClashMatchConfidence.High));
 
-            var result = ClassifyWith(matcher, MakeRun("run-1", new[] { Sigma, Alfa }, p0, p1), MakeRun("run-2", new[] { Sigma, Alfa }, c0));
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, p0, p1),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, c0));
 
             var unmatchedEntry = result.Entries.Single(e => e.PreviousOccurrence == p0);
             Assert.Equal(ClashLifecycleStatus.Unverifiable, unmatchedEntry.Status);
@@ -340,8 +379,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Sigma, Alfa }, previousOccurrence),
-                MakeRun("run-2", new[] { Sigma, Alfa }, currentTestPresence));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousOccurrence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, currentTestPresence));
 
             var entry = result.Entries.Single(e => e.PreviousOccurrence == previousOccurrence);
             Assert.Equal(ClashLifecycleStatus.Resolved, entry.Status);
@@ -356,8 +395,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Sigma, Alfa }, previousOccurrence),
-                MakeRun("run-2", new[] { Sigma, Alfa }, currentTestPresence));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { TestFor("HVAC vs Structure", Sigma, Alfa) }, previousOccurrence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { TestFor("HVAC-Structure", Sigma, Alfa) }, currentTestPresence));
 
             var entry = result.Entries.Single(e => e.PreviousOccurrence == previousOccurrence);
             Assert.Equal(ClashLifecycleStatus.Unverifiable, entry.Status);
@@ -372,8 +411,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Sigma, Alfa }, previousOccurrence),
-                MakeRun("run-2", new[] { Sigma, Alfa }, currentTestPresence));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { TestFor("Test 01", Sigma, Alfa) }, previousOccurrence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, currentTestPresence));
 
             var entry = result.Entries.Single(e => e.PreviousOccurrence == previousOccurrence);
             Assert.Equal(ClashLifecycleStatus.Unverifiable, entry.Status);
@@ -390,8 +429,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Sigma, Alfa }, previousOccurrence),
-                MakeRun("run-2", new[] { sigmaR05, alfaR08 }, currentTestPresence));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousOccurrence),
+                MakeRun("run-2", new[] { sigmaR05, alfaR08 }, new[] { StandardTest }, currentTestPresence));
 
             var entry = result.Entries.Single(e => e.PreviousOccurrence == previousOccurrence);
             Assert.Equal(ClashLifecycleStatus.Resolved, entry.Status);
@@ -407,8 +446,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Sigma, Alfa }, previousOccurrence),
-                MakeRun("run-2", new[] { sigmaOtherFile, Alfa }, currentTestPresence));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousOccurrence),
+                MakeRun("run-2", new[] { sigmaOtherFile, Alfa }, new[] { StandardTest }, currentTestPresence));
 
             var entry = result.Entries.Single(e => e.PreviousOccurrence == previousOccurrence);
             Assert.Equal(ClashLifecycleStatus.Resolved, entry.Status);
@@ -423,8 +462,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Sigma }, previousOccurrence),
-                MakeRun("run-2", new[] { Sigma }, currentTestPresence));
+                MakeRun("run-1", new[] { Sigma }, new[] { SelfClashTest }, previousOccurrence),
+                MakeRun("run-2", new[] { Sigma }, new[] { SelfClashTest }, currentTestPresence));
 
             var entry = result.Entries.Single(e => e.PreviousOccurrence == previousOccurrence);
             Assert.Equal(ClashLifecycleStatus.Resolved, entry.Status);
@@ -441,8 +480,8 @@ namespace OrzioClashReport.Tests
                 var previousOccurrence = MakeOccurrence("Test 1", Sigma, Alfa, "p", "q", "g1", rawStatus);
                 var result = ClassifyWith(
                     matcher,
-                    MakeRun("run-1", new[] { Sigma, Alfa }, previousOccurrence),
-                    MakeRun("run-2", new[] { Sigma, Alfa }, currentTestPresence));
+                    MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousOccurrence),
+                    MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, currentTestPresence));
                 return result.Entries.Single(e => e.PreviousOccurrence == previousOccurrence).Status;
             }
 
@@ -467,8 +506,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Sigma, Alfa }, persisting, disappearing),
-                MakeRun("run-2", new[] { Sigma, Alfa }, current));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, persisting, disappearing),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, current));
 
             var persistingEntry = result.Entries.Single(e => e.SelectedMatch != null);
             var disappearingEntry = result.Entries.Single(e => e.PreviousOccurrence == disappearing);
@@ -488,8 +527,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Sigma, Alfa }, previousTestPresence),
-                MakeRun("run-2", new[] { Sigma, Alfa }, currentOccurrence));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousTestPresence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, currentOccurrence));
 
             var entry = result.Entries.Single(e => e.CurrentOccurrence == currentOccurrence);
             Assert.Equal(ClashLifecycleStatus.New, entry.Status);
@@ -504,8 +543,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Alfa }, previousTestPresence),
-                MakeRun("run-2", new[] { Sigma, Alfa }, currentOccurrence));
+                MakeRun("run-1", new[] { Alfa }, new[] { TestFor("Test 1", Alfa, Alfa) }, previousTestPresence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, currentOccurrence));
 
             var entry = result.Entries.Single(e => e.CurrentOccurrence == currentOccurrence);
             Assert.Equal(ClashLifecycleStatus.Unverifiable, entry.Status);
@@ -520,8 +559,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Sigma }, previousTestPresence),
-                MakeRun("run-2", new[] { Sigma, Alfa }, currentOccurrence));
+                MakeRun("run-1", new[] { Sigma }, new[] { SelfClashTest }, previousTestPresence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, currentOccurrence));
 
             var entry = result.Entries.Single(e => e.CurrentOccurrence == currentOccurrence);
             Assert.Equal(ClashLifecycleStatus.Unverifiable, entry.Status);
@@ -536,8 +575,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Sigma, Alfa }, previousOtherTest),
-                MakeRun("run-2", new[] { Sigma, Alfa }, currentOccurrence));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { TestFor("Test 2", Sigma, Alfa) }, previousOtherTest),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, currentOccurrence));
 
             var entry = result.Entries.Single(e => e.CurrentOccurrence == currentOccurrence);
             Assert.Equal(ClashLifecycleStatus.Unverifiable, entry.Status);
@@ -553,7 +592,10 @@ namespace OrzioClashReport.Tests
             matcher.RespondWith(p0, c0, MakeAssessment(p0, c0, ClashMatchConfidence.High));
             matcher.RespondWith(p0, c1, MakeAssessment(p0, c1, ClashMatchConfidence.Medium));
 
-            var result = ClassifyWith(matcher, MakeRun("run-1", new[] { Sigma, Alfa }, p0), MakeRun("run-2", new[] { Sigma, Alfa }, c0, c1));
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, p0),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, c0, c1));
 
             var unmatchedEntry = result.Entries.Single(e => e.CurrentOccurrence == c1);
             Assert.Equal(ClashLifecycleStatus.Unverifiable, unmatchedEntry.Status);
@@ -568,8 +610,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Sigma, Alfa }, previousTestPresence),
-                MakeRun("run-2", new[] { Sigma, Alfa }, currentOccurrence));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousTestPresence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, currentOccurrence));
 
             var entry = result.Entries.Single(e => e.CurrentOccurrence == currentOccurrence);
             Assert.Equal(ClashLifecycleStatus.New, entry.Status);
@@ -585,8 +627,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { sigmaR05, Alfa }, previousTestPresence),
-                MakeRun("run-2", new[] { Sigma, Alfa }, currentOccurrence));
+                MakeRun("run-1", new[] { sigmaR05, Alfa }, new[] { StandardTest }, previousTestPresence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, currentOccurrence));
 
             var entry = result.Entries.Single(e => e.CurrentOccurrence == currentOccurrence);
             Assert.Equal(ClashLifecycleStatus.New, entry.Status);
@@ -601,8 +643,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Sigma }, previousTestPresence),
-                MakeRun("run-2", new[] { Sigma }, currentOccurrence));
+                MakeRun("run-1", new[] { Sigma }, new[] { SelfClashTest }, previousTestPresence),
+                MakeRun("run-2", new[] { Sigma }, new[] { SelfClashTest }, currentOccurrence));
 
             var entry = result.Entries.Single(e => e.CurrentOccurrence == currentOccurrence);
             Assert.Equal(ClashLifecycleStatus.New, entry.Status);
@@ -619,8 +661,8 @@ namespace OrzioClashReport.Tests
                 var currentOccurrence = MakeOccurrence("Test 1", Sigma, Alfa, "p", "q", "g1", rawStatus);
                 var result = ClassifyWith(
                     matcher,
-                    MakeRun("run-1", new[] { Sigma, Alfa }, previousTestPresence),
-                    MakeRun("run-2", new[] { Sigma, Alfa }, currentOccurrence));
+                    MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousTestPresence),
+                    MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, currentOccurrence));
                 return result.Entries.Single(e => e.CurrentOccurrence == currentOccurrence).Status;
             }
 
@@ -641,8 +683,8 @@ namespace OrzioClashReport.Tests
 
             var result = ClassifyWith(
                 matcher,
-                MakeRun("run-1", new[] { Sigma, Alfa }, existing),
-                MakeRun("run-2", new[] { Sigma, Alfa }, existingCurrentMatch, additional));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, existing),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, existingCurrentMatch, additional));
 
             var additionalEntry = result.Entries.Single(e => e.CurrentOccurrence == additional);
             Assert.Equal(ClashLifecycleStatus.New, additionalEntry.Status);
@@ -655,7 +697,10 @@ namespace OrzioClashReport.Tests
         {
             var matcher = new ConfigurableClashMatcher();
 
-            var result = ClassifyWith(matcher, MakeRun("run-1", new[] { Sigma }), MakeRun("run-2", new[] { Sigma }));
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma }, Array.Empty<ExecutedClashTest>()),
+                MakeRun("run-2", new[] { Sigma }, Array.Empty<ExecutedClashTest>()));
 
             Assert.Empty(result.Entries);
         }
@@ -666,7 +711,10 @@ namespace OrzioClashReport.Tests
             var currentOccurrence = MakeOccurrence("Test 1", Sigma, Alfa);
             var matcher = new ConfigurableClashMatcher();
 
-            var result = ClassifyWith(matcher, MakeRun("run-1", new[] { Sigma, Alfa }), MakeRun("run-2", new[] { Sigma, Alfa }, currentOccurrence));
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, Array.Empty<ExecutedClashTest>()),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, currentOccurrence));
 
             var entry = Assert.Single(result.Entries);
             Assert.Equal(ClashLifecycleStatus.Unverifiable, entry.Status);
@@ -679,7 +727,10 @@ namespace OrzioClashReport.Tests
             var previousOccurrence = MakeOccurrence("Test 1", Sigma, Alfa);
             var matcher = new ConfigurableClashMatcher();
 
-            var result = ClassifyWith(matcher, MakeRun("run-1", new[] { Sigma, Alfa }, previousOccurrence), MakeRun("run-2", new[] { Sigma, Alfa }));
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousOccurrence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, Array.Empty<ExecutedClashTest>()));
 
             var entry = Assert.Single(result.Entries);
             Assert.Equal(ClashLifecycleStatus.Unverifiable, entry.Status);
@@ -696,7 +747,10 @@ namespace OrzioClashReport.Tests
             var matcher = new ConfigurableClashMatcher();
             matcher.RespondWith(shared, current, MakeAssessment(shared, current, ClashMatchConfidence.High));
 
-            var result = ClassifyWith(matcher, MakeRun("run-1", new[] { Sigma, Alfa }, shared, shared), MakeRun("run-2", new[] { Sigma, Alfa }, current));
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, shared, shared),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, current));
 
             Assert.Equal(2, result.Entries.Count);
             var selectedEntry = result.Entries.Single(e => e.SelectedMatch != null);
@@ -712,7 +766,10 @@ namespace OrzioClashReport.Tests
             var shared = MakeOccurrence("Test 1", Sigma, Alfa, "shared-a", "shared-b");
             var matcher = new ConfigurableClashMatcher();
 
-            var result = ClassifyWith(matcher, MakeRun("run-1", new[] { Sigma, Alfa }, shared, shared), MakeRun("run-2", new[] { Sigma, Alfa }));
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, shared, shared),
+                MakeRun("run-2", new[] { Sigma, Alfa }, Array.Empty<ExecutedClashTest>()));
 
             Assert.Equal(2, result.Entries.Count);
             Assert.Equal(0, result.Entries[0].PreviousIndex);
@@ -731,7 +788,10 @@ namespace OrzioClashReport.Tests
             var matcher = new ConfigurableClashMatcher();
             matcher.RespondWith(p0, c0, MakeAssessment(p0, c0, ClashMatchConfidence.High));
 
-            var result = ClassifyWith(matcher, MakeRun("run-1", new[] { Sigma, Alfa }, p0, p1), MakeRun("run-2", new[] { Sigma, Alfa }, c0, c1));
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, p0, p1),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, c0, c1));
 
             Assert.Equal(3, result.Entries.Count);
             Assert.NotNull(result.Entries[0].SelectedMatch);
@@ -752,7 +812,8 @@ namespace OrzioClashReport.Tests
             matcher.RespondWith(p0, c0, MakeAssessment(p0, c0, ClashMatchConfidence.High));
 
             var matchResult = new DeterministicClashRunComparer(matcher).Compare(
-                MakeRun("run-1", new[] { Sigma, Alfa }, p0, p1), MakeRun("run-2", new[] { Sigma, Alfa }, c0, c1));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, p0, p1),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, c0, c1));
 
             var first = Classifier.Classify(matchResult);
             var second = Classifier.Classify(matchResult);
@@ -767,6 +828,113 @@ namespace OrzioClashReport.Tests
             }
         }
 
+        // ===================== Explicit executed-clash-test coverage =====================
+
+        [Fact]
+        public void ZeroResult_UnmatchedPrevious_CurrentDeclaresTestWithNoOccurrence_IsResolved()
+        {
+            var previousOccurrence = MakeOccurrence("Test 1", Sigma, Alfa);
+            var matcher = new ConfigurableClashMatcher();
+
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousOccurrence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }));
+
+            var entry = Assert.Single(result.Entries);
+            Assert.Equal(ClashLifecycleStatus.Resolved, entry.Status);
+        }
+
+        [Fact]
+        public void ZeroResult_UnmatchedCurrent_PreviousDeclaresTestWithNoOccurrence_IsNew()
+        {
+            var currentOccurrence = MakeOccurrence("Test 1", Sigma, Alfa);
+            var matcher = new ConfigurableClashMatcher();
+
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, currentOccurrence));
+
+            var entry = Assert.Single(result.Entries);
+            Assert.Equal(ClashLifecycleStatus.New, entry.Status);
+        }
+
+        [Fact]
+        public void DeclaredTest_SameNameDeclaredForDifferentPair_IsUnverifiable()
+        {
+            var previousOccurrence = MakeOccurrence("Test 1", Sigma, Alfa);
+            var matcher = new ConfigurableClashMatcher();
+
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousOccurrence),
+                MakeRun("run-2", new[] { Sigma, Alfa, Beta }, new[] { TestFor("Test 1", Sigma, Beta) }));
+
+            var entry = Assert.Single(result.Entries);
+            Assert.Equal(ClashLifecycleStatus.Unverifiable, entry.Status);
+        }
+
+        [Fact]
+        public void DeclaredTest_SamePairDeclaredWithDifferentName_IsUnverifiable()
+        {
+            var previousOccurrence = MakeOccurrence("Test 1", Sigma, Alfa);
+            var matcher = new ConfigurableClashMatcher();
+
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousOccurrence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { TestFor("Test 2", Sigma, Alfa) }));
+
+            var entry = Assert.Single(result.Entries);
+            Assert.Equal(ClashLifecycleStatus.Unverifiable, entry.Status);
+        }
+
+        [Fact]
+        public void DeclaredTest_AbInvertedDeclaration_IsVerifiable()
+        {
+            var previousOccurrence = MakeOccurrence("Test 1", Sigma, Alfa);
+            var matcher = new ConfigurableClashMatcher();
+
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousOccurrence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { TestFor("Test 1", Alfa, Sigma) }));
+
+            var entry = Assert.Single(result.Entries);
+            Assert.Equal(ClashLifecycleStatus.Resolved, entry.Status);
+        }
+
+        [Fact]
+        public void DeclaredTest_CaseOnlyNameDifference_IsVerifiable()
+        {
+            var previousOccurrence = MakeOccurrence("Test 1", Sigma, Alfa);
+            var matcher = new ConfigurableClashMatcher();
+
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousOccurrence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { TestFor("TEST 1", Sigma, Alfa) }));
+
+            var entry = Assert.Single(result.Entries);
+            Assert.Equal(ClashLifecycleStatus.Resolved, entry.Status);
+        }
+
+        [Fact]
+        public void DeclaredTest_EmptyExecutedClashTestsList_IsUnverifiable()
+        {
+            var previousOccurrence = MakeOccurrence("Test 1", Sigma, Alfa);
+            var matcher = new ConfigurableClashMatcher();
+
+            var result = ClassifyWith(
+                matcher,
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousOccurrence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, Array.Empty<ExecutedClashTest>()));
+
+            var entry = Assert.Single(result.Entries);
+            Assert.Equal(ClashLifecycleStatus.Unverifiable, entry.Status);
+        }
+
         // ===================== 16.10 Real Core integration =====================
 
         [Fact]
@@ -776,8 +944,8 @@ namespace OrzioClashReport.Tests
             var currentOccurrence = MakeOccurrence("Test 1", Sigma, Alfa, "elem-a", "elem-b", "guid-1");
 
             var matchResult = new DeterministicClashRunComparer(new ConservativeClashMatcher()).Compare(
-                MakeRun("run-1", new[] { Sigma, Alfa }, previousOccurrence),
-                MakeRun("run-2", new[] { Sigma, Alfa }, currentOccurrence));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousOccurrence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, currentOccurrence));
             var result = Classifier.Classify(matchResult);
 
             var entry = Assert.Single(result.Entries);
@@ -792,8 +960,8 @@ namespace OrzioClashReport.Tests
             var current = MakeOccurrence("Test 1", Sigma, Alfa, "persist-a", "persist-b", "guid-1");
 
             var matchResult = new DeterministicClashRunComparer(new ConservativeClashMatcher()).Compare(
-                MakeRun("run-1", new[] { Sigma, Alfa }, persisting, disappearing),
-                MakeRun("run-2", new[] { Sigma, Alfa }, current));
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, persisting, disappearing),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, current));
             var result = Classifier.Classify(matchResult);
 
             var persistingEntry = result.Entries.Single(e => e.SelectedMatch != null);
@@ -801,6 +969,34 @@ namespace OrzioClashReport.Tests
 
             Assert.Equal(ClashLifecycleStatus.StillOpen, persistingEntry.Status);
             Assert.Equal(ClashLifecycleStatus.Resolved, disappearingEntry.Status);
+        }
+
+        [Fact]
+        public void Integration_ClashDisappears_CurrentDeclaresTestWithZeroOccurrences_IsResolved()
+        {
+            var previousOccurrence = MakeOccurrence("Test 1", Sigma, Alfa, "elem-a", "elem-b", "guid-1");
+
+            var matchResult = new DeterministicClashRunComparer(new ConservativeClashMatcher()).Compare(
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousOccurrence),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }));
+            var result = Classifier.Classify(matchResult);
+
+            var entry = Assert.Single(result.Entries);
+            Assert.Equal(ClashLifecycleStatus.Resolved, entry.Status);
+        }
+
+        [Fact]
+        public void Integration_ClashAppears_PreviousDeclaredTestWithZeroOccurrences_IsNew()
+        {
+            var currentOccurrence = MakeOccurrence("Test 1", Sigma, Alfa, "elem-a", "elem-b", "guid-1");
+
+            var matchResult = new DeterministicClashRunComparer(new ConservativeClashMatcher()).Compare(
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, currentOccurrence));
+            var result = Classifier.Classify(matchResult);
+
+            var entry = Assert.Single(result.Entries);
+            Assert.Equal(ClashLifecycleStatus.New, entry.Status);
         }
     }
 }

@@ -68,8 +68,11 @@ namespace OrzioClashReport.Tests
                 new ClashResult(clashTestName, ClashStatus.New, null, null, null, MakeObject(elementIdA), MakeObject(elementIdB), "g1"),
                 modelA, modelB);
 
+        private static readonly ExecutedClashTest Test1ForSigma = new ExecutedClashTest("Test 1", Sigma.Identity, Sigma.Identity);
+        private static readonly ExecutedClashTest RepeatedForSigma = new ExecutedClashTest("Repeated", Sigma.Identity, Sigma.Identity);
+
         private static RunManifest MakeManifest(string runId, params ModelRevision[] models) =>
-            new RunManifest(runId, new DateTimeOffset(2026, 7, 10, 9, 0, 0, TimeSpan.Zero), models);
+            new RunManifest(runId, new DateTimeOffset(2026, 7, 10, 9, 0, 0, TimeSpan.Zero), models, new[] { Test1ForSigma, RepeatedForSigma });
 
         private static CoordinationRun MakeRun(string runId, ModelRevision[] models, params ClashOccurrence[] occurrences) =>
             new CoordinationRun(MakeManifest(runId, models), occurrences);

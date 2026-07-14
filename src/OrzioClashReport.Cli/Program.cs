@@ -195,7 +195,9 @@ namespace OrzioClashReport.Cli
                     return false;
                 }
 
-                if (i + 1 >= args.Length || string.IsNullOrWhiteSpace(args[i + 1]))
+                if (i + 1 >= args.Length
+                    || string.IsNullOrWhiteSpace(args[i + 1])
+                    || IsRecognizedCompareOption(args[i + 1]))
                 {
                     error = $"Missing value for '{argument}'.";
                     return false;

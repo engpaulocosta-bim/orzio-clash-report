@@ -98,8 +98,7 @@ MVP.
 
 The run manifest is an explicit input contract. Do not infer revisions from filenames,
 paths, XML, Forma, or ACC. `schemaVersion` belongs to the JSON adapter, not the Core. A
-`RunManifest` contains at most one `ModelRevision` per stable `ModelIdentity`. The CLI does
-not consume the manifest until a later step.
+`RunManifest` contains at most one `ModelRevision` per stable `ModelIdentity`.
 
 ## Coordination run snapshot
 
@@ -195,6 +194,16 @@ in Core and performs no I/O.
 (`Item Source File`, falling back to `Item Source File Name`). `samples/sample-clash.run-manifest.json`
 is the companion manifest for `samples/sample-clash.xml`, so the real XML → JSON → assembler
 pipeline is exercised end to end in tests.
+
+## Two-run comparison CLI
+
+The legacy single-XML HTML command remains supported.
+The compare command receives previous/current XML and manifest paths explicitly; it never infers chronological order from `CreatedAt`, `RunId`, revision, or filenames.
+The CLI is only the composition root: XML source → manifest source → coordination-run assembler → matcher → run comparer → lifecycle classifier.
+`Program.cs` never recreates matching or lifecycle rules.
+Compare mode currently writes a deterministic console summary only.
+No revision-aware HTML is produced yet.
+The same run or same file may be supplied in both roles for synthetic smoke testing; this is not sequential real-model validation.
 
 ## Anti-patterns that fail review
 

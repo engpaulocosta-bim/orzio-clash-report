@@ -160,6 +160,38 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
+        public void Main_CompareMode_RecognizedOptionAfterPreviousXml_IsMissingValue()
+        {
+            var result = InvokeMain(
+                "compare",
+                "--previous-xml",
+                "--current-xml", SampleClashXmlPath,
+                "--previous-manifest", SampleClashManifestPath,
+                "--current-manifest", SampleClashManifestPath);
+
+            Assert.Equal(1, result.ExitCode);
+            Assert.Equal(string.Empty, result.StdOut);
+            Assert.Contains("Missing value for '--previous-xml'.", result.StdErr);
+            Assert.Contains("Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json>", result.StdErr);
+        }
+
+        [Fact]
+        public void Main_CompareMode_RecognizedOptionAfterPreviousManifest_IsMissingValue()
+        {
+            var result = InvokeMain(
+                "compare",
+                "--previous-xml", SampleClashXmlPath,
+                "--previous-manifest",
+                "--current-manifest", SampleClashManifestPath,
+                "--current-xml", SampleClashXmlPath);
+
+            Assert.Equal(1, result.ExitCode);
+            Assert.Equal(string.Empty, result.StdOut);
+            Assert.Contains("Missing value for '--previous-manifest'.", result.StdErr);
+            Assert.Contains("Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json>", result.StdErr);
+        }
+
+        [Fact]
         public void Main_CompareMode_UnknownArgument_ReturnsUsageError()
         {
             var result = InvokeMain(

@@ -3,6 +3,7 @@
   <ItemGroup>
     <ProjectReference Include="..\OrzioClashReport.Core\OrzioClashReport.Core.csproj" />
     <ProjectReference Include="..\OrzioClashReport.Input.NavisworksXml\OrzioClashReport.Input.NavisworksXml.csproj" />
+    <ProjectReference Include="..\OrzioClashReport.Input.RunManifestJson\OrzioClashReport.Input.RunManifestJson.csproj" />
     <ProjectReference Include="..\OrzioClashReport.Output.Html\OrzioClashReport.Output.Html.csproj" />
   </ItemGroup>
 

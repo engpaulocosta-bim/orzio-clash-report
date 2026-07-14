@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\OrzioClashReport.Cli\OrzioClashReport.Cli.csproj" />
     <ProjectReference Include="..\..\src\OrzioClashReport.Core\OrzioClashReport.Core.csproj" />
     <ProjectReference Include="..\..\src\OrzioClashReport.Input.NavisworksXml\OrzioClashReport.Input.NavisworksXml.csproj" />
     <ProjectReference Include="..\..\src\OrzioClashReport.Input.RunManifestJson\OrzioClashReport.Input.RunManifestJson.csproj" />

@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Text;
 using OrzioClashReport.Core.Model;
@@ -16,29 +17,17 @@ namespace OrzioClashReport.Output.Html
                 throw new ArgumentNullException(nameof(result));
             }
 
-            int stillOpenCount = 0;
-            int newCount = 0;
-            int resolvedCount = 0;
-            int unverifiableCount = 0;
+            int stillOpenCount =
+                result.Entries.Count(entry => entry.Status == ClashLifecycleStatus.StillOpen);
 
-            foreach (var entry in result.Entries)
-            {
-                switch (entry.Status)
-                {
-                    case ClashLifecycleStatus.StillOpen:
-                        stillOpenCount++;
-                        break;
-                    case ClashLifecycleStatus.New:
-                        newCount++;
-                        break;
-                    case ClashLifecycleStatus.Resolved:
-                        resolvedCount++;
-                        break;
-                    case ClashLifecycleStatus.Unverifiable:
-                        unverifiableCount++;
-                        break;
-                }
-            }
+            int newCount =
+                result.Entries.Count(entry => entry.Status == ClashLifecycleStatus.New);
+
+            int resolvedCount =
+                result.Entries.Count(entry => entry.Status == ClashLifecycleStatus.Resolved);
+
+            int unverifiableCount =
+                result.Entries.Count(entry => entry.Status == ClashLifecycleStatus.Unverifiable);
 
             var html = new StringBuilder();
             html.Append("<!doctype html>\n<html lang=\"en\">\n<head>\n");

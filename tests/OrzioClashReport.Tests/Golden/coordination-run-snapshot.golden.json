@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "runId": "coordination-run-001",
+  "createdAt": "2026-07-14T09:00:00.0000000+01:00",
+  "models": [
+    {
+      "company": "Sigma",
+      "discipline": "Structure",
+      "modelName": "Main",
+      "revision": "R04",
+      "sourceFileName": "Sigma_Main_R04.nwc",
+      "sourceFilePath": null,
+      "contentHash": null,
+      "publishedAt": null
+    },
+    {
+      "company": "Alfa",
+      "discipline": "HVAC",
+      "modelName": "Coordination",
+      "revision": "R07",
+      "sourceFileName": "Alfa_Coordination_R07.nwc",
+      "sourceFilePath": "C:\\coord\\Alfa_Coordination_R07.nwc",
+      "contentHash": "sha256:abcdef0123456789",
+      "publishedAt": "2026-07-10T08:30:00.0000000+01:00"
+    }
+  ],
+  "executedClashTests": [
+    {
+      "name": "HVAC vs Structure",
+      "modelAIndex": 0,
+      "modelBIndex": 1
+    },
+    {
+      "name": "Structure self clash",
+      "modelAIndex": 0,
+      "modelBIndex": 0
+    }
+  ],
+  "occurrences": [
+    {
+      "clashTestName": "HVAC vs Structure",
+      "modelAIndex": 0,
+      "modelBIndex": 1,
+      "clash": {
+        "name": "Clash 001",
+        "status": "Active",
+        "distance": -0.125,
+        "gridLocation": "A-01",
+        "point": {
+          "x": 1.25,
+          "y": 2.5,
+          "z": 3.75
+        },
+        "elementA": {
+          "elementId": "s-100",
+          "elementName": "Beam 100",
+          "level": "L01",
+          "sourceModel": "Sigma_Main_R04.nwc",
+          "pathHierarchy": [
+            "Project",
+            "Structure",
+            "Beam 100"
+          ],
+          "properties": [
+            {
+              "key": "Category",
+              "value": "Structural Framing"
+            },
+            {
+              "key": "Element Id",
+              "value": "s-100"
+            },
+            {
+              "key": "Item Source File",
+              "value": "Sigma_Main_R04.nwc"
+            }
+          ]
+        },
+        "elementB": {
+          "elementId": "h-200",
+          "elementName": "Duct 200",
+          "level": "L01",
+          "sourceModel": "Alfa_Coordination_R07.nwc",
+          "pathHierarchy": [
+            "Project",
+            "HVAC"
+          ],
+          "properties": []
+        },
+        "guid": "guid-001"
+      }
+    },
+    {
+      "clashTestName": "HVAC vs Structure",
+      "modelAIndex": 0,
+      "modelBIndex": 1,
+      "clash": {
+        "name": "Clash 001",
+        "status": "Active",
+        "distance": -0.125,
+        "gridLocation": "A-01",
+        "point": {
+          "x": 1.25,
+          "y": 2.5,
+          "z": 3.75
+        },
+        "elementA": {
+          "elementId": "s-100",
+          "elementName": "Beam 100",
+          "level": "L01",
+          "sourceModel": "Sigma_Main_R04.nwc",
+          "pathHierarchy": [
+            "Project",
+            "Structure",
+            "Beam 100"
+          ],
+          "properties": [
+            {
+              "key": "Category",
+              "value": "Structural Framing"
+            },
+            {
+              "key": "Element Id",
+              "value": "s-100"
+            },
+            {
+              "key": "Item Source File",
+              "value": "Sigma_Main_R04.nwc"
+            }
+          ]
+        },
+        "elementB": {
+          "elementId": "h-200",
+          "elementName": "Duct 200",
+          "level": "L01",
+          "sourceModel": "Alfa_Coordination_R07.nwc",
+          "pathHierarchy": [
+            "Project",
+            "HVAC"
+          ],
+          "properties": []
+        },
+        "guid": "guid-001"
+      }
+    },
+    {
+      "clashTestName": "Structure self clash",
+      "modelAIndex": 0,
+      "modelBIndex": 0,
+      "clash": {
+        "name": null,
+        "status": "Resolved",
+        "distance": null,
+        "gridLocation": null,
+        "point": null,
+        "elementA": {
+          "elementId": "s-300",
+          "elementName": null,
+          "level": null,
+          "sourceModel": null,
+          "pathHierarchy": [],
+          "properties": []
+        },
+        "elementB": {
+          "elementId": "s-301",
+          "elementName": "Column 301",
+          "level": "L02",
+          "sourceModel": "Sigma_Main_R04.nwc",
+          "pathHierarchy": [
+            "Root",
+            "Nested Model",
+            "Discipline",
+            "Element"
+          ],
+          "properties": [
+            {
+              "key": "Category",
+              "value": "Structural Columns"
+            },
+            {
+              "key": "Level",
+              "value": "L02"
+            }
+          ]
+        },
+        "guid": null
+      }
+    },
+    {
+      "clashTestName": "HVAC vs Structure",
+      "modelAIndex": 1,
+      "modelBIndex": 0,
+      "clash": {
+        "name": "Clash 004",
+        "status": "Unknown",
+        "distance": 12,
+        "gridLocation": "B-02",
+        "point": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "elementA": {
+          "elementId": "h-400",
+          "elementName": "Pipe 400",
+          "level": "L03",
+          "sourceModel": "Alfa_Coordination_R07.nwc",
+          "pathHierarchy": [
+            "Project",
+            "HVAC",
+            "Pipe 400"
+          ],
+          "properties": [
+            {
+              "key": "Category",
+              "value": "Pipes"
+            },
+            {
+              "key": "System",
+              "value": "Chilled Water"
+            }
+          ]
+        },
+        "elementB": {
+          "elementId": "s-401",
+          "elementName": null,
+          "level": null,
+          "sourceModel": null,
+          "pathHierarchy": [
+            "Project"
+          ],
+          "properties": []
+        },
+        "guid": "guid-004"
+      }
+    }
+  ]
+}

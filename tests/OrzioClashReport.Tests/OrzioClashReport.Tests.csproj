@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\src\OrzioClashReport.Input.NavisworksXml\OrzioClashReport.Input.NavisworksXml.csproj" />
     <ProjectReference Include="..\..\src\OrzioClashReport.Input.RunManifestJson\OrzioClashReport.Input.RunManifestJson.csproj" />
     <ProjectReference Include="..\..\src\OrzioClashReport.Output.Html\OrzioClashReport.Output.Html.csproj" />
+    <ProjectReference Include="..\..\src\OrzioClashReport.Persistence.RunSnapshotJson\OrzioClashReport.Persistence.RunSnapshotJson.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,6 +50,9 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Golden\lifecycle-report.golden.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Golden\coordination-run-snapshot.golden.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

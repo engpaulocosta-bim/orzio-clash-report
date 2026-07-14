@@ -296,8 +296,8 @@ The legacy single-XML HTML command remains supported.
 The compare command receives previous/current XML and manifest paths explicitly; it never infers chronological order from `CreatedAt`, `RunId`, revision, or filenames.
 The CLI is only the composition root: XML source → manifest source → coordination-run assembler → matcher → run comparer → lifecycle classifier.
 `Program.cs` never recreates matching or lifecycle rules.
-Compare mode currently writes a deterministic console summary only.
-No revision-aware HTML is produced yet.
+Compare mode writes the same deterministic eleven-line console summary as before and
+may optionally write the revision-aware lifecycle HTML with `-o`/`--output`.
 The same run or same file may be supplied in both roles for synthetic smoke testing; this is not sequential real-model validation.
 
 ## Language

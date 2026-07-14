@@ -37,6 +37,35 @@ Report written to report.html
 
 Abra o `report.html` gerado em qualquer navegador — é um arquivo único e autocontido (sem CSS/JS externo).
 
+## Comparar duas coordination runs
+
+O comando `compare` recebe explicitamente os papéis previous/current e produz apenas um
+resumo determinístico no console nesta etapa:
+
+```bash
+dotnet run --project src/OrzioClashReport.Cli -- \
+  compare \
+  --previous-xml <previous.xml> \
+  --previous-manifest <previous.json> \
+  --current-xml <current.xml> \
+  --current-manifest <current.json>
+```
+
+O pipeline composto pela CLI é:
+
+1. Previous/current são papéis explícitos da linha de comando.
+2. A CLI não reordena as runs por timestamp, `RunId`, revisão ou nome de arquivo.
+3. Cada XML é parseado separadamente por `NavisworksXmlClashSource`.
+4. Cada manifesto é carregado separadamente por `JsonRunManifestSource`.
+5. `ExactSourceModelCoordinationRunAssembler` resolve `SourceModel` para `ModelRevision`.
+6. `ConservativeClashMatcher` avalia candidate relationships par-a-par.
+7. `DeterministicClashRunComparer` seleciona um subconjunto one-to-one determinístico.
+8. `ConservativeClashLifecycleClassifier` produz os statuses finais.
+9. O console mostra contagens determinísticas de candidates, matches e lifecycle.
+10. Ainda não existe HTML revision-aware para esse fluxo.
+11. Ainda não existe persistência de runs ou histórico.
+12. Comparar o mesmo fixture nos dois lados é apenas um smoke sintético, não validação sequencial real.
+
 ### Identidade de um grupo
 
 Um grupo (`ClashGroup`) é identificado pela combinação de três dados, nesta ordem:
@@ -154,9 +183,9 @@ distinta e independente das ocorrências de clash observadas:
    um clash test foi observado na outra rodada — nunca varre as ocorrências.
 
 O parser (`OrzioClashReport.Input.RunManifestJson`) valida a estrutura e o schema do JSON e
-constrói `RunManifest`/`ModelRevision`/`ModelIdentity`/`ExecutedClashTest` do Core. **A CLI
-ainda não consome o manifesto nesta etapa** — este é apenas o contrato de entrada, isolado
-no Core e em um adapter dedicado.
+constrói `RunManifest`/`ModelRevision`/`ModelIdentity`/`ExecutedClashTest` do Core. O
+comando `compare` da CLI carrega explicitamente um manifesto previous e um current; o
+comando legado de HTML continua operando apenas sobre o XML.
 
 ### Schema v2 substitui v1
 
@@ -178,11 +207,11 @@ são fatos completamente diferentes.
    declarada exatamente no manifesto (mesma `ModelIdentity` com revisão diferente é
    rejeitada), e toda ocorrência precisa corresponder a um `executedClashTests` declarado.
 
-Nenhum matching ou comparação entre rodadas existe ainda — `CoordinationRun` é só o
-snapshot de uma rodada isolada. A associação automática entre elementos do XML e as
-revisões do manifesto (`ClashObject.SourceModel` → `ModelRevision`) também ainda não foi
-implementada; hoje `ClashOccurrence` é construída explicitamente. A CLI ainda não cria esse
-snapshot.
+`CoordinationRun` continua sendo o snapshot isolado de uma rodada; matching, comparação e
+lifecycle vivem fora dele. A associação entre elementos do XML e as revisões do manifesto
+(`ClashObject.SourceModel` → `ModelRevision`) é feita por
+`ExactSourceModelCoordinationRunAssembler`, e o comando `compare` da CLI monta
+explicitamente uma run previous e uma run current sem inferir ordem temporal.
 
 ## Matching vocabulary
 
@@ -198,7 +227,8 @@ snapshot.
    deles.
 5. Não há score numérico, threshold, lifecycle status ou decisão automática nestes
    contratos.
-6. A CLI ainda não usa esses contratos.
+6. O comando `compare` usa esses contratos via matcher/comparer/classifier existentes; a
+   CLI apenas apresenta o resultado.
 
 ## Pairwise matcher port
 
@@ -210,12 +240,12 @@ snapshot.
    insuficiente, sinais incompatíveis, ou pré-condição da estratégia não satisfeita).
 4. `Low` **não** equivale a `null` — `Low` é uma avaliação candidata real, com pelo menos uma
    evidência; `null` é a ausência de avaliação.
-5. O port não implementa nenhum algoritmo de matching — nesta etapa não existe nenhuma
-   implementação concreta em produção, só fakes de teste.
+5. O port não define o algoritmo concreto; a implementação de produção atual é
+   `ConservativeClashMatcher`.
 6. O port não compara rodadas (`CoordinationRun`) completas nem recebe listas de ocorrências.
 7. Seleção um-para-um entre candidatos concorrentes, resolução de conflitos e qualquer
    lifecycle status ainda não existem — ficam para um futuro run comparer.
-8. A CLI ainda não usa o matcher.
+8. O comando `compare` usa o matcher apenas através de `DeterministicClashRunComparer`.
 
 ## Conservative pairwise matcher
 
@@ -237,9 +267,9 @@ snapshot.
    quando os três sinais passam mas o GUID está ausente ou contradiz.
 7. Este matcher nunca produz `Low` — ele só aceita quando os três sinais obrigatórios são
    favoráveis; candidatos fracos ficam para uma estratégia futura.
-8. Ainda não existe comparação entre rodadas completas nem lifecycle status — isso pertence
-   a um futuro run comparer.
-9. A CLI ainda não usa este matcher.
+8. A comparação entre rodadas completas e a classificação de lifecycle acontecem em
+   componentes separados; este matcher permanece estritamente pairwise.
+9. O comando `compare` usa este matcher na composição revision-aware atual.
 
 ## Deterministic run comparer
 
@@ -262,7 +292,8 @@ implementa `IClashRunComparer`, o primeiro orquestrador entre duas `Coordination
    dois candidatos que uma atribuição ótima teria conseguido parear. Isso é aceitável nesta
    etapa porque a política é determinística, a precedência é explícita, e nenhuma
    classificação de lifecycle é produzida a partir do resultado.
-10. A CLI ainda não usa este comparer.
+10. O comando `compare` usa este comparer com papéis previous/current explícitos, sem
+    inferência temporal.
 
 ## Conservative lifecycle classification
 
@@ -292,7 +323,8 @@ produzido, sem nunca reexecutar `IClashMatcher` ou `IClashRunComparer`.
    lifecycle.
 8. Não existe `Reopened` — distinguir um clash genuinamente novo de um que reabriu exige
    histórico de mais de duas rodadas, fora do escopo desta etapa.
-9. A CLI ainda não usa esse classificador.
+9. O comando `compare` usa esse classificador e imprime apenas um resumo determinístico no
+   console.
 
 ## Coordination run assembly
 
@@ -324,7 +356,7 @@ XML) e um `RunManifest` (adapter JSON).
 8. Existe um manifesto companion sintético vinculado ao fixture XML real
    (`samples/sample-clash.run-manifest.json`, para `samples/sample-clash.xml`) — ver a seção
    abaixo.
-9. A CLI ainda não executa esse pipeline revision-aware.
+9. O comando `compare` executa esse pipeline revision-aware para cada lado explicitamente.
 10. Ainda não foi validado em modelo real sequencial.
 
 ### Companion manifest para `sample-clash.xml`

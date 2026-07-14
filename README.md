@@ -68,7 +68,9 @@ O pipeline composto pela CLI é:
 9. O console mostra contagens determinísticas de candidates, matches e lifecycle.
 10. `-o`/`--output` é opcional: sem output, só há summary; com output, o mesmo summary é
     seguido por um HTML lifecycle revision-aware.
-11. Ainda não existe persistência de runs ou histórico.
+11. Persistência de snapshot de uma única run já existe (ver "Snapshot imutável de uma
+    coordination run" abaixo); ledger, índice de runs e histórico ainda não existem, e o
+    `compare` ainda não salva nem carrega snapshots automaticamente.
 12. Comparar o mesmo fixture nos dois lados é apenas um smoke sintético, não validação sequencial real.
 
 O HTML revision-aware apresenta:
@@ -89,7 +91,8 @@ Limites importantes do fluxo revision-aware:
 2. Source clash GUID aparece somente como evidência, não como stable identity.
 3. Ainda não existe `Reopened`.
 4. Ainda não existe persistent clash id.
-5. Ainda não existe storage nem histórico além de duas runs.
+5. Já existe persistência de snapshot de uma única run (evidência imutável); ainda não
+   existe ledger, índice de runs nem histórico além de duas runs.
 
 ### Identidade de um grupo
 
@@ -238,6 +241,85 @@ lifecycle vivem fora dele. A associação entre elementos do XML e as revisões 
 (`ClashObject.SourceModel` → `ModelRevision`) é feita por
 `ExactSourceModelCoordinationRunAssembler`, e o comando `compare` da CLI monta
 explicitamente uma run previous e uma run current sem inferir ordem temporal.
+
+## Snapshot imutável de uma coordination run
+
+Há dois contratos JSON distintos, com adapters distintos, que não devem ser confundidos:
+
+- **RunManifest JSON** (`OrzioClashReport.Input.RunManifestJson`, `schemaVersion: 2`) é um
+  contrato de **entrada explícito, pré-montagem**: declara manualmente modelos, revisões e
+  clash tests executados antes de montar a run.
+- **CoordinationRun snapshot JSON** (`OrzioClashReport.Persistence.RunSnapshotJson`,
+  `schemaVersion: 1`) é um snapshot de **evidência, pós-montagem**: persiste uma
+  `CoordinationRun` já montada para que comparação e lifecycle possam ser recalculados no
+  futuro.
+
+São schemas diferentes e adapters independentes; o número de `schemaVersion` de um não tem
+relação com o do outro.
+
+O adapter público é `JsonCoordinationRunSnapshotSerializer`, com quatro métodos:
+
+- `Serialize(CoordinationRun) -> string` — JSON canônico determinístico.
+- `Parse(string) -> CoordinationRun` — reidrata com validação estrita.
+- `Save(CoordinationRun, filePath)` — grava um novo arquivo imutável.
+- `Load(filePath) -> CoordinationRun` — lê e reidrata.
+
+Características do snapshot (`schemaVersion` 1):
+
+1. A ordem do array `models` é preservada.
+2. `executedClashTests` referencia modelos por `modelAIndex`/`modelBIndex`.
+3. `occurrences` referencia modelos por `modelAIndex`/`modelBIndex`.
+4. A ordem das ocorrências e os slots duplicados são preservados.
+5. A reidratação reusa as instâncias exatas de `ModelRevision`/`ModelIdentity` apontadas
+   pelos índices.
+6. O `ClashStatus` bruto (recebido da fonte) é persistido como string exata do enum.
+7. Matching, seleção, confiança, evidências e lifecycle **não** são persistidos — são
+   recalculáveis e nunca são congelados na camada de evidência. `ClashStatus.Resolved` bruto
+   é evidência da fonte, não um lifecycle status.
+8. `ClashObject.Properties` é a única coleção canonicalizada: as entradas são ordenadas por
+   chave com `StringComparer.Ordinal` antes de serializar.
+9. Nomes de propriedade são camelCase exato e case-sensitive; propriedades JSON desconhecidas
+   ou duplicadas são rejeitadas. Timestamps exigem offset explícito ou `Z`.
+10. `Save` usa semântica create-new: nunca sobrescreve um arquivo existente (mesmo com bytes
+    idênticos), grava UTF-8 sem BOM, e uma falha de serialização não cria arquivo.
+
+Exemplo reduzido:
+
+```json
+{
+  "schemaVersion": 1,
+  "runId": "coordination-run-001",
+  "createdAt": "2026-07-14T09:00:00.0000000+01:00",
+  "models": [
+    {
+      "company": "Sigma",
+      "discipline": "Structure",
+      "modelName": "Main",
+      "revision": "R04",
+      "sourceFileName": "Sigma_Main_R04.nwc",
+      "sourceFilePath": null,
+      "contentHash": null,
+      "publishedAt": null
+    }
+  ],
+  "executedClashTests": [
+    {
+      "name": "Structure self clash",
+      "modelAIndex": 0,
+      "modelBIndex": 0
+    }
+  ],
+  "occurrences": []
+}
+```
+
+Limites honestos desta etapa:
+
+- Ainda não há comando de snapshot na CLI.
+- Ainda não há Clash Ledger.
+- Ainda não há travessia de histórico.
+- Ainda não há `Reopened`.
+- Ainda não há validação sequencial contra exports reais.
 
 ## Matching vocabulary
 

@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Orzio Clash Comparison</title>
+<style>
+body{margin:0;background:#f5f2ea;color:#1f2933;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5;}
+body{max-width:1200px;padding:32px 24px;margin:0 auto;}
+h1,h2,h3,h4,p,ol,ul,dl{margin-top:0;}
+h2{font-size:1.3rem;}
+.comparison-header{background:linear-gradient(135deg,#fef3c7,#fffaf0);border:1px solid #d9c7a1;border-radius:20px;padding:24px;margin-bottom:24px;box-shadow:0 12px 30px rgba(77,58,27,.08);}
+.comparison-header h1{font-size:2rem;margin-bottom:8px;}
+.comparison-flow-label{font-size:.9rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#8a6b32;margin-bottom:4px;}
+.comparison-flow{font-size:1.05rem;font-weight:600;overflow-wrap:anywhere;}
+.run-comparison-section,.lifecycle-summary-section,.matching-summary-section,.classification-note{margin-bottom:24px;}
+.run-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;}
+.run-card,.summary-card,.metric-card,.lifecycle-entry{background:#fff;border:1px solid #d7dde5;border-radius:18px;box-shadow:0 10px 24px rgba(15,23,42,.05);}
+.run-card{padding:20px;}
+.previous-run{border-top:4px solid #1d4ed8;}
+.current-run{border-top:4px solid #ea580c;}
+.run-metadata,.occurrence-metadata{display:grid;grid-template-columns:minmax(140px,180px) minmax(0,1fr);gap:6px 12px;margin-bottom:16px;}
+.run-metadata dt,.occurrence-metadata dt{font-weight:700;color:#334155;}
+.run-metadata dd,.occurrence-metadata dd{margin:0;overflow-wrap:anywhere;}
+.run-models h4{margin-bottom:10px;}
+.run-models ul{padding-left:18px;margin-bottom:0;}
+.run-models li{margin-bottom:10px;overflow-wrap:anywhere;}
+.model-label{font-weight:600;}
+.model-source{font-size:.95rem;color:#52606d;}
+.summary-grid,.matching-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;}
+.matching-summary-grid{grid-template-columns:repeat(5,minmax(0,1fr));}
+.summary-card,.metric-card{padding:18px;text-align:center;}
+.summary-card h3,.metric-card h3{font-size:1rem;margin-bottom:10px;}
+.summary-count,.metric-count{font-size:2rem;font-weight:800;margin:0;}
+.status-stillopen{border-left:8px solid #2563eb;}
+.status-new{border-left:8px solid #f97316;}
+.status-resolved{border-left:8px solid #15803d;}
+.status-unverifiable{border-left:8px solid #64748b;}
+.lifecycle-entries{display:grid;gap:20px;margin-bottom:24px;}
+.lifecycle-entry{padding:20px;}
+.lifecycle-entry-header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:16px;}
+.lifecycle-entry-header h2{margin-bottom:0;}
+.slot-reference{font-family:Consolas,"SFMono-Regular",Menlo,monospace;font-size:.95rem;color:#475569;overflow-wrap:anywhere;}
+.occurrence-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:16px;}
+.occurrence-panel{padding:16px;border:1px solid #d7dde5;border-radius:14px;background:#fcfcfd;}
+.occurrence-panel h3{margin-bottom:12px;}
+.previous-occurrence{background:linear-gradient(180deg,#eff6ff,#fcfcfd);}
+.current-occurrence{background:linear-gradient(180deg,#fff7ed,#fcfcfd);}
+.missing-occurrence{display:flex;flex-direction:column;justify-content:center;}
+.selected-match-section{margin-bottom:16px;padding:14px 16px;border-radius:14px;background:#f8fafc;border:1px solid #d7dde5;}
+.selected-match-section h3{margin-bottom:8px;}
+.selected-match-confidence{margin-bottom:0;font-weight:700;}
+.evidence-section{margin-bottom:16px;border:1px solid #d7dde5;border-radius:14px;background:#f8fafc;padding:0;}
+.evidence-section summary{cursor:pointer;font-weight:700;padding:14px 16px;}
+.evidence-list{margin:0;padding:0 16px 16px 36px;}
+.evidence-item{padding:12px 0;overflow-wrap:anywhere;}
+.evidence-item + .evidence-item{border-top:1px solid #e5e7eb;}
+.verdict-supportsclassification,.verdict-supports{border-left:4px solid #15803d;padding-left:12px;}
+.verdict-blocksclassification,.verdict-contradicts{border-left:4px solid #c2410c;padding-left:12px;}
+.verdict-unavailable{border-left:4px solid #64748b;padding-left:12px;}
+.classification-note{padding:20px;background:#fff;border:1px solid #d7dde5;border-radius:18px;}
+.classification-note p:last-child{margin-bottom:0;}
+@media (max-width:900px){
+  body{padding:20px 16px;}
+  .run-comparison,.summary-grid,.matching-summary-grid,.occurrence-grid{grid-template-columns:1fr;}
+  .lifecycle-entry-header{flex-direction:column;}
+}
+@media print{
+  body{background:#fff;padding:0;}
+  .comparison-header,.run-card,.summary-card,.metric-card,.lifecycle-entry,.classification-note,.occurrence-panel,.selected-match-section,.evidence-section{box-shadow:none;}
+  .comparison-header,.run-card,.summary-card,.metric-card,.lifecycle-entry,.classification-note{break-inside:avoid;}
+}
+</style>
+</head>
+<body>
+<header class="comparison-header">
+<h1>Orzio Clash Comparison</h1>
+<p class="comparison-flow-label">Previous run &rarr; Current run</p>
+<p class="comparison-flow">previous-run &rarr; current-run</p>
+</header>
+<section class="run-comparison-section">
+<h2>Run comparison</h2>
+<div class="run-comparison">
+<article class="run-card previous-run">
+<h3>Previous run</h3>
+<dl class="run-metadata">
+<dt>Run ID</dt><dd>previous-run</dd>
+<dt>Created at</dt><dd>2026-07-10T09:00:00.0000000+00:00</dd>
+<dt>Occurrences</dt><dd>3</dd>
+<dt>Executed clash tests</dt><dd>1</dd>
+</dl>
+<div class="run-models">
+<h4>Models</h4>
+<ul>
+<li><div class="model-label">Sigma / Structure / Main @ R04</div><div class="model-source">Source file: Sigma_Main_R04.nwc</div></li>
+<li><div class="model-label">Alfa / HVAC / Coordination @ R07</div><div class="model-source">Source file: Alfa_Coordination_R07.nwc</div></li>
+</ul>
+</div>
+</article>
+<article class="run-card current-run">
+<h3>Current run</h3>
+<dl class="run-metadata">
+<dt>Run ID</dt><dd>current-run</dd>
+<dt>Created at</dt><dd>2026-07-11T09:30:00.0000000+00:00</dd>
+<dt>Occurrences</dt><dd>3</dd>
+<dt>Executed clash tests</dt><dd>1</dd>
+</dl>
+<div class="run-models">
+<h4>Models</h4>
+<ul>
+<li><div class="model-label">Sigma / Structure / Main @ R04</div><div class="model-source">Source file: Sigma_Main_R04.nwc</div></li>
+<li><div class="model-label">Alfa / HVAC / Coordination @ R07</div><div class="model-source">Source file: Alfa_Coordination_R07.nwc</div></li>
+</ul>
+</div>
+</article>
+</div>
+</section>
+<section class="lifecycle-summary-section">
+<h2>Lifecycle summary</h2>
+<div class="summary-grid">
+<article class="summary-card status-stillopen"><h3>StillOpen</h3><p class="summary-count">1</p></article>
+<article class="summary-card status-new"><h3>New</h3><p class="summary-count">1</p></article>
+<article class="summary-card status-resolved"><h3>Resolved</h3><p class="summary-count">1</p></article>
+<article class="summary-card status-unverifiable"><h3>Unverifiable</h3><p class="summary-count">1</p></article>
+</div>
+</section>
+<section class="matching-summary-section">
+<h2>Matching summary</h2>
+<div class="matching-summary-grid">
+<article class="metric-card"><h3>Previous occurrences</h3><p class="metric-count">3</p></article>
+<article class="metric-card"><h3>Current occurrences</h3><p class="metric-count">3</p></article>
+<article class="metric-card"><h3>Candidates</h3><p class="metric-count">2</p></article>
+<article class="metric-card"><h3>Selected matches</h3><p class="metric-count">2</p></article>
+<article class="metric-card"><h3>Alternative candidates</h3><p class="metric-count">0</p></article>
+</div>
+</section>
+<main class="lifecycle-entries">
+<section class="lifecycle-entry status-stillopen">
+<header class="lifecycle-entry-header">
+<h2>StillOpen</h2>
+<p class="slot-reference">previous[0] &times; current[0]</p>
+</header>
+<div class="occurrence-grid">
+<article class="occurrence-panel previous-occurrence">
+<h3>Previous occurrence</h3>
+<dl class="occurrence-metadata">
+<dt>Clash test</dt><dd>Coordination Test</dd>
+<dt>Clash name</dt><dd>Still Open Clash</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main @ R04</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R07</dd>
+<dt>Element A</dt><dd>P0-A<br>Name: Beam 01<br>Level: L01</dd>
+<dt>Element B</dt><dd>P0-B<br>Name: Duct 01<br>Level: L01</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.111, 2.222, 3.333</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-still-open</dd>
+</dl>
+</article>
+<article class="occurrence-panel current-occurrence">
+<h3>Current occurrence</h3>
+<dl class="occurrence-metadata">
+<dt>Clash test</dt><dd>Coordination Test</dd>
+<dt>Clash name</dt><dd>Still Open Clash Current</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main @ R04</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R07</dd>
+<dt>Element A</dt><dd>P0-A<br>Name: Beam 01<br>Level: L01</dd>
+<dt>Element B</dt><dd>P0-B<br>Name: Duct 01<br>Level: L01</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.111, 2.222, 3.333</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-still-open</dd>
+</dl>
+</article>
+</div>
+<section class="selected-match-section">
+<h3>Selected match</h3>
+<p class="selected-match-confidence">Confidence: High</p>
+</section>
+<details class="evidence-section lifecycle-evidence">
+<summary>Lifecycle evidence (3)</summary>
+<ol class="evidence-list">
+<li class="evidence-item verdict-supportsclassification">
+<p><strong>Kind:</strong> SelectedMatch</p>
+<p><strong>Verdict:</strong> SupportsClassification</p>
+<p><strong>Description:</strong> This previous/current pair was selected as a one-to-one match.</p>
+</li>
+<li class="evidence-item verdict-supportsclassification">
+<p><strong>Kind:</strong> MatchConfidence</p>
+<p><strong>Verdict:</strong> SupportsClassification</p>
+<p><strong>Description:</strong> Match confidence is High. This is not treated as exact, only as sufficient to proceed.</p>
+</li>
+<li class="evidence-item verdict-supportsclassification">
+<p><strong>Kind:</strong> CandidateAmbiguity</p>
+<p><strong>Verdict:</strong> SupportsClassification</p>
+<p><strong>Description:</strong> No alternative candidate shares this match&#39;s previous or current index.</p>
+</li>
+</ol>
+</details>
+<details class="evidence-section match-evidence">
+<summary>Match evidence (2)</summary>
+<ol class="evidence-list">
+<li class="evidence-item verdict-supports">
+<p><strong>Kind:</strong> SourceClashGuid</p>
+<p><strong>Verdict:</strong> Supports</p>
+<p><strong>Description:</strong> Exact source GUID match</p>
+<p><strong>Previous value:</strong> guid-still-open</p>
+<p><strong>Current value:</strong> guid-still-open</p>
+</li>
+<li class="evidence-item verdict-supports">
+<p><strong>Kind:</strong> ElementIdentifierPair</p>
+<p><strong>Verdict:</strong> Supports</p>
+<p><strong>Description:</strong> Element identifiers remained aligned</p>
+<p><strong>Previous value:</strong> P0-A/P0-B</p>
+<p><strong>Current value:</strong> P0-A/P0-B</p>
+</li>
+</ol>
+</details>
+</section>
+<section class="lifecycle-entry status-unverifiable">
+<header class="lifecycle-entry-header">
+<h2>Unverifiable</h2>
+<p class="slot-reference">previous[2] &times; current[2]</p>
+</header>
+<div class="occurrence-grid">
+<article class="occurrence-panel previous-occurrence">
+<h3>Previous occurrence</h3>
+<dl class="occurrence-metadata">
+<dt>Clash test</dt><dd>Coordination Test</dd>
+<dt>Clash name</dt><dd>Unverifiable Clash</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main @ R04</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R07</dd>
+<dt>Element A</dt><dd>P2-A<br>Name: Beam 03<br>Level: L03</dd>
+<dt>Element B</dt><dd>P2-B<br>Name: Duct 03<br>Level: L03</dd>
+<dt>Distance</dt><dd>1.125</dd>
+<dt>Point</dt><dd>7.777, 8.888, 9.999</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-unverifiable-previous</dd>
+</dl>
+</article>
+<article class="occurrence-panel current-occurrence">
+<h3>Current occurrence</h3>
+<dl class="occurrence-metadata">
+<dt>Clash test</dt><dd>Coordination Test</dd>
+<dt>Clash name</dt><dd>Unverifiable Clash Current</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main @ R04</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R07</dd>
+<dt>Element A</dt><dd>C2-A<br>Name: Beam 05<br>Level: L05</dd>
+<dt>Element B</dt><dd>C2-B<br>Name: Duct 05<br>Level: L05</dd>
+<dt>Distance</dt><dd>1.625</dd>
+<dt>Point</dt><dd>9.111, 8.222, 7.333</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-unverifiable-current</dd>
+</dl>
+</article>
+</div>
+<section class="selected-match-section">
+<h3>Selected match</h3>
+<p class="selected-match-confidence">Confidence: Low</p>
+</section>
+<details class="evidence-section lifecycle-evidence">
+<summary>Lifecycle evidence (3)</summary>
+<ol class="evidence-list">
+<li class="evidence-item verdict-supportsclassification">
+<p><strong>Kind:</strong> SelectedMatch</p>
+<p><strong>Verdict:</strong> SupportsClassification</p>
+<p><strong>Description:</strong> This previous/current pair was selected as a one-to-one match.</p>
+</li>
+<li class="evidence-item verdict-blocksclassification">
+<p><strong>Kind:</strong> MatchConfidence</p>
+<p><strong>Verdict:</strong> BlocksClassification</p>
+<p><strong>Description:</strong> Match confidence is Low, too weak to auto-classify.</p>
+</li>
+<li class="evidence-item verdict-supportsclassification">
+<p><strong>Kind:</strong> CandidateAmbiguity</p>
+<p><strong>Verdict:</strong> SupportsClassification</p>
+<p><strong>Description:</strong> No alternative candidate shares this match&#39;s previous or current index.</p>
+</li>
+</ol>
+</details>
+<details class="evidence-section match-evidence">
+<summary>Match evidence (1)</summary>
+<ol class="evidence-list">
+<li class="evidence-item verdict-unavailable">
+<p><strong>Kind:</strong> ElementMetadata</p>
+<p><strong>Verdict:</strong> Unavailable</p>
+<p><strong>Description:</strong> Insufficient metadata for confident lifecycle correlation</p>
+<p><strong>Previous value:</strong> L03</p>
+<p><strong>Current value:</strong> L05</p>
+</li>
+</ol>
+</details>
+</section>
+<section class="lifecycle-entry status-resolved">
+<header class="lifecycle-entry-header">
+<h2>Resolved</h2>
+<p class="slot-reference">previous[1] &times; current[-]</p>
+</header>
+<div class="occurrence-grid">
+<article class="occurrence-panel previous-occurrence">
+<h3>Previous occurrence</h3>
+<dl class="occurrence-metadata">
+<dt>Clash test</dt><dd>Coordination Test</dd>
+<dt>Clash name</dt><dd>Resolved Clash</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main @ R04</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R07</dd>
+<dt>Element A</dt><dd>P1-A<br>Name: Beam 02<br>Level: L02</dd>
+<dt>Element B</dt><dd>P1-B<br>Name: Duct 02<br>Level: L02</dd>
+<dt>Distance</dt><dd>0.875</dd>
+<dt>Point</dt><dd>4.444, 5.555, 6.666</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-resolved</dd>
+</dl>
+</article>
+<article class="occurrence-panel current-occurrence missing-occurrence">
+<h3>Current occurrence</h3>
+<p>No current occurrence</p>
+</article>
+</div>
+<details class="evidence-section lifecycle-evidence">
+<summary>Lifecycle evidence (5)</summary>
+<ol class="evidence-list">
+<li class="evidence-item verdict-supportsclassification">
+<p><strong>Kind:</strong> CandidateAmbiguity</p>
+<p><strong>Verdict:</strong> SupportsClassification</p>
+<p><strong>Description:</strong> No alternative candidate references this previous slot.</p>
+</li>
+<li class="evidence-item verdict-supportsclassification">
+<p><strong>Kind:</strong> ModelIdentityPresence</p>
+<p><strong>Verdict:</strong> SupportsClassification</p>
+<p><strong>Description:</strong> ModelA identity &#39;Sigma / Structure / Main&#39; is declared in the other run&#39;s manifest, regardless of revision.</p>
+</li>
+<li class="evidence-item verdict-supportsclassification">
+<p><strong>Kind:</strong> ModelIdentityPresence</p>
+<p><strong>Verdict:</strong> SupportsClassification</p>
+<p><strong>Description:</strong> ModelB identity &#39;Alfa / HVAC / Coordination&#39; is declared in the other run&#39;s manifest, regardless of revision.</p>
+</li>
+<li class="evidence-item verdict-supportsclassification">
+<p><strong>Kind:</strong> ClashTestPresence</p>
+<p><strong>Verdict:</strong> SupportsClassification</p>
+<p><strong>Description:</strong> Clash test &#39;Coordination Test&#39; is explicitly declared as executed for this revision-free model pair in the other run&#39;s manifest.</p>
+</li>
+<li class="evidence-item verdict-supportsclassification">
+<p><strong>Kind:</strong> SelectedMatch</p>
+<p><strong>Verdict:</strong> SupportsClassification</p>
+<p><strong>Description:</strong> No selected match consumes this previous slot.</p>
+</li>
+</ol>
+</details>
+</section>
+<section class="lifecycle-entry status-new">
+<header class="lifecycle-entry-header">
+<h2>New</h2>
+<p class="slot-reference">previous[-] &times; current[1]</p>
+</header>
+<div class="occurrence-grid">
+<article class="occurrence-panel previous-occurrence missing-occurrence">
+<h3>Previous occurrence</h3>
+<p>No previous occurrence</p>
+</article>
+<article class="occurrence-panel current-occurrence">
+<h3>Current occurrence</h3>
+<dl class="occurrence-metadata">
+<dt>Clash test</dt><dd>Coordination Test</dd>
+<dt>Clash name</dt><dd>New Clash</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main @ R04</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R07</dd>
+<dt>Element A</dt><dd>C1-A<br>Name: Beam 04<br>Level: L04</dd>
+<dt>Element B</dt><dd>C1-B<br>Name: Duct 04<br>Level: L04</dd>
+<dt>Distance</dt><dd>2.125</dd>
+<dt>Point</dt><dd>3.141, 2.718, 1.618</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-new</dd>
+</dl>
+</article>
+</div>
+<details class="evidence-section lifecycle-evidence">
+<summary>Lifecycle evidence (5)</summary>
+<ol class="evidence-list">
+<li class="evidence-item verdict-supportsclassification">
+<p><strong>Kind:</strong> CandidateAmbiguity</p>
+<p><strong>Verdict:</strong> SupportsClassification</p>
+<p><strong>Description:</strong> No alternative candidate references this current slot.</p>
+</li>
+<li class="evidence-item verdict-supportsclassification">
+<p><strong>Kind:</strong> ModelIdentityPresence</p>
+<p><strong>Verdict:</strong> SupportsClassification</p>
+<p><strong>Description:</strong> ModelA identity &#39;Sigma / Structure / Main&#39; is declared in the other run&#39;s manifest, regardless of revision.</p>
+</li>
+<li class="evidence-item verdict-supportsclassification">
+<p><strong>Kind:</strong> ModelIdentityPresence</p>
+<p><strong>Verdict:</strong> SupportsClassification</p>
+<p><strong>Description:</strong> ModelB identity &#39;Alfa / HVAC / Coordination&#39; is declared in the other run&#39;s manifest, regardless of revision.</p>
+</li>
+<li class="evidence-item verdict-supportsclassification">
+<p><strong>Kind:</strong> ClashTestPresence</p>
+<p><strong>Verdict:</strong> SupportsClassification</p>
+<p><strong>Description:</strong> Clash test &#39;Coordination Test&#39; is explicitly declared as executed for this revision-free model pair in the other run&#39;s manifest.</p>
+</li>
+<li class="evidence-item verdict-supportsclassification">
+<p><strong>Kind:</strong> SelectedMatch</p>
+<p><strong>Verdict:</strong> SupportsClassification</p>
+<p><strong>Description:</strong> No selected match consumes this current slot.</p>
+</li>
+</ol>
+</details>
+</section>
+</main>
+<footer class="classification-note">
+<h2>Classification note</h2>
+<p>Lifecycle classifications are based on two explicitly supplied coordination runs.</p>
+<p>Match confidence is evidence-based and is not human confirmation.</p>
+<p>Source clash GUIDs are evidence only and are not treated as stable clash identities.</p>
+<p>This report does not classify Reopened clashes and does not assign persistent clash IDs.</p>
+</footer>
+</body>
+</html>

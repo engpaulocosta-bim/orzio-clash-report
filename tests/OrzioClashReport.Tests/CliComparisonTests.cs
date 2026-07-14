@@ -15,6 +15,20 @@ namespace OrzioClashReport.Tests
     public sealed class CliComparisonTests
     {
         private static readonly MethodInfo MainMethod = ResolveMainMethod();
+        private const string CompareUsage = "Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json> [-o <output.html> | --output <output.html>]";
+        private static readonly string ExpectedCompareSummary = string.Join(
+            "\n",
+            "Previous run: coordination-sample-clash-xml",
+            "Current run: coordination-sample-clash-xml",
+            "Previous occurrences: 5",
+            "Current occurrences: 5",
+            "Candidates: 5",
+            "Selected matches: 5",
+            "Alternative candidates: 0",
+            "StillOpen: 5",
+            "New: 0",
+            "Resolved: 0",
+            "Unverifiable: 0");
 
         private static string SamplesDirectory => Path.Combine(AppContext.BaseDirectory, "samples");
 
@@ -59,21 +73,7 @@ namespace OrzioClashReport.Tests
 
             Assert.Equal(0, result.ExitCode);
             Assert.Equal(string.Empty, result.StdErr);
-            Assert.Equal(
-                string.Join(
-                    "\n",
-                    "Previous run: coordination-sample-clash-xml",
-                    "Current run: coordination-sample-clash-xml",
-                    "Previous occurrences: 5",
-                    "Current occurrences: 5",
-                    "Candidates: 5",
-                    "Selected matches: 5",
-                    "Alternative candidates: 0",
-                    "StillOpen: 5",
-                    "New: 0",
-                    "Resolved: 0",
-                    "Unverifiable: 0"),
-                NormalizeLineEndings(result.StdOut));
+            Assert.Equal(ExpectedCompareSummary, NormalizeLineEndings(result.StdOut));
         }
 
         [Fact]
@@ -123,7 +123,7 @@ namespace OrzioClashReport.Tests
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(string.Empty, result.StdOut);
             Assert.Contains("Missing required option '--current-manifest'.", result.StdErr);
-            Assert.Contains("Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json>", result.StdErr);
+            Assert.Contains(CompareUsage, result.StdErr);
         }
 
         [Fact]
@@ -140,7 +140,7 @@ namespace OrzioClashReport.Tests
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(string.Empty, result.StdOut);
             Assert.Contains("Duplicate option '--previous-xml'.", result.StdErr);
-            Assert.Contains("Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json>", result.StdErr);
+            Assert.Contains(CompareUsage, result.StdErr);
         }
 
         [Fact]
@@ -156,7 +156,7 @@ namespace OrzioClashReport.Tests
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(string.Empty, result.StdOut);
             Assert.Contains("Missing value for '--current-manifest'.", result.StdErr);
-            Assert.Contains("Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json>", result.StdErr);
+            Assert.Contains(CompareUsage, result.StdErr);
         }
 
         [Fact]
@@ -172,7 +172,7 @@ namespace OrzioClashReport.Tests
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(string.Empty, result.StdOut);
             Assert.Contains("Missing value for '--previous-xml'.", result.StdErr);
-            Assert.Contains("Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json>", result.StdErr);
+            Assert.Contains(CompareUsage, result.StdErr);
         }
 
         [Fact]
@@ -188,7 +188,7 @@ namespace OrzioClashReport.Tests
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(string.Empty, result.StdOut);
             Assert.Contains("Missing value for '--previous-manifest'.", result.StdErr);
-            Assert.Contains("Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json>", result.StdErr);
+            Assert.Contains(CompareUsage, result.StdErr);
         }
 
         [Fact]
@@ -205,14 +205,158 @@ namespace OrzioClashReport.Tests
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(string.Empty, result.StdOut);
             Assert.Contains("Unrecognized compare argument '--foo'.", result.StdErr);
-            Assert.Contains("Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json>", result.StdErr);
+            Assert.Contains(CompareUsage, result.StdErr);
         }
 
         [Fact]
-        public void Main_CompareMode_OutputOptionIsRejected()
+        public void Main_CompareMode_OutputOptionWritesLifecycleHtml()
         {
             string tempDirectory = CreateTempDirectory();
-            string outputPath = Path.Combine(tempDirectory, "result.html");
+            string outputPath = Path.Combine(tempDirectory, "comparison.html");
+
+            try
+            {
+                var result = InvokeMain(
+                    "compare",
+                    "--previous-xml", SampleClashXmlPath,
+                    "--previous-manifest", SampleClashManifestPath,
+                    "--current-xml", SampleClashXmlPath,
+                    "--current-manifest", SampleClashManifestPath,
+                    "-o", outputPath);
+
+                Assert.Equal(0, result.ExitCode);
+                Assert.True(File.Exists(outputPath));
+                Assert.Equal(string.Empty, result.StdErr);
+                Assert.Equal(
+                    ExpectedCompareSummary + "\n" + $"Comparison report written to {outputPath}",
+                    NormalizeLineEndings(result.StdOut));
+
+                string html = File.ReadAllText(outputPath);
+                Assert.Contains("<title>Orzio Clash Comparison</title>", html, StringComparison.Ordinal);
+                Assert.Contains("<h1>Orzio Clash Comparison</h1>", html, StringComparison.Ordinal);
+                Assert.Contains("StillOpen", html, StringComparison.Ordinal);
+                Assert.Contains("coordination-sample-clash-xml", html, StringComparison.Ordinal);
+            }
+            finally
+            {
+                DeleteFileIfExists(outputPath);
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CompareMode_OutputAliasWritesLifecycleHtml()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string outputPath = Path.Combine(tempDirectory, "comparison.html");
+
+            try
+            {
+                var result = InvokeMain(
+                    "compare",
+                    "--previous-xml", SampleClashXmlPath,
+                    "--previous-manifest", SampleClashManifestPath,
+                    "--current-xml", SampleClashXmlPath,
+                    "--current-manifest", SampleClashManifestPath,
+                    "--output", outputPath);
+
+                Assert.Equal(0, result.ExitCode);
+                Assert.True(File.Exists(outputPath));
+                Assert.Equal(string.Empty, result.StdErr);
+                Assert.EndsWith($"Comparison report written to {outputPath}", NormalizeLineEndings(result.StdOut), StringComparison.Ordinal);
+            }
+            finally
+            {
+                DeleteFileIfExists(outputPath);
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CompareMode_DuplicateOutputAliases_ReturnsUsageError()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string firstOutputPath = Path.Combine(tempDirectory, "first.html");
+            string secondOutputPath = Path.Combine(tempDirectory, "second.html");
+
+            try
+            {
+                var result = InvokeMain(
+                    "compare",
+                    "--previous-xml", SampleClashXmlPath,
+                    "--previous-manifest", SampleClashManifestPath,
+                    "--current-xml", SampleClashXmlPath,
+                    "--current-manifest", SampleClashManifestPath,
+                    "-o", firstOutputPath,
+                    "--output", secondOutputPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("Duplicate option '-o/--output'.", result.StdErr);
+                Assert.Contains(CompareUsage, result.StdErr);
+                Assert.False(File.Exists(firstOutputPath));
+                Assert.False(File.Exists(secondOutputPath));
+            }
+            finally
+            {
+                DeleteFileIfExists(firstOutputPath);
+                DeleteFileIfExists(secondOutputPath);
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CompareMode_MissingOutputValue_ReturnsUsageError()
+        {
+            var result = InvokeMain(
+                "compare",
+                "--previous-xml", SampleClashXmlPath,
+                "--previous-manifest", SampleClashManifestPath,
+                "-o",
+                "--current-xml", SampleClashXmlPath,
+                "--current-manifest", SampleClashManifestPath);
+
+            Assert.Equal(1, result.ExitCode);
+            Assert.Equal(string.Empty, result.StdOut);
+            Assert.Contains("Missing value for '-o'.", result.StdErr);
+            Assert.Contains(CompareUsage, result.StdErr);
+        }
+
+        [Fact]
+        public void Main_CompareMode_OutputOptionCannotBeConsumedAsRequiredValue()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string outputPath = Path.Combine(tempDirectory, "comparison.html");
+
+            try
+            {
+                var result = InvokeMain(
+                    "compare",
+                    "--previous-xml",
+                    "-o", outputPath,
+                    "--previous-manifest", SampleClashManifestPath,
+                    "--current-xml", SampleClashXmlPath,
+                    "--current-manifest", SampleClashManifestPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("Missing value for '--previous-xml'.", result.StdErr);
+                Assert.Contains(CompareUsage, result.StdErr);
+                Assert.False(File.Exists(outputPath));
+            }
+            finally
+            {
+                DeleteFileIfExists(outputPath);
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CompareMode_WriteFailure_DoesNotPrintSuccessSummary()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string missingParent = Path.Combine(tempDirectory, "missing-parent");
+            string outputPath = Path.Combine(missingParent, "comparison.html");
 
             try
             {
@@ -225,8 +369,10 @@ namespace OrzioClashReport.Tests
                     "-o", outputPath);
 
                 Assert.Equal(1, result.ExitCode);
-                Assert.Equal(string.Empty, result.StdOut);
-                Assert.Contains("Unrecognized compare argument '-o'.", result.StdErr);
+                Assert.DoesNotContain("Previous run:", result.StdOut, StringComparison.Ordinal);
+                Assert.DoesNotContain("StillOpen:", result.StdOut, StringComparison.Ordinal);
+                Assert.DoesNotContain("Comparison report written to", result.StdOut, StringComparison.Ordinal);
+                Assert.Contains("Failed to compare runs:", result.StdErr);
                 Assert.False(File.Exists(outputPath));
             }
             finally

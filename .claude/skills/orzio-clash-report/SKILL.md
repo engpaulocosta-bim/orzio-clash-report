@@ -219,6 +219,32 @@ Compare mode currently writes a deterministic console summary only.
 No revision-aware HTML is produced yet.
 The same run or same file may be supplied in both roles for synthetic smoke testing; this is not sequential real-model validation.
 
+## Immutable coordination-run JSON snapshots
+
+A `CoordinationRun` may now be persisted as a deterministic schema-v1 JSON snapshot by
+`OrzioClashReport.Persistence.RunSnapshotJson` (net8.0, System.Text.Json). The public
+`JsonCoordinationRunSnapshotSerializer` exposes `Serialize`, `Parse`, `Save`, and `Load`.
+This is the single deliberate exception to the "no persistence/history/database" scope gate:
+single-run snapshot persistence exists; run collections, indexes, history traversal, ledgers,
+`Reopened` classification, databases, and any CLI snapshot workflow still do not.
+
+The snapshot is evidence storage, not a persisted lifecycle decision. It contains
+`RunManifest` facts, declared model revisions, executed-test coverage, ordered occurrence
+slots, and raw clash/object evidence (including the raw `ClashStatus`). Matching candidates,
+selected matches, confidence, match evidence, lifecycle entries/evidence/statuses,
+fingerprints, and persistent clash IDs are never stored in a run snapshot. Executed clash
+tests and occurrences reference the snapshot's models array by explicit A/B model indexes,
+and parsing reuses the exact manifest `ModelRevision` / `ModelIdentity` instances addressed
+by those indexes. Model/test/occurrence/path-hierarchy order is preserved, and so are
+duplicate occurrence slots and A/B orientation. `ClashObject.Properties` is the only
+canonicalized collection: property entries are sorted by key with `StringComparer.Ordinal`
+before serialization. Snapshot JSON property names are exact case-sensitive camelCase;
+unknown and duplicate JSON properties are rejected. `Save` uses create-new semantics, never
+overwrites an existing path, and writes UTF-8 without a BOM. Snapshot `schemaVersion` belongs
+only to the persistence adapter; it is unrelated to the run-manifest `schemaVersion`. The
+persistence adapter depends only on `Core` and never on the XML, run-manifest JSON, HTML, or
+CLI adapters.
+
 ## Anti-patterns that fail review
 
 - Core with a `using System.Xml.Linq`, a Navisworks reference, or any HTML string.

@@ -243,9 +243,9 @@ run end to end in tests.
 A `CoordinationRun` may now be persisted as a deterministic schema-v1 JSON snapshot by
 `OrzioClashReport.Persistence.RunSnapshotJson` (`JsonCoordinationRunSnapshotSerializer` with
 `Serialize`/`Parse`/`Save`/`Load`). This is the one deliberate, narrow exception to the
-"no persistence/history/database" scope gate: single-run snapshot persistence exists; run
-collections, indexes, history traversal, ledgers, databases, and any CLI snapshot workflow
-still do not.
+"no persistence/history/database" scope gate: single-run snapshot persistence and explicit
+snapshot creation CLI exist; run collections, indexes, history traversal, ledgers,
+databases, and snapshot loading/comparison/history CLI workflows still do not.
 
 - The snapshot is evidence storage, not a persisted lifecycle decision. It contains
   `RunManifest` facts, declared model revisions, executed-test coverage, ordered occurrence
@@ -273,6 +273,22 @@ still do not.
   HTML, or CLI adapters. Its `DuplicatePropertyValidator` and
   `StrictIso8601DateTimeOffsetConverter` are independent copies, not shared with the manifest
   adapter.
+
+## Create-run snapshot CLI
+
+The snapshot subcommand is an explicit composition workflow: Navisworks XML + RunManifest
+JSON -> ExactSourceModelCoordinationRunAssembler -> CoordinationRun ->
+JsonCoordinationRunSnapshotSerializer.Save.
+The command is `orzioclash snapshot --xml <input.xml> --manifest <run-manifest.json> (-o <run-snapshot.json> | --output <run-snapshot.json>)`.
+Output is mandatory and no filename/storage convention is inferred.
+The CLI never constructs RunManifest, ModelRevision, ExecutedClashTest, ClashOccurrence, or
+CoordinationRun manually in snapshot mode.
+The persistence adapter remains the sole authority for snapshot serialization, canonical
+JSON, UTF-8/no-BOM writing, create-new semantics, and overwrite refusal.
+Success output is emitted only after Save succeeds.
+Snapshot mode does not compare runs, load stored snapshots for comparison, persist
+matching/lifecycle, create history, or create a ledger.
+Legacy and compare command contracts remain unchanged.
 
 ## Two-run comparison CLI
 

@@ -313,9 +313,48 @@ Exemplo reduzido:
 }
 ```
 
+Criação de snapshot pela CLI:
+
+```bash
+dotnet run --project src/OrzioClashReport.Cli -- \
+  snapshot \
+  --xml samples/sample-clash.xml \
+  --manifest samples/sample-clash.run-manifest.json \
+  -o run-snapshot.json
+```
+
+O comando `snapshot` compõe explicitamente o pipeline real:
+
+1. `NavisworksXmlClashSource` lê o XML.
+2. `JsonRunManifestSource` carrega o manifesto.
+3. `ExactSourceModelCoordinationRunAssembler` monta a `CoordinationRun`.
+4. `JsonCoordinationRunSnapshotSerializer.Save` persiste o snapshot canônico imutável.
+
+Regras do contrato da CLI:
+
+1. `-o`/`--output` é obrigatório.
+2. A CLI não infere nome de ficheiro nem convenção de armazenamento.
+3. A CLI não cria o diretório-pai do output.
+4. Um caminho de output já existente é recusado.
+5. O success summary só é impresso depois que `Save` conclui com sucesso.
+
+Success summary esperado com o fixture real:
+
+```text
+Run snapshot: coordination-sample-clash-xml
+Models: 2
+Executed clash tests: 2
+Occurrences: 5
+Snapshot written to run-snapshot.json
+```
+
+Este comando cria um único snapshot imutável de run. Ele não compara snapshots, não adiciona
+a run a uma coleção ou histórico, não cria ledger, e não persiste matching ou lifecycle:
+essas informações continuam recalculáveis.
+
 Limites honestos desta etapa:
 
-- Ainda não há comando de snapshot na CLI.
+- Já existe criação de snapshot pela CLI; ainda não há carregamento/comparação de snapshots pela CLI.
 - Ainda não há Clash Ledger.
 - Ainda não há travessia de histórico.
 - Ainda não há `Reopened`.

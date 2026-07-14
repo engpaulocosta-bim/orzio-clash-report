@@ -215,8 +215,7 @@ The legacy single-XML HTML command remains supported.
 The compare command receives previous/current XML and manifest paths explicitly; it never infers chronological order from `CreatedAt`, `RunId`, revision, or filenames.
 The CLI is only the composition root: XML source → manifest source → coordination-run assembler → matcher → run comparer → lifecycle classifier.
 `Program.cs` never recreates matching or lifecycle rules.
-Compare mode currently writes a deterministic console summary only.
-No revision-aware HTML is produced yet.
+Compare mode writes the same deterministic eleven-line console summary as before and may optionally write the revision-aware lifecycle HTML with `-o`/`--output`.
 The same run or same file may be supplied in both roles for synthetic smoke testing; this is not sequential real-model validation.
 
 ## Immutable coordination-run JSON snapshots
@@ -225,8 +224,9 @@ A `CoordinationRun` may now be persisted as a deterministic schema-v1 JSON snaps
 `OrzioClashReport.Persistence.RunSnapshotJson` (net8.0, System.Text.Json). The public
 `JsonCoordinationRunSnapshotSerializer` exposes `Serialize`, `Parse`, `Save`, and `Load`.
 This is the single deliberate exception to the "no persistence/history/database" scope gate:
-single-run snapshot persistence exists; run collections, indexes, history traversal, ledgers,
-`Reopened` classification, databases, and any CLI snapshot workflow still do not.
+single-run snapshot persistence and explicit snapshot creation CLI exist; run collections,
+indexes, history traversal, ledgers, `Reopened` classification, databases, and snapshot
+loading/comparison/history CLI workflows still do not.
 
 The snapshot is evidence storage, not a persisted lifecycle decision. It contains
 `RunManifest` facts, declared model revisions, executed-test coverage, ordered occurrence
@@ -244,6 +244,22 @@ overwrites an existing path, and writes UTF-8 without a BOM. Snapshot `schemaVer
 only to the persistence adapter; it is unrelated to the run-manifest `schemaVersion`. The
 persistence adapter depends only on `Core` and never on the XML, run-manifest JSON, HTML, or
 CLI adapters.
+
+## Create-run snapshot CLI
+
+The snapshot subcommand is an explicit composition workflow: Navisworks XML + RunManifest
+JSON -> ExactSourceModelCoordinationRunAssembler -> CoordinationRun ->
+JsonCoordinationRunSnapshotSerializer.Save.
+The command is `orzioclash snapshot --xml <input.xml> --manifest <run-manifest.json> (-o <run-snapshot.json> | --output <run-snapshot.json>)`.
+Output is mandatory and no filename/storage convention is inferred.
+The CLI never constructs RunManifest, ModelRevision, ExecutedClashTest, ClashOccurrence, or
+CoordinationRun manually in snapshot mode.
+The persistence adapter remains the sole authority for snapshot serialization, canonical
+JSON, UTF-8/no-BOM writing, create-new semantics, and overwrite refusal.
+Success output is emitted only after Save succeeds.
+Snapshot mode does not compare runs, load stored snapshots for comparison, persist
+matching/lifecycle, create history, or create a ledger.
+Legacy and compare command contracts remain unchanged.
 
 ## Anti-patterns that fail review
 

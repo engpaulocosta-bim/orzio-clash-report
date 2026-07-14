@@ -13,7 +13,7 @@ namespace OrzioClashReport.Cli
     internal static class Program
     {
         private const string LegacyUsage = "Usage: orzioclash <input.xml> -o <output.html>";
-        private const string CompareUsage = "Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json>";
+        private const string CompareUsage = "Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json> [-o <output.html> | --output <output.html>]";
 
         private static int Main(string[] args)
         {
@@ -101,7 +101,19 @@ namespace OrzioClashReport.Cli
                 IClashLifecycleClassifier lifecycleClassifier = new ConservativeClashLifecycleClassifier();
                 var lifecycleResult = lifecycleClassifier.Classify(matchResult);
 
+                if (options.OutputPath != null)
+                {
+                    string html = new HtmlLifecycleReportRenderer().Render(lifecycleResult);
+                    File.WriteAllText(options.OutputPath, html);
+                }
+
                 WriteComparisonSummary(lifecycleResult);
+
+                if (options.OutputPath != null)
+                {
+                    Console.WriteLine($"Comparison report written to {options.OutputPath}");
+                }
+
                 return 0;
             }
             catch (Exception ex)
@@ -185,6 +197,7 @@ namespace OrzioClashReport.Cli
             string? previousManifestPath = null;
             string? currentXmlPath = null;
             string? currentManifestPath = null;
+            string? outputPath = null;
 
             for (int i = 1; i < args.Length; i++)
             {
@@ -242,6 +255,16 @@ namespace OrzioClashReport.Cli
 
                         currentManifestPath = value;
                         break;
+                    case "-o":
+                    case "--output":
+                        if (outputPath != null)
+                        {
+                            error = "Duplicate option '-o/--output'.";
+                            return false;
+                        }
+
+                        outputPath = value;
+                        break;
                     default:
                         error = $"Unrecognized compare argument '{argument}'.";
                         return false;
@@ -274,7 +297,7 @@ namespace OrzioClashReport.Cli
                 return false;
             }
 
-            options = new CompareCommandOptions(previousXmlPath, previousManifestPath, currentXmlPath, currentManifestPath);
+            options = new CompareCommandOptions(previousXmlPath, previousManifestPath, currentXmlPath, currentManifestPath, outputPath);
             return true;
         }
 
@@ -282,7 +305,9 @@ namespace OrzioClashReport.Cli
             argument == "--previous-xml"
             || argument == "--previous-manifest"
             || argument == "--current-xml"
-            || argument == "--current-manifest";
+            || argument == "--current-manifest"
+            || argument == "-o"
+            || argument == "--output";
 
         private static string? ValidateComparePaths(CompareCommandOptions options)
         {
@@ -311,24 +336,27 @@ namespace OrzioClashReport.Cli
 
         private sealed class CompareCommandOptions
         {
-            public static readonly CompareCommandOptions Empty = new CompareCommandOptions(string.Empty, string.Empty, string.Empty, string.Empty);
+            public static readonly CompareCommandOptions Empty = new CompareCommandOptions(string.Empty, string.Empty, string.Empty, string.Empty, null);
 
             public CompareCommandOptions(
                 string previousXmlPath,
                 string previousManifestPath,
                 string currentXmlPath,
-                string currentManifestPath)
+                string currentManifestPath,
+                string? outputPath)
             {
                 PreviousXmlPath = previousXmlPath;
                 PreviousManifestPath = previousManifestPath;
                 CurrentXmlPath = currentXmlPath;
                 CurrentManifestPath = currentManifestPath;
+                OutputPath = outputPath;
             }
 
             public string PreviousXmlPath { get; }
             public string PreviousManifestPath { get; }
             public string CurrentXmlPath { get; }
             public string CurrentManifestPath { get; }
+            public string? OutputPath { get; }
         }
     }
 }

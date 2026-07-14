@@ -176,6 +176,20 @@ it for the same revision-free model pair (direct or A/B-swapped); this is what l
 occurrence declared test still support `Resolved`/`New`. Raw `ClashStatus` never drives
 lifecycle. `Reopened` requires longer history and is out of scope.
 
+## Revision-aware lifecycle HTML
+
+`HtmlLifecycleReportRenderer` lives in `OrzioClashReport.Output.Html` and consumes
+`ClashLifecycleResult` directly. The renderer presents `Status`, selected-match confidence,
+lifecycle evidence, and match evidence exactly as already produced; it never reclassifies or
+rematches. `ClashLifecycleResult.Entries` order is preserved. The legacy
+`HtmlReportRenderer` / `IReportRenderer` path remains unchanged. The `compare` command may
+optionally write the lifecycle HTML with `-o`/`--output`; without output, its eleven-line
+console summary remains unchanged. Source file path metadata, content hashes, and arbitrary
+`ClashObject.Properties` are not rendered. Source clash GUIDs, when displayed, are labeled
+as evidence only and never as persistent IDs. The HTML is deterministic, self-contained,
+and contains no JavaScript or external assets. No `Reopened` status, stable clash id,
+persistence, or history beyond two runs exists yet.
+
 ## Coordination run assembly
 
 `ICoordinationRunAssembler` converts an already-parsed `ClashReportDocument` plus a

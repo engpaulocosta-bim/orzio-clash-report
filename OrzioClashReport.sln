@@ -19,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{19660F60
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrzioClashReport.Tests", "tests\OrzioClashReport.Tests\OrzioClashReport.Tests.csproj", "{D2C737F5-DE7C-4788-A383-B5285F72B3E5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrzioClashReport.Persistence.RunSnapshotJson", "src\OrzioClashReport.Persistence.RunSnapshotJson\OrzioClashReport.Persistence.RunSnapshotJson.csproj", "{3EB7104B-8B59-4AD3-B600-5D37E0FB9BC7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -52,6 +54,10 @@ Global
 		{D2C737F5-DE7C-4788-A383-B5285F72B3E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D2C737F5-DE7C-4788-A383-B5285F72B3E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D2C737F5-DE7C-4788-A383-B5285F72B3E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EB7104B-8B59-4AD3-B600-5D37E0FB9BC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EB7104B-8B59-4AD3-B600-5D37E0FB9BC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EB7104B-8B59-4AD3-B600-5D37E0FB9BC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EB7104B-8B59-4AD3-B600-5D37E0FB9BC7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{DCC898D6-AF90-4F16-8DD1-944EABA0D939} = {4F5DFCCE-B943-45BD-80E4-5FBDDCD5AE6B}
@@ -60,5 +66,6 @@ Global
 		{8B67C14F-02ED-4E94-9D48-3B2A360A024C} = {4F5DFCCE-B943-45BD-80E4-5FBDDCD5AE6B}
 		{EBA92EEA-66CB-4873-AB13-A50C96AD05F7} = {4F5DFCCE-B943-45BD-80E4-5FBDDCD5AE6B}
 		{D2C737F5-DE7C-4788-A383-B5285F72B3E5} = {19660F60-8A96-4B69-B260-C13ACEED1726}
+		{3EB7104B-8B59-4AD3-B600-5D37E0FB9BC7} = {4F5DFCCE-B943-45BD-80E4-5FBDDCD5AE6B}
 	EndGlobalSection
 EndGlobal

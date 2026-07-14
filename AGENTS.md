@@ -61,7 +61,9 @@ OrzioClashReport.sln
 ├── src/
 │   ├── OrzioClashReport.Core/                netstandard2.0, ZERO third-party deps, nullable ON, warnings-as-errors
 │   ├── OrzioClashReport.Input.NavisworksXml/ netstandard2.0, System.Xml.Linq
+│   ├── OrzioClashReport.Input.RunManifestJson/ net8.0, System.Text.Json, run manifest input adapter
 │   ├── OrzioClashReport.Output.Html/         netstandard2.0, deterministic HTML
+│   ├── OrzioClashReport.Persistence.RunSnapshotJson/ net8.0, System.Text.Json, immutable run snapshot
 │   └── OrzioClashReport.Cli/                 net8.0 console entry point
 ├── tests/
 │   └── OrzioClashReport.Tests/               net8.0, xUnit
@@ -235,6 +237,42 @@ precedence documented at the parser). `samples/sample-clash.run-manifest.json` i
 companion manifest for `samples/sample-clash.xml`, letting the full real pipeline
 (`NavisworksXmlClashSource` → `JsonRunManifestSource` → `ExactSourceModelCoordinationRunAssembler`)
 run end to end in tests.
+
+## Immutable coordination-run JSON snapshots
+
+A `CoordinationRun` may now be persisted as a deterministic schema-v1 JSON snapshot by
+`OrzioClashReport.Persistence.RunSnapshotJson` (`JsonCoordinationRunSnapshotSerializer` with
+`Serialize`/`Parse`/`Save`/`Load`). This is the one deliberate, narrow exception to the
+"no persistence/history/database" scope gate: single-run snapshot persistence exists; run
+collections, indexes, history traversal, ledgers, databases, and any CLI snapshot workflow
+still do not.
+
+- The snapshot is evidence storage, not a persisted lifecycle decision. It contains
+  `RunManifest` facts, declared model revisions, executed-test coverage, ordered occurrence
+  slots, and raw clash/object evidence (including the raw `ClashStatus`).
+- Matching candidates, selected matches, confidence, match evidence, lifecycle
+  entries/evidence/statuses, fingerprints, and persistent clash IDs are never stored in a run
+  snapshot. They are recalculable; freezing them into the evidence layer is forbidden. Raw
+  `ClashStatus.Resolved` is source evidence and is not a lifecycle status.
+- Executed clash tests and occurrences reference the snapshot's `models` array by explicit
+  A/B model indexes. Parsing reuses the exact manifest `ModelRevision` / `ModelIdentity`
+  instances addressed by those indexes.
+- Model, executed-test, occurrence, and path-hierarchy order is preserved; duplicate
+  occurrence slots and A/B orientation are preserved. `ClashObject.Properties` is the only
+  canonicalized collection: property entries are sorted by key with `StringComparer.Ordinal`
+  before serialization.
+- Snapshot JSON property names are exact, case-sensitive camelCase; unknown and duplicate
+  JSON properties are rejected (recursively). Timestamps require an explicit offset or `Z`.
+- `Save` uses `FileMode.CreateNew` semantics and never overwrites an existing path, even with
+  byte-identical content; there is no `--force` and no idempotent overwrite. It writes UTF-8
+  without a BOM, and a serialization failure creates no file.
+- Snapshot `schemaVersion` belongs only to this adapter and is unrelated to the run-manifest
+  `schemaVersion` (the run-manifest adapter is at schema v2). The Core does not know
+  `schemaVersion` exists.
+- The persistence adapter depends only on `Core` and never on the XML, run-manifest JSON,
+  HTML, or CLI adapters. Its `DuplicatePropertyValidator` and
+  `StrictIso8601DateTimeOffsetConverter` are independent copies, not shared with the manifest
+  adapter.
 
 ## Two-run comparison CLI
 

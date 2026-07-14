@@ -73,6 +73,44 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
+        public void Render_RunCards_PreserveDistinctDeclaredRevisions()
+        {
+            var scenario = CreateAllStatusesScenario();
+            var previousRun = scenario.Result.MatchResult.PreviousRun;
+            var currentRun = scenario.Result.MatchResult.CurrentRun;
+
+            Assert.Equal("R04", previousRun.Models[0].Revision);
+            Assert.Equal("R07", previousRun.Models[1].Revision);
+            Assert.Equal("R05", currentRun.Models[0].Revision);
+            Assert.Equal("R08", currentRun.Models[1].Revision);
+
+            Assert.True(previousRun.Models[0].Identity.Equals(currentRun.Models[0].Identity));
+            Assert.True(previousRun.Models[1].Identity.Equals(currentRun.Models[1].Identity));
+
+            var html = new HtmlLifecycleReportRenderer().Render(scenario.Result);
+            string previousBlock = ExtractRunCardBlock(html, "run-card previous-run");
+            string currentBlock = ExtractRunCardBlock(html, "run-card current-run");
+
+            Assert.Contains("Sigma / Structure / Main @ R04", previousBlock, StringComparison.Ordinal);
+            Assert.Contains("Sigma_Main_R04.nwc", previousBlock, StringComparison.Ordinal);
+            Assert.Contains("Alfa / HVAC / Coordination @ R07", previousBlock, StringComparison.Ordinal);
+            Assert.Contains("Alfa_Coordination_R07.nwc", previousBlock, StringComparison.Ordinal);
+            Assert.DoesNotContain("@ R05", previousBlock, StringComparison.Ordinal);
+            Assert.DoesNotContain("@ R08", previousBlock, StringComparison.Ordinal);
+            Assert.DoesNotContain("Sigma_Main_R05.nwc", previousBlock, StringComparison.Ordinal);
+            Assert.DoesNotContain("Alfa_Coordination_R08.nwc", previousBlock, StringComparison.Ordinal);
+
+            Assert.Contains("Sigma / Structure / Main @ R05", currentBlock, StringComparison.Ordinal);
+            Assert.Contains("Sigma_Main_R05.nwc", currentBlock, StringComparison.Ordinal);
+            Assert.Contains("Alfa / HVAC / Coordination @ R08", currentBlock, StringComparison.Ordinal);
+            Assert.Contains("Alfa_Coordination_R08.nwc", currentBlock, StringComparison.Ordinal);
+            Assert.DoesNotContain("@ R04", currentBlock, StringComparison.Ordinal);
+            Assert.DoesNotContain("@ R07", currentBlock, StringComparison.Ordinal);
+            Assert.DoesNotContain("Sigma_Main_R04.nwc", currentBlock, StringComparison.Ordinal);
+            Assert.DoesNotContain("Alfa_Coordination_R07.nwc", currentBlock, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void Render_SelectedAndUnmatchedEntries_ShowExpectedSections()
         {
             var scenario = CreateAllStatusesScenario();
@@ -153,18 +191,32 @@ namespace OrzioClashReport.Tests
                 : html.Substring(sectionStart);
         }
 
+        private static string ExtractRunCardBlock(string html, string cssClass)
+        {
+            string marker = "<article class=\"" + cssClass + "\">";
+            int startIndex = html.IndexOf(marker, StringComparison.Ordinal);
+            Assert.True(startIndex >= 0);
+
+            int endIndex = html.IndexOf("</article>", startIndex, StringComparison.Ordinal);
+            Assert.True(endIndex >= 0);
+
+            return html.Substring(startIndex, endIndex + "</article>".Length - startIndex);
+        }
+
         private static LifecycleScenario CreateAllStatusesScenario()
         {
-            var sigma = MakeRevision("Sigma", "Structure", "Main", "R04", "Sigma_Main_R04.nwc");
-            var alfa = MakeRevision("Alfa", "HVAC", "Coordination", "R07", "Alfa_Coordination_R07.nwc");
+            var previousSigma = MakeRevision("Sigma", "Structure", "Main", "R04", "Sigma_Main_R04.nwc");
+            var previousAlfa = MakeRevision("Alfa", "HVAC", "Coordination", "R07", "Alfa_Coordination_R07.nwc");
+            var currentSigma = MakeRevision("Sigma", "Structure", "Main", "R05", "Sigma_Main_R05.nwc");
+            var currentAlfa = MakeRevision("Alfa", "HVAC", "Coordination", "R08", "Alfa_Coordination_R08.nwc");
 
             var previousOccurrences = new[]
             {
                 MakeOccurrence(
                     "Coordination Test",
                     "Still Open Clash",
-                    sigma,
-                    alfa,
+                    previousSigma,
+                    previousAlfa,
                     "P0-A",
                     "P0-B",
                     elementNameA: "Beam 01",
@@ -177,8 +229,8 @@ namespace OrzioClashReport.Tests
                 MakeOccurrence(
                     "Coordination Test",
                     "Resolved Clash",
-                    sigma,
-                    alfa,
+                    previousSigma,
+                    previousAlfa,
                     "P1-A",
                     "P1-B",
                     elementNameA: "Beam 02",
@@ -191,8 +243,8 @@ namespace OrzioClashReport.Tests
                 MakeOccurrence(
                     "Coordination Test",
                     "Unverifiable Clash",
-                    sigma,
-                    alfa,
+                    previousSigma,
+                    previousAlfa,
                     "P2-A",
                     "P2-B",
                     elementNameA: "Beam 03",
@@ -209,8 +261,8 @@ namespace OrzioClashReport.Tests
                 MakeOccurrence(
                     "Coordination Test",
                     "Still Open Clash Current",
-                    sigma,
-                    alfa,
+                    currentSigma,
+                    currentAlfa,
                     "P0-A",
                     "P0-B",
                     elementNameA: "Beam 01",
@@ -223,8 +275,8 @@ namespace OrzioClashReport.Tests
                 MakeOccurrence(
                     "Coordination Test",
                     "New Clash",
-                    sigma,
-                    alfa,
+                    currentSigma,
+                    currentAlfa,
                     "C1-A",
                     "C1-B",
                     elementNameA: "Beam 04",
@@ -237,8 +289,8 @@ namespace OrzioClashReport.Tests
                 MakeOccurrence(
                     "Coordination Test",
                     "Unverifiable Clash Current",
-                    sigma,
-                    alfa,
+                    currentSigma,
+                    currentAlfa,
                     "C2-A",
                     "C2-B",
                     elementNameA: "Beam 05",
@@ -250,9 +302,10 @@ namespace OrzioClashReport.Tests
                     point: new ClashPoint(9.111, 8.222, 7.333)),
             };
 
-            var executedTests = new[] { new ExecutedClashTest("Coordination Test", sigma.Identity, alfa.Identity) };
-            var previousRun = MakeRun("previous-run", PreviousCreatedAt, new[] { sigma, alfa }, executedTests, previousOccurrences);
-            var currentRun = MakeRun("current-run", CurrentCreatedAt, new[] { sigma, alfa }, executedTests, currentOccurrences);
+            var previousExecutedTests = new[] { new ExecutedClashTest("Coordination Test", previousSigma.Identity, previousAlfa.Identity) };
+            var currentExecutedTests = new[] { new ExecutedClashTest("Coordination Test", currentSigma.Identity, currentAlfa.Identity) };
+            var previousRun = MakeRun("previous-run", PreviousCreatedAt, new[] { previousSigma, previousAlfa }, previousExecutedTests, previousOccurrences);
+            var currentRun = MakeRun("current-run", CurrentCreatedAt, new[] { currentSigma, currentAlfa }, currentExecutedTests, currentOccurrences);
 
             var matcher = new ConfigurableClashMatcher();
             matcher.RespondWith(

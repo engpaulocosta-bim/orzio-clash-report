@@ -1,7 +1,9 @@
 # OrzioClashReport
 
-Lê clashes exportados do Navisworks Clash Detective e gera um relatório de coordenação em
-HTML, agrupado por clash test, par de disciplinas e nível.
+Lê clashes exportados do Navisworks Clash Detective e suporta dois fluxos complementares:
+um relatório HTML de uma única run, agrupado por clash test, par de disciplinas e nível, e
+uma comparação revision-aware entre duas coordination runs com summary determinístico no
+console e HTML lifecycle opcional.
 
 ## Arquitetura
 
@@ -39,8 +41,9 @@ Abra o `report.html` gerado em qualquer navegador — é um arquivo único e aut
 
 ## Comparar duas coordination runs
 
-O comando `compare` recebe explicitamente os papéis previous/current e produz apenas um
-resumo determinístico no console nesta etapa:
+O comando `compare` recebe explicitamente os papéis previous/current. Sem output, ele
+produz o mesmo resumo determinístico no console. Com `-o`/`--output`, ele escreve esse
+mesmo resumo e também gera um HTML revision-aware autocontido:
 
 ```bash
 dotnet run --project src/OrzioClashReport.Cli -- \
@@ -48,7 +51,8 @@ dotnet run --project src/OrzioClashReport.Cli -- \
   --previous-xml <previous.xml> \
   --previous-manifest <previous.json> \
   --current-xml <current.xml> \
-  --current-manifest <current.json>
+  --current-manifest <current.json> \
+  -o comparison.html
 ```
 
 O pipeline composto pela CLI é:
@@ -62,9 +66,30 @@ O pipeline composto pela CLI é:
 7. `DeterministicClashRunComparer` seleciona um subconjunto one-to-one determinístico.
 8. `ConservativeClashLifecycleClassifier` produz os statuses finais.
 9. O console mostra contagens determinísticas de candidates, matches e lifecycle.
-10. Ainda não existe HTML revision-aware para esse fluxo.
+10. `-o`/`--output` é opcional: sem output, só há summary; com output, o mesmo summary é
+    seguido por um HTML lifecycle revision-aware.
 11. Ainda não existe persistência de runs ou histórico.
 12. Comparar o mesmo fixture nos dois lados é apenas um smoke sintético, não validação sequencial real.
+
+O HTML revision-aware apresenta:
+
+1. metadados das runs previous/current;
+2. revisões de modelo declaradas no manifesto;
+3. lifecycle summary;
+4. matching summary;
+5. um card por `ClashLifecycleEntry`;
+6. evidências de ocorrência previous/current;
+7. confidence do selected match;
+8. lifecycle evidence;
+9. match evidence.
+
+Limites importantes do fluxo revision-aware:
+
+1. `High` confidence não é confirmação humana.
+2. Source clash GUID aparece somente como evidência, não como stable identity.
+3. Ainda não existe `Reopened`.
+4. Ainda não existe persistent clash id.
+5. Ainda não existe storage nem histórico além de duas runs.
 
 ### Identidade de um grupo
 
@@ -101,10 +126,11 @@ para os testes de parsing e agrupamento. Veja [samples/README.md](samples/README
 
 - **Compila**: `dotnet build -c Release` passa sem avisos.
 - **Roda**: `dotnet test -c Release` está verde e a CLI gera HTML a partir dos fixtures em
-  `samples/`.
+  `samples/`, incluindo o smoke sintético do compare com HTML lifecycle.
 - **Validado em modelo real**: ainda não. Esta validação só pode ser feita por um humano,
   rodando a ferramenta contra um export real (anonimizado) do Clash Detective e conferindo
-  se o relatório agrupado corresponde à realidade do projeto.
+  se o relatório agrupado corresponde à realidade do projeto. O fluxo revision-aware ainda
+  não foi validado contra exports sequenciais reais.
 
 ## CI
 

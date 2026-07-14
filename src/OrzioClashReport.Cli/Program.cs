@@ -7,6 +7,7 @@ using OrzioClashReport.Core.Model;
 using OrzioClashReport.Input.NavisworksXml;
 using OrzioClashReport.Input.RunManifestJson;
 using OrzioClashReport.Output.Html;
+using OrzioClashReport.Persistence.RunSnapshotJson;
 
 namespace OrzioClashReport.Cli
 {
@@ -14,12 +15,18 @@ namespace OrzioClashReport.Cli
     {
         private const string LegacyUsage = "Usage: orzioclash <input.xml> -o <output.html>";
         private const string CompareUsage = "Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json> [-o <output.html> | --output <output.html>]";
+        private const string SnapshotUsage = "Usage: orzioclash snapshot --xml <input.xml> --manifest <run-manifest.json> (-o <run-snapshot.json> | --output <run-snapshot.json>)";
 
         private static int Main(string[] args)
         {
             if (args.Length > 0 && string.Equals(args[0], "compare", StringComparison.OrdinalIgnoreCase))
             {
                 return RunCompare(args);
+            }
+
+            if (args.Length > 0 && string.Equals(args[0], "snapshot", StringComparison.OrdinalIgnoreCase))
+            {
+                return RunSnapshot(args);
             }
 
             return RunLegacyReport(args);
@@ -119,6 +126,52 @@ namespace OrzioClashReport.Cli
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Failed to compare runs: {ex.Message}");
+                return 1;
+            }
+        }
+
+        private static int RunSnapshot(string[] args)
+        {
+            if (!TryParseSnapshotArguments(args, out SnapshotCommandOptions options, out string parseError))
+            {
+                Console.Error.WriteLine(parseError);
+                Console.Error.WriteLine(SnapshotUsage);
+                return 1;
+            }
+
+            string? missingPathError = ValidateSnapshotInputPaths(options);
+            if (missingPathError != null)
+            {
+                Console.Error.WriteLine(missingPathError);
+                return 1;
+            }
+
+            var log = new ConsoleAppLog();
+
+            try
+            {
+                IClashSource source = new NavisworksXmlClashSource(options.XmlPath, log);
+                var document = source.Read();
+
+                var manifestSource = new JsonRunManifestSource();
+                var manifest = manifestSource.Load(options.ManifestPath);
+
+                ICoordinationRunAssembler assembler = new ExactSourceModelCoordinationRunAssembler();
+                var run = assembler.Assemble(document, manifest);
+
+                var serializer = new JsonCoordinationRunSnapshotSerializer();
+                serializer.Save(run, options.OutputPath);
+
+                Console.WriteLine($"Run snapshot: {run.RunId}");
+                Console.WriteLine($"Models: {run.Models.Count}");
+                Console.WriteLine($"Executed clash tests: {run.ExecutedClashTests.Count}");
+                Console.WriteLine($"Occurrences: {run.Occurrences.Count}");
+                Console.WriteLine($"Snapshot written to {options.OutputPath}");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create run snapshot: {ex.Message}");
                 return 1;
             }
         }
@@ -301,11 +354,105 @@ namespace OrzioClashReport.Cli
             return true;
         }
 
+        private static bool TryParseSnapshotArguments(
+            string[] args, out SnapshotCommandOptions options, out string error)
+        {
+            options = SnapshotCommandOptions.Empty;
+            error = string.Empty;
+
+            string? xmlPath = null;
+            string? manifestPath = null;
+            string? outputPath = null;
+
+            for (int i = 1; i < args.Length; i++)
+            {
+                string argument = args[i];
+                if (!IsRecognizedSnapshotOption(argument))
+                {
+                    error = $"Unrecognized snapshot argument '{argument}'.";
+                    return false;
+                }
+
+                if (i + 1 >= args.Length
+                    || string.IsNullOrWhiteSpace(args[i + 1])
+                    || IsRecognizedSnapshotOption(args[i + 1]))
+                {
+                    error = $"Missing value for '{argument}'.";
+                    return false;
+                }
+
+                string value = args[i + 1];
+                switch (argument)
+                {
+                    case "--xml":
+                        if (xmlPath != null)
+                        {
+                            error = "Duplicate option '--xml'.";
+                            return false;
+                        }
+
+                        xmlPath = value;
+                        break;
+                    case "--manifest":
+                        if (manifestPath != null)
+                        {
+                            error = "Duplicate option '--manifest'.";
+                            return false;
+                        }
+
+                        manifestPath = value;
+                        break;
+                    case "-o":
+                    case "--output":
+                        if (outputPath != null)
+                        {
+                            error = "Duplicate option '-o/--output'.";
+                            return false;
+                        }
+
+                        outputPath = value;
+                        break;
+                    default:
+                        error = $"Unrecognized snapshot argument '{argument}'.";
+                        return false;
+                }
+
+                i++;
+            }
+
+            if (xmlPath == null)
+            {
+                error = "Missing required option '--xml'.";
+                return false;
+            }
+
+            if (manifestPath == null)
+            {
+                error = "Missing required option '--manifest'.";
+                return false;
+            }
+
+            if (outputPath == null)
+            {
+                error = "Missing required option '-o/--output'.";
+                return false;
+            }
+
+            options = new SnapshotCommandOptions(xmlPath, manifestPath, outputPath);
+            return true;
+        }
+
         private static bool IsRecognizedCompareOption(string argument) =>
             argument == "--previous-xml"
             || argument == "--previous-manifest"
             || argument == "--current-xml"
             || argument == "--current-manifest"
+            || argument == "-o"
+            || argument == "--output";
+
+        private static bool IsRecognizedSnapshotOption(string argument) =>
+            argument == "--xml"
+            || argument == "--manifest"
             || argument == "-o"
             || argument == "--output";
 
@@ -334,6 +481,21 @@ namespace OrzioClashReport.Cli
             return null;
         }
 
+        private static string? ValidateSnapshotInputPaths(SnapshotCommandOptions options)
+        {
+            if (!File.Exists(options.XmlPath))
+            {
+                return $"Snapshot XML file not found: {options.XmlPath}";
+            }
+
+            if (!File.Exists(options.ManifestPath))
+            {
+                return $"Snapshot manifest file not found: {options.ManifestPath}";
+            }
+
+            return null;
+        }
+
         private sealed class CompareCommandOptions
         {
             public static readonly CompareCommandOptions Empty = new CompareCommandOptions(string.Empty, string.Empty, string.Empty, string.Empty, null);
@@ -357,6 +519,22 @@ namespace OrzioClashReport.Cli
             public string CurrentXmlPath { get; }
             public string CurrentManifestPath { get; }
             public string? OutputPath { get; }
+        }
+
+        private sealed class SnapshotCommandOptions
+        {
+            public static readonly SnapshotCommandOptions Empty = new SnapshotCommandOptions(string.Empty, string.Empty, string.Empty);
+
+            public SnapshotCommandOptions(string xmlPath, string manifestPath, string outputPath)
+            {
+                XmlPath = xmlPath;
+                ManifestPath = manifestPath;
+                OutputPath = outputPath;
+            }
+
+            public string XmlPath { get; }
+            public string ManifestPath { get; }
+            public string OutputPath { get; }
         }
     }
 }

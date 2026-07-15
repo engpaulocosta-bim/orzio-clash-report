@@ -224,9 +224,10 @@ A `CoordinationRun` may now be persisted as a deterministic schema-v1 JSON snaps
 `OrzioClashReport.Persistence.RunSnapshotJson` (net8.0, System.Text.Json). The public
 `JsonCoordinationRunSnapshotSerializer` exposes `Serialize`, `Parse`, `Save`, and `Load`.
 This is the single deliberate exception to the "no persistence/history/database" scope gate:
-single-run snapshot persistence, explicit snapshot creation CLI, and explicit
-snapshot-to-snapshot comparison CLI exist; run collections, indexes, history traversal,
-ledgers, `Reopened` classification, and databases still do not.
+single-run snapshot persistence, explicit snapshot creation CLI, explicit
+snapshot-to-snapshot comparison CLI, and explicit ordered run-index persistence CLI exist;
+run collections, automatic index consumption, history traversal, ledgers, `Reopened`
+classification, and databases still do not.
 
 The snapshot is evidence storage, not a persisted lifecycle decision. It contains
 `RunManifest` facts, declared model revisions, executed-test coverage, ordered occurrence
@@ -279,6 +280,32 @@ for synthetic smoke testing; that is not sequential real-model validation.
 Matching and lifecycle are recalculated from immutable evidence every time; they are never
 loaded from persisted derived state. `compare-snapshots` does not create a run collection,
 index, history traversal, ledger, `Reopened`, or persistent clash ID.
+
+## Ordered run index JSON
+
+`OrzioClashReport.Persistence.RunIndexJson` owns a strict deterministic schema-v1 JSON
+format for an ordered collection of persisted run-snapshot path references. The format
+contains only `schemaVersion` and ordered `snapshotPaths`; it never duplicates run headers,
+model revisions, clash evidence, matching, lifecycle, `Reopened`, or persistent clash IDs.
+The stored references are canonical, relative to the run-index file directory, and always
+persisted with `/` separators. Order is an explicit declaration and is never inferred from
+`CreatedAt`, `RunId`, revisions, filenames, or filesystem metadata. Duplicate references are
+preserved exactly as declared.
+
+## Create ordered run index CLI
+
+The `index-snapshots` subcommand is an explicit composition workflow:
+ordered `--snapshot` CLI paths ->
+`JsonCoordinationRunSnapshotSerializer.Load` for each supplied snapshot ->
+`RunIndexSnapshotPathResolver.CreateReference` ->
+`RunIndexDocument` ->
+`JsonRunIndexSerializer.Save`.
+The command is `orzioclash index-snapshots --snapshot <run-snapshot.json> [--snapshot <run-snapshot.json> ...] (-o <run-index.json> | --output <run-index.json>)`.
+CLI order is the only source of index order; there is no automatic discovery, chronology
+inference, latest/previous lookup, run-index consumption CLI, history traversal, ledger,
+`Reopened`, or persistent clash ID. The snapshots remain the authority for immutable run
+evidence, and matching/lifecycle remain recalculable instead of being persisted into the
+index.
 
 ## Anti-patterns that fail review
 

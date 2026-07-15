@@ -357,6 +357,50 @@ pairwise lifecycle results: no history, no multi-run lifecycle, no persistent cl
 no Clash Ledger, no `Reopened`. `compare-index` is the only current consumer; `compare` and
 `compare-snapshots` remain pairwise via the existing `CreateDerivedComparison` helper.
 
+## Selected-match continuity projection (Core-only, not yet wired into any CLI)
+
+`IClashRunSequenceContinuityProjector` projects an already-derived
+`ClashRunSequenceComparisonResult` onto the set of `SelectedMatchContinuityLink`s at its
+consecutive comparison boundaries: at boundary `i` (between `Comparisons[i]` and
+`Comparisons[i + 1]`, sharing the run at `Runs[i + 1]`), a link exists wherever a selected
+match's `CurrentIndex` enters an occurrence slot and a selected match's `PreviousIndex`
+leaves the exact same slot. The projector calls no `IClashMatcher`, `IClashRunComparer`,
+`IClashLifecycleClassifier`, or `IClashRunSequenceComparer`, and knows nothing about
+run-index JSON or snapshot files.
+
+`DeterministicSelectedMatchContinuityProjector` is the sole current implementation, with a
+public parameterless constructor (no dependencies). It considers only
+`ClashRunMatchResult.SelectedMatches` -- `Candidates`, `AlternativeCandidates`,
+`UnmatchedPrevious`, and `UnmatchedCurrent` never create a link, and a selected match's
+`ClashLifecycleStatus` (even `Unverifiable`) never filters the projection. Only consecutive
+boundaries are considered -- never `[0]` to `[2]`, never non-adjacent, never sorted or
+deduplicated (duplicate run references and duplicate `RunId` values are preserved as-is).
+
+`SelectedMatchContinuityLink` observes only that a selected match enters an exact
+occurrence slot of a shared run and another selected match leaves the exact same slot
+through the immediately following comparison. It stores `IncomingComparisonIndex` and
+`SharedOccurrenceIndex`; `OutgoingComparisonIndex` and `SharedRunIndex` are derived
+(`IncomingComparisonIndex + 1`). It requires exact object-reference continuity -- a
+value-shaped-equivalent occurrence at a different slot never satisfies it -- and carries no
+identifier, fingerprint, status, or aggregated confidence.
+
+`ClashRunSequenceContinuityResult` is the immutable output: the exact `SequenceComparison`
+reference plus the complete, canonically ordered (`IncomingComparisonIndex` ascending, then
+`SharedOccurrenceIndex` ascending) set of `Links`. It independently re-validates every
+link's exact selected-match membership (never an alternative candidate, never an
+equivalent-but-distinct object), shared-run reference, shared-slot continuity, and
+completeness against the sequence comparison alone, rejecting a missing link, an extra
+link, a duplicate link, or any non-canonical order as a single structural check -- never
+rematching.
+
+This is the smallest possible longitudinal observation: a link never asserts the underlying
+clash is the same clash, and there is no chain assembly, track assembly, or transitive
+identity across non-adjacent boundaries. No persistent or stable clash identity, no
+fingerprinting, no Clash Ledger, no `Reopened`. Links are derived and recalculable, never
+persisted. No CLI command and no HTML renderer consumes this projection yet --
+`compare-index` stdout is unchanged and `Program.cs` is untouched by it. Sequential real
+Navisworks export validation remains unverified.
+
 ## Anti-patterns that fail review
 
 - Core with a `using System.Xml.Linq`, a Navisworks reference, or any HTML string.

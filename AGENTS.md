@@ -393,6 +393,60 @@ identity, no Clash Ledger, and no `Reopened`. `compare-index` is the only curren
 `compare` and `compare-snapshots` remain pairwise and continue using the existing
 `CreateDerivedComparison` helper in `Program.cs`, not this sequence comparer.
 
+## Selected-match continuity projection (Core-only, not yet wired into any CLI)
+
+`IClashRunSequenceContinuityProjector` (`src/OrzioClashReport.Core/Abstractions/IClashRunSequenceContinuityProjector.cs`)
+projects an already-derived `ClashRunSequenceComparisonResult` onto the set of
+`SelectedMatchContinuityLink`s that exist at its consecutive comparison boundaries: for
+boundary `i` (between `Comparisons[i]` and `Comparisons[i + 1]`, sharing the run at
+`Runs[i + 1]`), a link exists wherever a selected match's `CurrentIndex` enters an
+occurrence slot and a selected match's `PreviousIndex` leaves the exact same slot. The
+projector does not know run-index JSON, does not load snapshots, and calls no
+`IClashMatcher`, `IClashRunComparer`, `IClashLifecycleClassifier`, or
+`IClashRunSequenceComparer` -- matching, run comparison, lifecycle classification, and
+sequence comparison have already happened by the time it runs.
+
+`DeterministicSelectedMatchContinuityProjector` (`src/OrzioClashReport.Core/Continuity/DeterministicSelectedMatchContinuityProjector.cs`)
+is the sole current implementation, with a public parameterless constructor (no
+dependencies at all). It considers only `ClashRunMatchResult.SelectedMatches` --
+`Candidates`, `AlternativeCandidates`, `UnmatchedPrevious`, and `UnmatchedCurrent` never
+create a link, and neither does a selected match's `ClashLifecycleStatus` (a selected match
+classified `Unverifiable` may still produce a link; lifecycle status is never used as a
+filter). Only consecutive boundaries are considered -- there is no non-adjacent or `[0]` to
+`[2]`-style comparison, and no run is ever compared against a run it is not immediately
+adjacent to. Duplicate run references and duplicate `RunId` values are never deduplicated.
+
+`SelectedMatchContinuityLink` (`src/OrzioClashReport.Core/Model/SelectedMatchContinuityLink.cs`)
+observes only that one selected match enters an exact occurrence slot of a shared run and
+another selected match leaves that exact same slot through the immediately following
+comparison. It stores `IncomingComparisonIndex` and `SharedOccurrenceIndex`; `OutgoingComparisonIndex`
+and `SharedRunIndex` are derived (`IncomingComparisonIndex + 1` in both cases). It validates
+exact slot and exact object-reference continuity between the two selected matches and the
+shared occurrence -- value-shaped equivalence at a different slot never satisfies it. It
+carries no identifier, fingerprint, status, or aggregated confidence.
+
+`ClashRunSequenceContinuityResult` (`src/OrzioClashReport.Core/Model/ClashRunSequenceContinuityResult.cs`)
+is the immutable output: the exact `SequenceComparison` reference plus the complete,
+canonically ordered (`IncomingComparisonIndex` ascending, then `SharedOccurrenceIndex`
+ascending) set of `Links`. It independently re-validates every link's membership (exact
+selected-match reference, never an alternative or an equivalent-but-distinct object),
+shared-run reference, shared-slot continuity, and completeness -- it recomputes, from
+`SequenceComparison` alone, the full expected set of (boundary, slot) pairs and requires
+`Links` to match it exactly, position for position, which is what rejects a missing link,
+an extra link, a duplicate link, and any non-canonical order all at once. This is
+structural validation, never rematching.
+
+This is the smallest possible longitudinal observation and stops well short of clash
+identity: a link never asserts that the underlying clash is the same clash, and there is no
+chain assembly, no track assembly, no transitive identity across non-adjacent boundaries
+(a link at boundary 0 and a link at boundary 1 through different shared runs are always
+independent list entries, never connected into a chain/track/history record), no
+persistent or stable clash identity, no fingerprinting, no Clash Ledger, and no `Reopened`.
+Links are derived and fully recalculable; they are never persisted. No CLI command and no
+HTML renderer consumes this projection yet -- `compare-index`'s stdout is unchanged, and
+`Program.cs` is untouched by this projection. Sequential real Navisworks export validation
+remains unverified.
+
 ## Two-run comparison CLI
 
 The legacy single-XML HTML command remains supported.

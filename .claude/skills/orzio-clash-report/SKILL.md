@@ -318,21 +318,44 @@ ordered `RunIndexDocument.SnapshotPaths` ->
 `RunIndexSnapshotPathResolver.ResolveReference` for every entry ->
 `JsonCoordinationRunSnapshotSerializer.Load` for every resolved snapshot ->
 ordered `CoordinationRun` list ->
-adjacent pairs `[i] -> [i + 1]` only ->
-`ConservativeClashMatcher` ->
-`DeterministicClashRunComparer` ->
-`ConservativeClashLifecycleClassifier` ->
+`DeterministicAdjacentClashRunSequenceComparer.Compare` (adjacent pairs `[i] -> [i + 1]` only,
+via `ConservativeClashMatcher` -> `DeterministicClashRunComparer` ->
+`ConservativeClashLifecycleClassifier` for each pair) ->
+`ClashRunSequenceComparisonResult` ->
 the existing deterministic eleven-line pairwise summary reused once per adjacent transition.
 The command is `orzioclash compare-index --index <run-index.json>`.
 The run-index order remains the sole sequence authority: the CLI never reorders by
 `CreatedAt`, `RunId`, revision, filename, or filesystem metadata. Duplicate references are
 preserved exactly as declared, so adjacent duplicate snapshots remain valid comparisons.
-Every snapshot is loaded before output, every adjacent comparison is computed before output,
-and the command is console-only in this stage: no `-o`/`--output`, no lifecycle HTML, no
-history JSON, and no persisted derived state. Explicit ordered index consumption and
-adjacent-pair traversal now exist; automatic discovery, chronology inference,
-latest/previous lookup, non-adjacent/all-vs-all comparison, multi-run lifecycle, Clash
-Ledger, `Reopened`, and persistent clash identity still do not.
+Every snapshot is loaded before output, the Core sequence comparer computes every adjacent
+comparison before output, and the command is console-only in this stage: no `-o`/`--output`,
+no lifecycle HTML, no history JSON, and no persisted derived state. Explicit ordered index
+consumption and adjacent-pair traversal now exist; automatic discovery, chronology
+inference, latest/previous lookup, non-adjacent/all-vs-all comparison, multi-run lifecycle,
+Clash Ledger, `Reopened`, and persistent clash identity still do not.
+
+## Adjacent run sequence comparer (Core)
+
+`IClashRunSequenceComparer` formalizes, in Core, the adjacent-traversal orchestration that
+previously lived directly in `Program.cs`'s `compare-index` loop. It takes an already
+explicitly ordered `IReadOnlyList<CoordinationRun>` -- caller order is authoritative, and the
+Core does not know about run-index JSON or any other persistence format -- and compares only
+`[i] -> [i + 1]` pairs, never non-adjacent or reversed pairs, never sorting or deduplicating
+runs. `DeterministicAdjacentClashRunSequenceComparer` is the sole current implementation: its
+constructor takes an `IClashRunComparer` and an `IClashLifecycleClassifier`, and for each
+adjacent pair it calls the injected run comparer then the injected lifecycle classifier, with
+no cross-transition propagation of selected matches, confidence, or evidence. It requires at
+least two runs, rejects a `null` sequence or any `null` entry, preserves duplicate run
+references (e.g. `A, A, B`), and is fail-fast: an exception from either injected dependency
+on any pair propagates immediately with no partial result returned.
+`ClashRunSequenceComparisonResult` is the immutable output: the ordered `Runs` plus one
+`ClashLifecycleResult` per adjacent transition in `Comparisons`. It validates only structural
+continuity -- each `Comparisons[i]` must reference `Runs[i]`/`Runs[i + 1]` by exact object
+reference, never by `RunId`, `CreatedAt`, or value equality -- and never recomputes matching
+or lifecycle. It represents only an ordered collection of independently recalculated adjacent
+pairwise lifecycle results: no history, no multi-run lifecycle, no persistent clash identity,
+no Clash Ledger, no `Reopened`. `compare-index` is the only current consumer; `compare` and
+`compare-snapshots` remain pairwise via the existing `CreateDerivedComparison` helper.
 
 ## Anti-patterns that fail review
 

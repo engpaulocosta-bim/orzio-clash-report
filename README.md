@@ -125,7 +125,9 @@ Regras do contrato:
 4. Cada referência é resolvida por `RunIndexSnapshotPathResolver.ResolveReference`.
 5. Cada snapshot resolvido é carregado por `JsonCoordinationRunSnapshotSerializer.Load`.
 6. Todos os snapshots são carregados antes de qualquer output.
-7. Todas as comparações adjacentes são calculadas antes de qualquer output.
+7. A travessia adjacente é feita pelo Core, por
+   `DeterministicAdjacentClashRunSequenceComparer` (ver "Comparador de sequência de runs
+   adjacentes" abaixo), que calcula todas as comparações adjacentes antes de qualquer output.
 8. Os pares são exatamente `[i] -> [i + 1]`, preservando duplicados e a ordem declarada.
 9. Matching e lifecycle são recalculados independentemente para cada transição adjacente.
 10. O comando reutiliza o mesmo summary pairwise determinístico de 11 linhas já usado por
@@ -133,6 +135,34 @@ Regras do contrato:
 11. `compare-index` é console-only nesta etapa: não aceita `-o`/`--output` e não gera HTML.
 12. Não há discovery automático, inferência cronológica, latest/previous lookup,
     comparação non-adjacent, all-vs-all, Clash Ledger, `Reopened` nem persistent clash ID.
+
+### Comparador de sequência de runs adjacentes (Core)
+
+`IClashRunSequenceComparer` (`src/OrzioClashReport.Core/Abstractions/IClashRunSequenceComparer.cs`)
+formaliza no Core a travessia adjacente que antes vivia diretamente no loop do `compare-index`
+em `Program.cs`. Ele recebe uma `IReadOnlyList<CoordinationRun>` já explicitamente ordenada
+pelo chamador — o Core não conhece run-index JSON nem qualquer outro formato de persistência
+— e compara somente pares `[i] -> [i + 1]`, nunca pares non-adjacent ou invertidos.
+
+`DeterministicAdjacentClashRunSequenceComparer` é a única implementação atual. O construtor
+recebe um `IClashRunComparer` e um `IClashLifecycleClassifier`; para cada par adjacente ele
+chama o run comparer injetado e depois o lifecycle classifier injetado, sem propagar match
+selecionado, confiança ou evidência de uma transição para a próxima. Exige pelo menos duas
+runs, rejeita qualquer entrada nula e rejeita uma sequência nula. Referências duplicadas de
+run (por exemplo `A, A, B`) são preservadas, nunca deduplicadas. A travessia é síncrona,
+sequencial e fail-fast: uma exceção de qualquer dependência injetada em qualquer par se
+propaga imediatamente, e nenhum `ClashRunSequenceComparisonResult` parcial é retornado.
+
+`ClashRunSequenceComparisonResult` é o resultado imutável: as `Runs` ordenadas mais um
+`ClashLifecycleResult` por transição adjacente em `Comparisons`, na mesma ordem. Ele valida
+somente continuidade estrutural — cada `Comparisons[i]` precisa referenciar `Runs[i]` e
+`Runs[i + 1]` por **exact object reference** (não `RunId`, não `CreatedAt`, não value
+equality) como seus lados previous/current — e nunca recalcula matching ou lifecycle.
+Representa apenas uma coleção ordenada de resultados lifecycle pairwise adjacentes
+recalculados independentemente: não cria history, lifecycle multi-run, persistent clash
+identity, Clash Ledger nem `Reopened`. `compare-index` é o único consumidor atual; `compare`
+e `compare-snapshots` continuam pairwise, usando o helper `CreateDerivedComparison` já
+existente em `Program.cs`, não este sequence comparer.
 
 O HTML revision-aware apresenta:
 
@@ -483,6 +513,9 @@ Limites honestos desta etapa:
   de run index ordenado e consumo explícito desse índice para traversal adjacente; a ordem
   do índice continua sendo a única autoridade de sequência, e todos os snapshots /
   comparações são carregados e calculados antes do primeiro output.
+- A travessia adjacente do `compare-index` agora é formalizada no Core por
+  `IClashRunSequenceComparer`/`DeterministicAdjacentClashRunSequenceComparer`, que produz um
+  `ClashRunSequenceComparisonResult`; o stdout do `compare-index` permanece byte-a-byte igual.
 - Ainda não há discovery automático, inferência cronológica, latest/previous lookup,
   comparação non-adjacent, all-vs-all, lifecycle multi-run ou derived state persistido.
 - Ainda não há Clash Ledger.

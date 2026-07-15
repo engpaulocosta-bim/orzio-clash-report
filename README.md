@@ -69,9 +69,26 @@ O pipeline composto pela CLI é:
 10. `-o`/`--output` é opcional: sem output, só há summary; com output, o mesmo summary é
     seguido por um HTML lifecycle revision-aware.
 11. Persistência de snapshot de uma única run já existe (ver "Snapshot imutável de uma
-    coordination run" abaixo); ledger, índice de runs e histórico ainda não existem, e o
-    `compare` ainda não salva nem carrega snapshots automaticamente.
+    coordination run" abaixo), e snapshots persistidos agora podem ser comparados
+    explicitamente pela CLI via `compare-snapshots`; ledger, índice de runs e histórico
+    ainda não existem, e a CLI não descobre snapshots automaticamente.
 12. Comparar o mesmo fixture nos dois lados é apenas um smoke sintético, não validação sequencial real.
+
+Comparar dois snapshots persistidos, sem reprocessar XML nem reler manifestos:
+
+```bash
+dotnet run --project src/OrzioClashReport.Cli -- \
+  compare-snapshots \
+  --previous-snapshot <previous.json> \
+  --current-snapshot <current.json> \
+  -o comparison.html
+```
+
+Este fluxo carrega dois `CoordinationRun` snapshots persistidos, preserva os papéis
+explícitos previous/current exatamente como vieram da linha de comando, recalcula matching
+e lifecycle a partir da evidência imutável, e opcionalmente escreve o mesmo HTML
+revision-aware do comando `compare`. Ele não cria run collection, run index, history
+traversal, ledger, `Reopened` nem persistent clash ID.
 
 O HTML revision-aware apresenta:
 
@@ -352,11 +369,37 @@ Este comando cria um único snapshot imutável de run. Ele não compara snapshot
 a run a uma coleção ou histórico, não cria ledger, e não persiste matching ou lifecycle:
 essas informações continuam recalculáveis.
 
+Comparar snapshots persistidos pela CLI:
+
+```bash
+dotnet run --project src/OrzioClashReport.Cli -- \
+  compare-snapshots \
+  --previous-snapshot previous-run.json \
+  --current-snapshot current-run.json \
+  --output comparison.html
+```
+
+Regras do contrato:
+
+1. `--previous-snapshot` e `--current-snapshot` são obrigatórios.
+2. Previous/current continuam sendo papéis explícitos e nunca são reordenados por
+   `CreatedAt`, `RunId`, revisão, nome de ficheiro ou metadata do snapshot.
+3. `JsonCoordinationRunSnapshotSerializer.Load` continua sendo a autoridade de parsing e
+   validação do snapshot.
+4. Matching e lifecycle são sempre recalculados a partir da evidência persistida; não há
+   HTML persistido, lifecycle persistido nem derived state persistido no snapshot.
+5. Sem `-o`/`--output`, o comando imprime apenas o summary determinístico de 11 linhas.
+6. Com `-o`/`--output`, o mesmo summary é seguido por `Comparison report written to ...` e
+   pelo HTML revision-aware recém-renderizado.
+7. O comando aceita o mesmo snapshot nos dois papéis apenas para smoke sintético.
+8. Ainda não há discovery automático de snapshots, run collection, run index, history
+   traversal, Clash Ledger, `Reopened` ou persistent clash ID.
+
 Limites honestos desta etapa:
 
-- Já existe criação de snapshot pela CLI; ainda não há carregamento/comparação de snapshots pela CLI.
+- Já existem criação e comparação explícita de snapshots pela CLI; ainda não há discovery
+  automático, run collection, run index nem history traversal.
 - Ainda não há Clash Ledger.
-- Ainda não há travessia de histórico.
 - Ainda não há `Reopened`.
 - Ainda não há validação sequencial contra exports reais.
 

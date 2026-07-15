@@ -16,6 +16,7 @@ namespace OrzioClashReport.Cli
     {
         private const string LegacyUsage = "Usage: orzioclash <input.xml> -o <output.html>";
         private const string CompareUsage = "Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json> [-o <output.html> | --output <output.html>]";
+        private const string CompareIndexUsage = "Usage: orzioclash compare-index --index <run-index.json>";
         private const string CompareSnapshotsUsage = "Usage: orzioclash compare-snapshots --previous-snapshot <previous.json> --current-snapshot <current.json> [-o <output.html> | --output <output.html>]";
         private const string IndexSnapshotsUsage = "Usage: orzioclash index-snapshots --snapshot <run-snapshot.json> [--snapshot <run-snapshot.json> ...] (-o <run-index.json> | --output <run-index.json>)";
         private const string SnapshotUsage = "Usage: orzioclash snapshot --xml <input.xml> --manifest <run-manifest.json> (-o <run-snapshot.json> | --output <run-snapshot.json>)";
@@ -25,6 +26,11 @@ namespace OrzioClashReport.Cli
             if (args.Length > 0 && string.Equals(args[0], "index-snapshots", StringComparison.OrdinalIgnoreCase))
             {
                 return RunIndexSnapshots(args);
+            }
+
+            if (args.Length > 0 && string.Equals(args[0], "compare-index", StringComparison.OrdinalIgnoreCase))
+            {
+                return RunCompareIndex(args);
             }
 
             if (args.Length > 0 && string.Equals(args[0], "compare-snapshots", StringComparison.OrdinalIgnoreCase))
@@ -191,6 +197,60 @@ namespace OrzioClashReport.Cli
             }
         }
 
+        private static int RunCompareIndex(string[] args)
+        {
+            if (!TryParseCompareIndexArguments(args, out CompareIndexCommandOptions options, out string parseError))
+            {
+                Console.Error.WriteLine(parseError);
+                Console.Error.WriteLine(CompareIndexUsage);
+                return 1;
+            }
+
+            try
+            {
+                var indexSerializer = new JsonRunIndexSerializer();
+                RunIndexDocument index = indexSerializer.Load(options.IndexPath);
+
+                if (index.SnapshotPaths.Count < 2)
+                {
+                    throw new InvalidOperationException(
+                        "Run index must contain at least two snapshot references to compare adjacent runs.");
+                }
+
+                var pathResolver = new RunIndexSnapshotPathResolver();
+                var snapshotSerializer = new JsonCoordinationRunSnapshotSerializer();
+                var runs = new List<CoordinationRun>(index.SnapshotPaths.Count);
+
+                for (int i = 0; i < index.SnapshotPaths.Count; i++)
+                {
+                    string resolvedPath = pathResolver.ResolveReference(options.IndexPath, index.SnapshotPaths[i]);
+                    runs.Add(snapshotSerializer.Load(resolvedPath));
+                }
+
+                var lifecycleResults = new List<ClashLifecycleResult>(runs.Count - 1);
+                for (int i = 0; i < runs.Count - 1; i++)
+                {
+                    lifecycleResults.Add(CreateDerivedComparison(runs[i], runs[i + 1]));
+                }
+
+                Console.WriteLine($"Indexed runs: {runs.Count}");
+                Console.WriteLine($"Adjacent comparisons: {lifecycleResults.Count}");
+
+                for (int i = 0; i < lifecycleResults.Count; i++)
+                {
+                    Console.WriteLine($"Comparison {i + 1}/{lifecycleResults.Count}");
+                    WriteComparisonSummary(lifecycleResults[i]);
+                }
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to compare run index: {ex.Message}");
+                return 1;
+            }
+        }
+
         private static int RunSnapshot(string[] args)
         {
             if (!TryParseSnapshotArguments(args, out SnapshotCommandOptions options, out string parseError))
@@ -257,14 +317,19 @@ namespace OrzioClashReport.Cli
             Console.WriteLine($"Unverifiable: {unverifiableCount}");
         }
 
-        private static int RunDerivedComparison(CoordinationRun previousRun, CoordinationRun currentRun, string? outputPath)
+        private static ClashLifecycleResult CreateDerivedComparison(CoordinationRun previousRun, CoordinationRun currentRun)
         {
             IClashMatcher matcher = new ConservativeClashMatcher();
             IClashRunComparer comparer = new DeterministicClashRunComparer(matcher);
             var matchResult = comparer.Compare(previousRun, currentRun);
 
             IClashLifecycleClassifier lifecycleClassifier = new ConservativeClashLifecycleClassifier();
-            var lifecycleResult = lifecycleClassifier.Classify(matchResult);
+            return lifecycleClassifier.Classify(matchResult);
+        }
+
+        private static int RunDerivedComparison(CoordinationRun previousRun, CoordinationRun currentRun, string? outputPath)
+        {
+            ClashLifecycleResult lifecycleResult = CreateDerivedComparison(previousRun, currentRun);
 
             if (outputPath != null)
             {
@@ -594,6 +659,61 @@ namespace OrzioClashReport.Cli
             return true;
         }
 
+        private static bool TryParseCompareIndexArguments(
+            string[] args, out CompareIndexCommandOptions options, out string error)
+        {
+            options = CompareIndexCommandOptions.Empty;
+            error = string.Empty;
+
+            string? indexPath = null;
+
+            for (int i = 1; i < args.Length; i++)
+            {
+                string argument = args[i];
+                if (!IsRecognizedCompareIndexOption(argument))
+                {
+                    error = $"Unrecognized compare-index argument '{argument}'.";
+                    return false;
+                }
+
+                if (i + 1 >= args.Length
+                    || string.IsNullOrWhiteSpace(args[i + 1])
+                    || IsRecognizedCompareIndexOption(args[i + 1]))
+                {
+                    error = $"Missing value for '{argument}'.";
+                    return false;
+                }
+
+                string value = args[i + 1];
+                switch (argument)
+                {
+                    case "--index":
+                        if (indexPath != null)
+                        {
+                            error = "Duplicate option '--index'.";
+                            return false;
+                        }
+
+                        indexPath = value;
+                        break;
+                    default:
+                        error = $"Unrecognized compare-index argument '{argument}'.";
+                        return false;
+                }
+
+                i++;
+            }
+
+            if (indexPath == null)
+            {
+                error = "Missing required option '--index'.";
+                return false;
+            }
+
+            options = new CompareIndexCommandOptions(indexPath);
+            return true;
+        }
+
         private static bool TryParseCompareSnapshotsArguments(
             string[] args, out CompareSnapshotsCommandOptions options, out string error)
         {
@@ -689,6 +809,9 @@ namespace OrzioClashReport.Cli
             || argument == "--manifest"
             || argument == "-o"
             || argument == "--output";
+
+        private static bool IsRecognizedCompareIndexOption(string argument) =>
+            argument == "--index";
 
         private static bool IsRecognizedCompareSnapshotsOption(string argument) =>
             argument == "--previous-snapshot"
@@ -811,6 +934,18 @@ namespace OrzioClashReport.Cli
             public string PreviousSnapshotPath { get; }
             public string CurrentSnapshotPath { get; }
             public string? OutputPath { get; }
+        }
+
+        private sealed class CompareIndexCommandOptions
+        {
+            public static readonly CompareIndexCommandOptions Empty = new CompareIndexCommandOptions(string.Empty);
+
+            public CompareIndexCommandOptions(string indexPath)
+            {
+                IndexPath = indexPath;
+            }
+
+            public string IndexPath { get; }
         }
 
         private sealed class IndexSnapshotsCommandOptions

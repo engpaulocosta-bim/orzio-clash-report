@@ -71,8 +71,10 @@ O pipeline composto pela CLI é:
 11. Persistência de snapshot de uma única run já existe (ver "Snapshot imutável de uma
     coordination run" abaixo), snapshots persistidos podem ser comparados explicitamente
     pela CLI via `compare-snapshots`, e agora também existe um run index JSON ordenado e
-    explícito criado pela CLI via `index-snapshots`; ledger, consumo automático de índice
-    e histórico ainda não existem, e a CLI não descobre snapshots automaticamente.
+    explícito criado pela CLI via `index-snapshots`, além do consumo explícito desse
+    índice pela CLI via `compare-index`; a ordem do índice continua sendo a única
+    autoridade de sequência, não há discovery automático nem inferência cronológica, e
+    não existe ledger nem lifecycle multi-run persistido.
 12. Comparar o mesmo fixture nos dois lados é apenas um smoke sintético, não validação sequencial real.
 
 Comparar dois snapshots persistidos, sem reprocessar XML nem reler manifestos:
@@ -105,8 +107,32 @@ Este fluxo carrega cada snapshot explicitamente informado apenas para validar ex
 contrato, preserva exatamente a ordem dos `--snapshot` da CLI, converte cada path para uma
 referência relativa canónica com `/`, e persiste um run index JSON que guarda somente
 `schemaVersion` + `snapshotPaths`. O índice não persiste matching, lifecycle, metadata de
-run nem qualquer forma de identidade estável de clash, e ainda não existe comando de CLI
-para consumir automaticamente esse índice.
+run nem qualquer forma de identidade estável de clash.
+
+Consumir um run index explícito e comparar apenas transições adjacentes:
+
+```bash
+dotnet run --project src/OrzioClashReport.Cli -- \
+  compare-index \
+  --index run-index.json
+```
+
+Regras do contrato:
+
+1. `--index` é obrigatório e único.
+2. `JsonRunIndexSerializer.Load` é a única autoridade para carregar o índice.
+3. A ordem de `snapshotPaths` é a única sequência autoritativa.
+4. Cada referência é resolvida por `RunIndexSnapshotPathResolver.ResolveReference`.
+5. Cada snapshot resolvido é carregado por `JsonCoordinationRunSnapshotSerializer.Load`.
+6. Todos os snapshots são carregados antes de qualquer output.
+7. Todas as comparações adjacentes são calculadas antes de qualquer output.
+8. Os pares são exatamente `[i] -> [i + 1]`, preservando duplicados e a ordem declarada.
+9. Matching e lifecycle são recalculados independentemente para cada transição adjacente.
+10. O comando reutiliza o mesmo summary pairwise determinístico de 11 linhas já usado por
+    `compare` e `compare-snapshots`.
+11. `compare-index` é console-only nesta etapa: não aceita `-o`/`--output` e não gera HTML.
+12. Não há discovery automático, inferência cronológica, latest/previous lookup,
+    comparação non-adjacent, all-vs-all, Clash Ledger, `Reopened` nem persistent clash ID.
 
 O HTML revision-aware apresenta:
 
@@ -410,8 +436,8 @@ Regras do contrato:
 6. Com `-o`/`--output`, o mesmo summary é seguido por `Comparison report written to ...` e
    pelo HTML revision-aware recém-renderizado.
 7. O comando aceita o mesmo snapshot nos dois papéis apenas para smoke sintético.
-8. Ainda não há discovery automático de snapshots, run collection, run index, history
-   traversal, Clash Ledger, `Reopened` ou persistent clash ID.
+8. Ainda não há discovery automático de snapshots, nem inferência cronológica, latest /
+   previous lookup, lifecycle multi-run, Clash Ledger, `Reopened` ou persistent clash ID.
 
 Criar run index ordenado pela CLI:
 
@@ -447,16 +473,21 @@ Regras do contrato:
    DTOs deles.
 6. Os snapshots continuam sendo a autoridade para a evidência imutável de run.
 7. Matching e lifecycle não são persistidos no índice.
-8. Ainda não existe discovery automático, inferência cronológica, comando para consumir o
-   índice, history traversal, Clash Ledger, `Reopened` ou persistent clash ID.
+8. Ainda não existe discovery automático, inferência cronológica, latest/previous lookup,
+   comparação non-adjacent ou all-vs-all, lifecycle multi-run, Clash Ledger, `Reopened`
+   ou persistent clash ID.
 
 Limites honestos desta etapa:
 
-- Já existem criação de snapshot, comparação explícita de dois snapshots e criação explícita
-  de run index ordenado; ainda não há discovery automático, consumo automático de índice,
-  run collection nem history traversal.
+- Já existem criação de snapshot, comparação explícita de dois snapshots, criação explícita
+  de run index ordenado e consumo explícito desse índice para traversal adjacente; a ordem
+  do índice continua sendo a única autoridade de sequência, e todos os snapshots /
+  comparações são carregados e calculados antes do primeiro output.
+- Ainda não há discovery automático, inferência cronológica, latest/previous lookup,
+  comparação non-adjacent, all-vs-all, lifecycle multi-run ou derived state persistido.
 - Ainda não há Clash Ledger.
 - Ainda não há `Reopened`.
+- Ainda não há persistent clash ID.
 - Ainda não há validação sequencial contra exports reais.
 
 ## Matching vocabulary

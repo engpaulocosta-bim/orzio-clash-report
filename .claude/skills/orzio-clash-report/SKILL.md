@@ -225,9 +225,11 @@ A `CoordinationRun` may now be persisted as a deterministic schema-v1 JSON snaps
 `JsonCoordinationRunSnapshotSerializer` exposes `Serialize`, `Parse`, `Save`, and `Load`.
 This is the single deliberate exception to the "no persistence/history/database" scope gate:
 single-run snapshot persistence, explicit snapshot creation CLI, explicit
-snapshot-to-snapshot comparison CLI, and explicit ordered run-index persistence CLI exist;
-run collections, automatic index consumption, history traversal, ledgers, `Reopened`
-classification, and databases still do not.
+snapshot-to-snapshot comparison CLI, explicit ordered run-index persistence CLI, and
+explicit ordered run-index consumption CLI for adjacent-pair traversal exist; automatic
+discovery, chronology inference, latest/previous lookup, all-vs-all comparison, multi-run
+lifecycle, ledgers, `Reopened` classification, persistent clash identity, and databases
+still do not.
 
 The snapshot is evidence storage, not a persisted lifecycle decision. It contains
 `RunManifest` facts, declared model revisions, executed-test coverage, ordered occurrence
@@ -302,10 +304,35 @@ ordered `--snapshot` CLI paths ->
 `JsonRunIndexSerializer.Save`.
 The command is `orzioclash index-snapshots --snapshot <run-snapshot.json> [--snapshot <run-snapshot.json> ...] (-o <run-index.json> | --output <run-index.json>)`.
 CLI order is the only source of index order; there is no automatic discovery, chronology
-inference, latest/previous lookup, run-index consumption CLI, history traversal, ledger,
-`Reopened`, or persistent clash ID. The snapshots remain the authority for immutable run
-evidence, and matching/lifecycle remain recalculable instead of being persisted into the
+inference, latest/previous lookup, non-adjacent/all-vs-all comparison, multi-run lifecycle,
+ledger, `Reopened`, or persistent clash ID. The snapshots remain the authority for immutable
+run evidence, and matching/lifecycle remain recalculable instead of being persisted into the
 index.
+
+## Compare ordered run index CLI
+
+The `compare-index` subcommand is an explicit evidence-only adjacent-traversal workflow:
+run-index JSON ->
+`JsonRunIndexSerializer.Load` ->
+ordered `RunIndexDocument.SnapshotPaths` ->
+`RunIndexSnapshotPathResolver.ResolveReference` for every entry ->
+`JsonCoordinationRunSnapshotSerializer.Load` for every resolved snapshot ->
+ordered `CoordinationRun` list ->
+adjacent pairs `[i] -> [i + 1]` only ->
+`ConservativeClashMatcher` ->
+`DeterministicClashRunComparer` ->
+`ConservativeClashLifecycleClassifier` ->
+the existing deterministic eleven-line pairwise summary reused once per adjacent transition.
+The command is `orzioclash compare-index --index <run-index.json>`.
+The run-index order remains the sole sequence authority: the CLI never reorders by
+`CreatedAt`, `RunId`, revision, filename, or filesystem metadata. Duplicate references are
+preserved exactly as declared, so adjacent duplicate snapshots remain valid comparisons.
+Every snapshot is loaded before output, every adjacent comparison is computed before output,
+and the command is console-only in this stage: no `-o`/`--output`, no lifecycle HTML, no
+history JSON, and no persisted derived state. Explicit ordered index consumption and
+adjacent-pair traversal now exist; automatic discovery, chronology inference,
+latest/previous lookup, non-adjacent/all-vs-all comparison, multi-run lifecycle, Clash
+Ledger, `Reopened`, and persistent clash identity still do not.
 
 ## Anti-patterns that fail review
 

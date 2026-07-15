@@ -164,6 +164,57 @@ identity, Clash Ledger nem `Reopened`. `compare-index` é o único consumidor at
 e `compare-snapshots` continuam pairwise, usando o helper `CreateDerivedComparison` já
 existente em `Program.cs`, não este sequence comparer.
 
+### Projeção de continuidade de selected matches (somente Core, ainda não exposta em nenhuma CLI)
+
+`IClashRunSequenceContinuityProjector` (`src/OrzioClashReport.Core/Abstractions/IClashRunSequenceContinuityProjector.cs`)
+projeta um `ClashRunSequenceComparisonResult` já derivado sobre o conjunto de
+`SelectedMatchContinuityLink`s existentes em suas fronteiras de comparações consecutivas:
+na fronteira `i` (entre `Comparisons[i]` e `Comparisons[i + 1]`, compartilhando a run em
+`Runs[i + 1]`), existe um link sempre que o `CurrentIndex` de um selected match entra num
+slot de ocorrência e o `PreviousIndex` de um selected match sai exatamente do mesmo slot. O
+projector não conhece run-index JSON, não carrega snapshots, e não chama `IClashMatcher`,
+`IClashRunComparer`, `IClashLifecycleClassifier` nem `IClashRunSequenceComparer` — matching,
+comparação de runs, classificação de lifecycle e sequence comparison já aconteceram antes
+dele rodar.
+
+`DeterministicSelectedMatchContinuityProjector` é a única implementação atual, com
+construtor público sem dependências. Considera somente
+`ClashRunMatchResult.SelectedMatches` — `Candidates`, `AlternativeCandidates`,
+`UnmatchedPrevious` e `UnmatchedCurrent` nunca criam link, e o `ClashLifecycleStatus` de um
+selected match também nunca filtra a projeção (um selected match classificado
+`Unverifiable` ainda pode gerar link). Somente fronteiras consecutivas são consideradas —
+não há comparação non-adjacent nem `[0]` direto para `[2]`, e duplicados (mesma referência
+de run ou mesmo `RunId`) nunca são deduplicados.
+
+`SelectedMatchContinuityLink` observa somente que um selected match entra num slot exato de
+uma run compartilhada e outro selected match sai do mesmo slot exato através da comparação
+imediatamente seguinte. Guarda `IncomingComparisonIndex` e `SharedOccurrenceIndex`;
+`OutgoingComparisonIndex` e `SharedRunIndex` são derivados (`IncomingComparisonIndex + 1`).
+Valida continuidade exata de slot e de referência de objeto — equivalência value-shaped num
+slot diferente nunca satisfaz o link. Não carrega identificador, fingerprint, status nem
+confidence agregada.
+
+`ClashRunSequenceContinuityResult` é o resultado imutável: a referência exata de
+`SequenceComparison` mais o conjunto completo e canonicamente ordenado (`IncomingComparisonIndex`
+ascendente, depois `SharedOccurrenceIndex` ascendente) de `Links`. Ele revalida
+independentemente cada link — membership exata nos selected matches (nunca um
+alternative nem um objeto equivalente-mas-distinto), referência da run compartilhada,
+continuidade do slot compartilhado, e completude: recalcula, a partir apenas de
+`SequenceComparison`, o conjunto esperado de pares (boundary, slot) e exige que `Links`
+corresponda exatamente, posição a posição — o que rejeita link faltante, link extra, link
+duplicado e qualquer ordem não canônica, tudo numa única verificação estrutural. Isso não é
+rematching.
+
+Esta é a menor observação longitudinal possível e para bem antes de identidade de clash: um
+link nunca afirma que o clash subjacente é o mesmo clash, e não há chain, track nem
+identidade transitiva entre boundaries não adjacentes (um link na boundary 0 e um link na
+boundary 1 são sempre entradas independentes da lista, nunca conectadas). Não há persistent
+clash identity, fingerprint, Clash Ledger nem `Reopened`. Links são derivados e
+recalculáveis; nunca são persistidos. Nenhum comando CLI e nenhum renderer HTML consome
+essa projeção ainda — o stdout do `compare-index` permanece inalterado, e `Program.cs` não
+é tocado por esta projeção. Validação sequencial contra exports reais do Navisworks
+continua não verificada.
+
 O HTML revision-aware apresenta:
 
 1. metadados das runs previous/current;

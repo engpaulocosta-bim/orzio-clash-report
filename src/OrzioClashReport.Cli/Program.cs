@@ -227,19 +227,21 @@ namespace OrzioClashReport.Cli
                     runs.Add(snapshotSerializer.Load(resolvedPath));
                 }
 
-                var lifecycleResults = new List<ClashLifecycleResult>(runs.Count - 1);
-                for (int i = 0; i < runs.Count - 1; i++)
-                {
-                    lifecycleResults.Add(CreateDerivedComparison(runs[i], runs[i + 1]));
-                }
+                IClashMatcher matcher = new ConservativeClashMatcher();
+                IClashRunComparer runComparer = new DeterministicClashRunComparer(matcher);
+                IClashLifecycleClassifier lifecycleClassifier = new ConservativeClashLifecycleClassifier();
+                IClashRunSequenceComparer sequenceComparer =
+                    new DeterministicAdjacentClashRunSequenceComparer(runComparer, lifecycleClassifier);
 
-                Console.WriteLine($"Indexed runs: {runs.Count}");
-                Console.WriteLine($"Adjacent comparisons: {lifecycleResults.Count}");
+                ClashRunSequenceComparisonResult sequenceResult = sequenceComparer.Compare(runs);
 
-                for (int i = 0; i < lifecycleResults.Count; i++)
+                Console.WriteLine($"Indexed runs: {sequenceResult.Runs.Count}");
+                Console.WriteLine($"Adjacent comparisons: {sequenceResult.Comparisons.Count}");
+
+                for (int i = 0; i < sequenceResult.Comparisons.Count; i++)
                 {
-                    Console.WriteLine($"Comparison {i + 1}/{lifecycleResults.Count}");
-                    WriteComparisonSummary(lifecycleResults[i]);
+                    Console.WriteLine($"Comparison {i + 1}/{sequenceResult.Comparisons.Count}");
+                    WriteComparisonSummary(sequenceResult.Comparisons[i]);
                 }
 
                 return 0;

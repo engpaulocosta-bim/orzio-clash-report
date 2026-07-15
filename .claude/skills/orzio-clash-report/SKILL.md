@@ -224,9 +224,9 @@ A `CoordinationRun` may now be persisted as a deterministic schema-v1 JSON snaps
 `OrzioClashReport.Persistence.RunSnapshotJson` (net8.0, System.Text.Json). The public
 `JsonCoordinationRunSnapshotSerializer` exposes `Serialize`, `Parse`, `Save`, and `Load`.
 This is the single deliberate exception to the "no persistence/history/database" scope gate:
-single-run snapshot persistence and explicit snapshot creation CLI exist; run collections,
-indexes, history traversal, ledgers, `Reopened` classification, databases, and snapshot
-loading/comparison/history CLI workflows still do not.
+single-run snapshot persistence, explicit snapshot creation CLI, and explicit
+snapshot-to-snapshot comparison CLI exist; run collections, indexes, history traversal,
+ledgers, `Reopened` classification, and databases still do not.
 
 The snapshot is evidence storage, not a persisted lifecycle decision. It contains
 `RunManifest` facts, declared model revisions, executed-test coverage, ordered occurrence
@@ -257,9 +257,28 @@ CoordinationRun manually in snapshot mode.
 The persistence adapter remains the sole authority for snapshot serialization, canonical
 JSON, UTF-8/no-BOM writing, create-new semantics, and overwrite refusal.
 Success output is emitted only after Save succeeds.
-Snapshot mode does not compare runs, load stored snapshots for comparison, persist
-matching/lifecycle, create history, or create a ledger.
+Snapshot mode creates one immutable run snapshot only; it does not itself compare runs,
+persist matching/lifecycle, create history, or create a ledger. Loading stored snapshots
+for comparison belongs to the separate `compare-snapshots` command.
 Legacy and compare command contracts remain unchanged.
+
+## Compare persisted snapshots CLI
+
+The `compare-snapshots` subcommand is an explicit evidence-only comparison workflow:
+previous snapshot JSON + current snapshot JSON ->
+`JsonCoordinationRunSnapshotSerializer.Load` ->
+`CoordinationRun` previous/current ->
+`ConservativeClashMatcher` ->
+`DeterministicClashRunComparer` ->
+`ConservativeClashLifecycleClassifier` ->
+optional `HtmlLifecycleReportRenderer` + deterministic eleven-line console summary.
+The command is `orzioclash compare-snapshots --previous-snapshot <previous.json> --current-snapshot <current.json> [-o <output.html> | --output <output.html>]`.
+Previous/current remain explicit CLI roles and are never reordered by `CreatedAt`, `RunId`,
+revision, filenames, or snapshot metadata. The same snapshot may be supplied in both roles
+for synthetic smoke testing; that is not sequential real-model validation.
+Matching and lifecycle are recalculated from immutable evidence every time; they are never
+loaded from persisted derived state. `compare-snapshots` does not create a run collection,
+index, history traversal, ledger, `Reopened`, or persistent clash ID.
 
 ## Anti-patterns that fail review
 

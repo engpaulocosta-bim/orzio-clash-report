@@ -15,10 +15,16 @@ namespace OrzioClashReport.Cli
     {
         private const string LegacyUsage = "Usage: orzioclash <input.xml> -o <output.html>";
         private const string CompareUsage = "Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json> [-o <output.html> | --output <output.html>]";
+        private const string CompareSnapshotsUsage = "Usage: orzioclash compare-snapshots --previous-snapshot <previous.json> --current-snapshot <current.json> [-o <output.html> | --output <output.html>]";
         private const string SnapshotUsage = "Usage: orzioclash snapshot --xml <input.xml> --manifest <run-manifest.json> (-o <run-snapshot.json> | --output <run-snapshot.json>)";
 
         private static int Main(string[] args)
         {
+            if (args.Length > 0 && string.Equals(args[0], "compare-snapshots", StringComparison.OrdinalIgnoreCase))
+            {
+                return RunCompareSnapshots(args);
+            }
+
             if (args.Length > 0 && string.Equals(args[0], "compare", StringComparison.OrdinalIgnoreCase))
             {
                 return RunCompare(args);
@@ -101,31 +107,42 @@ namespace OrzioClashReport.Cli
                 var previousRun = assembler.Assemble(previousDocument, previousManifest);
                 var currentRun = assembler.Assemble(currentDocument, currentManifest);
 
-                IClashMatcher matcher = new ConservativeClashMatcher();
-                IClashRunComparer comparer = new DeterministicClashRunComparer(matcher);
-                var matchResult = comparer.Compare(previousRun, currentRun);
-
-                IClashLifecycleClassifier lifecycleClassifier = new ConservativeClashLifecycleClassifier();
-                var lifecycleResult = lifecycleClassifier.Classify(matchResult);
-
-                if (options.OutputPath != null)
-                {
-                    string html = new HtmlLifecycleReportRenderer().Render(lifecycleResult);
-                    File.WriteAllText(options.OutputPath, html);
-                }
-
-                WriteComparisonSummary(lifecycleResult);
-
-                if (options.OutputPath != null)
-                {
-                    Console.WriteLine($"Comparison report written to {options.OutputPath}");
-                }
-
-                return 0;
+                return RunDerivedComparison(previousRun, currentRun, options.OutputPath);
             }
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Failed to compare runs: {ex.Message}");
+                return 1;
+            }
+        }
+
+        private static int RunCompareSnapshots(string[] args)
+        {
+            if (!TryParseCompareSnapshotsArguments(args, out CompareSnapshotsCommandOptions options, out string parseError))
+            {
+                Console.Error.WriteLine(parseError);
+                Console.Error.WriteLine(CompareSnapshotsUsage);
+                return 1;
+            }
+
+            string? missingPathError = ValidateCompareSnapshotPaths(options);
+            if (missingPathError != null)
+            {
+                Console.Error.WriteLine(missingPathError);
+                return 1;
+            }
+
+            try
+            {
+                var serializer = new JsonCoordinationRunSnapshotSerializer();
+                CoordinationRun previousRun = serializer.Load(options.PreviousSnapshotPath);
+                CoordinationRun currentRun = serializer.Load(options.CurrentSnapshotPath);
+
+                return RunDerivedComparison(previousRun, currentRun, options.OutputPath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to compare snapshots: {ex.Message}");
                 return 1;
             }
         }
@@ -194,6 +211,31 @@ namespace OrzioClashReport.Cli
             Console.WriteLine($"New: {newCount}");
             Console.WriteLine($"Resolved: {resolvedCount}");
             Console.WriteLine($"Unverifiable: {unverifiableCount}");
+        }
+
+        private static int RunDerivedComparison(CoordinationRun previousRun, CoordinationRun currentRun, string? outputPath)
+        {
+            IClashMatcher matcher = new ConservativeClashMatcher();
+            IClashRunComparer comparer = new DeterministicClashRunComparer(matcher);
+            var matchResult = comparer.Compare(previousRun, currentRun);
+
+            IClashLifecycleClassifier lifecycleClassifier = new ConservativeClashLifecycleClassifier();
+            var lifecycleResult = lifecycleClassifier.Classify(matchResult);
+
+            if (outputPath != null)
+            {
+                string html = new HtmlLifecycleReportRenderer().Render(lifecycleResult);
+                File.WriteAllText(outputPath, html);
+            }
+
+            WriteComparisonSummary(lifecycleResult);
+
+            if (outputPath != null)
+            {
+                Console.WriteLine($"Comparison report written to {outputPath}");
+            }
+
+            return 0;
         }
 
         private static bool TryParseLegacyArguments(
@@ -442,6 +484,88 @@ namespace OrzioClashReport.Cli
             return true;
         }
 
+        private static bool TryParseCompareSnapshotsArguments(
+            string[] args, out CompareSnapshotsCommandOptions options, out string error)
+        {
+            options = CompareSnapshotsCommandOptions.Empty;
+            error = string.Empty;
+
+            string? previousSnapshotPath = null;
+            string? currentSnapshotPath = null;
+            string? outputPath = null;
+
+            for (int i = 1; i < args.Length; i++)
+            {
+                string argument = args[i];
+                if (!IsRecognizedCompareSnapshotsOption(argument))
+                {
+                    error = $"Unrecognized compare-snapshots argument '{argument}'.";
+                    return false;
+                }
+
+                if (i + 1 >= args.Length
+                    || string.IsNullOrWhiteSpace(args[i + 1])
+                    || IsRecognizedCompareSnapshotsOption(args[i + 1]))
+                {
+                    error = $"Missing value for '{argument}'.";
+                    return false;
+                }
+
+                string value = args[i + 1];
+                switch (argument)
+                {
+                    case "--previous-snapshot":
+                        if (previousSnapshotPath != null)
+                        {
+                            error = "Duplicate option '--previous-snapshot'.";
+                            return false;
+                        }
+
+                        previousSnapshotPath = value;
+                        break;
+                    case "--current-snapshot":
+                        if (currentSnapshotPath != null)
+                        {
+                            error = "Duplicate option '--current-snapshot'.";
+                            return false;
+                        }
+
+                        currentSnapshotPath = value;
+                        break;
+                    case "-o":
+                    case "--output":
+                        if (outputPath != null)
+                        {
+                            error = "Duplicate option '-o/--output'.";
+                            return false;
+                        }
+
+                        outputPath = value;
+                        break;
+                    default:
+                        error = $"Unrecognized compare-snapshots argument '{argument}'.";
+                        return false;
+                }
+
+                i++;
+            }
+
+            if (previousSnapshotPath == null)
+            {
+                error = "Missing required option '--previous-snapshot'.";
+                return false;
+            }
+
+            if (currentSnapshotPath == null)
+            {
+                error = "Missing required option '--current-snapshot'.";
+                return false;
+            }
+
+            options = new CompareSnapshotsCommandOptions(previousSnapshotPath, currentSnapshotPath, outputPath);
+            return true;
+        }
+
         private static bool IsRecognizedCompareOption(string argument) =>
             argument == "--previous-xml"
             || argument == "--previous-manifest"
@@ -453,6 +577,12 @@ namespace OrzioClashReport.Cli
         private static bool IsRecognizedSnapshotOption(string argument) =>
             argument == "--xml"
             || argument == "--manifest"
+            || argument == "-o"
+            || argument == "--output";
+
+        private static bool IsRecognizedCompareSnapshotsOption(string argument) =>
+            argument == "--previous-snapshot"
+            || argument == "--current-snapshot"
             || argument == "-o"
             || argument == "--output";
 
@@ -491,6 +621,21 @@ namespace OrzioClashReport.Cli
             if (!File.Exists(options.ManifestPath))
             {
                 return $"Snapshot manifest file not found: {options.ManifestPath}";
+            }
+
+            return null;
+        }
+
+        private static string? ValidateCompareSnapshotPaths(CompareSnapshotsCommandOptions options)
+        {
+            if (!File.Exists(options.PreviousSnapshotPath))
+            {
+                return $"Previous snapshot file not found: {options.PreviousSnapshotPath}";
+            }
+
+            if (!File.Exists(options.CurrentSnapshotPath))
+            {
+                return $"Current snapshot file not found: {options.CurrentSnapshotPath}";
             }
 
             return null;
@@ -535,6 +680,22 @@ namespace OrzioClashReport.Cli
             public string XmlPath { get; }
             public string ManifestPath { get; }
             public string OutputPath { get; }
+        }
+
+        private sealed class CompareSnapshotsCommandOptions
+        {
+            public static readonly CompareSnapshotsCommandOptions Empty = new CompareSnapshotsCommandOptions(string.Empty, string.Empty, null);
+
+            public CompareSnapshotsCommandOptions(string previousSnapshotPath, string currentSnapshotPath, string? outputPath)
+            {
+                PreviousSnapshotPath = previousSnapshotPath;
+                CurrentSnapshotPath = currentSnapshotPath;
+                OutputPath = outputPath;
+            }
+
+            public string PreviousSnapshotPath { get; }
+            public string CurrentSnapshotPath { get; }
+            public string? OutputPath { get; }
         }
     }
 }

@@ -69,9 +69,10 @@ O pipeline composto pela CLI é:
 10. `-o`/`--output` é opcional: sem output, só há summary; com output, o mesmo summary é
     seguido por um HTML lifecycle revision-aware.
 11. Persistência de snapshot de uma única run já existe (ver "Snapshot imutável de uma
-    coordination run" abaixo), e snapshots persistidos agora podem ser comparados
-    explicitamente pela CLI via `compare-snapshots`; ledger, índice de runs e histórico
-    ainda não existem, e a CLI não descobre snapshots automaticamente.
+    coordination run" abaixo), snapshots persistidos podem ser comparados explicitamente
+    pela CLI via `compare-snapshots`, e agora também existe um run index JSON ordenado e
+    explícito criado pela CLI via `index-snapshots`; ledger, consumo automático de índice
+    e histórico ainda não existem, e a CLI não descobre snapshots automaticamente.
 12. Comparar o mesmo fixture nos dois lados é apenas um smoke sintético, não validação sequencial real.
 
 Comparar dois snapshots persistidos, sem reprocessar XML nem reler manifestos:
@@ -89,6 +90,23 @@ explícitos previous/current exatamente como vieram da linha de comando, recalcu
 e lifecycle a partir da evidência imutável, e opcionalmente escreve o mesmo HTML
 revision-aware do comando `compare`. Ele não cria run collection, run index, history
 traversal, ledger, `Reopened` nem persistent clash ID.
+
+Criar um run index ordenado e explícito a partir de snapshots persistidos:
+
+```bash
+dotnet run --project src/OrzioClashReport.Cli -- \
+  index-snapshots \
+  --snapshot <run-001.json> \
+  --snapshot <run-002.json> \
+  -o run-index.json
+```
+
+Este fluxo carrega cada snapshot explicitamente informado apenas para validar existência e
+contrato, preserva exatamente a ordem dos `--snapshot` da CLI, converte cada path para uma
+referência relativa canónica com `/`, e persiste um run index JSON que guarda somente
+`schemaVersion` + `snapshotPaths`. O índice não persiste matching, lifecycle, metadata de
+run nem qualquer forma de identidade estável de clash, e ainda não existe comando de CLI
+para consumir automaticamente esse índice.
 
 O HTML revision-aware apresenta:
 
@@ -395,10 +413,48 @@ Regras do contrato:
 8. Ainda não há discovery automático de snapshots, run collection, run index, history
    traversal, Clash Ledger, `Reopened` ou persistent clash ID.
 
+Criar run index ordenado pela CLI:
+
+```bash
+dotnet run --project src/OrzioClashReport.Cli -- \
+  index-snapshots \
+  --snapshot runs/run-001.json \
+  --snapshot runs/run-002.json \
+  --output run-index.json
+```
+
+Formato do run index:
+
+```json
+{
+  "schemaVersion": 1,
+  "snapshotPaths": [
+    "runs/run-001.json",
+    "runs/run-002.json"
+  ]
+}
+```
+
+Regras do contrato:
+
+1. `--snapshot` é obrigatório, repetível, preserva ordem e preserva duplicados.
+2. `-o`/`--output` é obrigatório.
+3. A ordem do índice vem somente da ordem explícita dos argumentos `--snapshot`.
+4. O índice persiste apenas referências canónicas relativas ao diretório do próprio
+   ficheiro de índice, sempre com separador `/`.
+5. `JsonCoordinationRunSnapshotSerializer.Load` continua sendo a autoridade para validar os
+   snapshots de entrada; o adapter de run index não desserializa snapshots nem inspeciona
+   DTOs deles.
+6. Os snapshots continuam sendo a autoridade para a evidência imutável de run.
+7. Matching e lifecycle não são persistidos no índice.
+8. Ainda não existe discovery automático, inferência cronológica, comando para consumir o
+   índice, history traversal, Clash Ledger, `Reopened` ou persistent clash ID.
+
 Limites honestos desta etapa:
 
-- Já existem criação e comparação explícita de snapshots pela CLI; ainda não há discovery
-  automático, run collection, run index nem history traversal.
+- Já existem criação de snapshot, comparação explícita de dois snapshots e criação explícita
+  de run index ordenado; ainda não há discovery automático, consumo automático de índice,
+  run collection nem history traversal.
 - Ainda não há Clash Ledger.
 - Ainda não há `Reopened`.
 - Ainda não há validação sequencial contra exports reais.

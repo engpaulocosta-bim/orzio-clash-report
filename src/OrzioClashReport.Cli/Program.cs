@@ -7,6 +7,7 @@ using OrzioClashReport.Core.Model;
 using OrzioClashReport.Input.NavisworksXml;
 using OrzioClashReport.Input.RunManifestJson;
 using OrzioClashReport.Output.Html;
+using OrzioClashReport.Persistence.RunIndexJson;
 using OrzioClashReport.Persistence.RunSnapshotJson;
 
 namespace OrzioClashReport.Cli
@@ -16,10 +17,16 @@ namespace OrzioClashReport.Cli
         private const string LegacyUsage = "Usage: orzioclash <input.xml> -o <output.html>";
         private const string CompareUsage = "Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json> [-o <output.html> | --output <output.html>]";
         private const string CompareSnapshotsUsage = "Usage: orzioclash compare-snapshots --previous-snapshot <previous.json> --current-snapshot <current.json> [-o <output.html> | --output <output.html>]";
+        private const string IndexSnapshotsUsage = "Usage: orzioclash index-snapshots --snapshot <run-snapshot.json> [--snapshot <run-snapshot.json> ...] (-o <run-index.json> | --output <run-index.json>)";
         private const string SnapshotUsage = "Usage: orzioclash snapshot --xml <input.xml> --manifest <run-manifest.json> (-o <run-snapshot.json> | --output <run-snapshot.json>)";
 
         private static int Main(string[] args)
         {
+            if (args.Length > 0 && string.Equals(args[0], "index-snapshots", StringComparison.OrdinalIgnoreCase))
+            {
+                return RunIndexSnapshots(args);
+            }
+
             if (args.Length > 0 && string.Equals(args[0], "compare-snapshots", StringComparison.OrdinalIgnoreCase))
             {
                 return RunCompareSnapshots(args);
@@ -143,6 +150,43 @@ namespace OrzioClashReport.Cli
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Failed to compare snapshots: {ex.Message}");
+                return 1;
+            }
+        }
+
+        private static int RunIndexSnapshots(string[] args)
+        {
+            if (!TryParseIndexSnapshotsArguments(args, out IndexSnapshotsCommandOptions options, out string parseError))
+            {
+                Console.Error.WriteLine(parseError);
+                Console.Error.WriteLine(IndexSnapshotsUsage);
+                return 1;
+            }
+
+            try
+            {
+                var snapshotSerializer = new JsonCoordinationRunSnapshotSerializer();
+                var pathResolver = new RunIndexSnapshotPathResolver();
+                var references = new List<string>(options.SnapshotPaths.Count);
+
+                for (int i = 0; i < options.SnapshotPaths.Count; i++)
+                {
+                    string snapshotPath = options.SnapshotPaths[i];
+                    snapshotSerializer.Load(snapshotPath);
+                    references.Add(pathResolver.CreateReference(options.OutputPath, snapshotPath));
+                }
+
+                var index = new RunIndexDocument(references);
+                var indexSerializer = new JsonRunIndexSerializer();
+                indexSerializer.Save(index, options.OutputPath);
+
+                Console.WriteLine($"Indexed snapshots: {references.Count}");
+                Console.WriteLine($"Run index written to {options.OutputPath}");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create run index: {ex.Message}");
                 return 1;
             }
         }
@@ -484,6 +528,72 @@ namespace OrzioClashReport.Cli
             return true;
         }
 
+        private static bool TryParseIndexSnapshotsArguments(
+            string[] args, out IndexSnapshotsCommandOptions options, out string error)
+        {
+            options = IndexSnapshotsCommandOptions.Empty;
+            error = string.Empty;
+
+            var snapshotPaths = new List<string>();
+            string? outputPath = null;
+
+            for (int i = 1; i < args.Length; i++)
+            {
+                string argument = args[i];
+                if (!IsRecognizedIndexSnapshotsOption(argument))
+                {
+                    error = $"Unrecognized index-snapshots argument '{argument}'.";
+                    return false;
+                }
+
+                if (i + 1 >= args.Length
+                    || string.IsNullOrWhiteSpace(args[i + 1])
+                    || IsRecognizedIndexSnapshotsOption(args[i + 1]))
+                {
+                    error = $"Missing value for '{argument}'.";
+                    return false;
+                }
+
+                string value = args[i + 1];
+                switch (argument)
+                {
+                    case "--snapshot":
+                        snapshotPaths.Add(value);
+                        break;
+                    case "-o":
+                    case "--output":
+                        if (outputPath != null)
+                        {
+                            error = "Duplicate option '-o/--output'.";
+                            return false;
+                        }
+
+                        outputPath = value;
+                        break;
+                    default:
+                        error = $"Unrecognized index-snapshots argument '{argument}'.";
+                        return false;
+                }
+
+                i++;
+            }
+
+            if (snapshotPaths.Count == 0)
+            {
+                error = "Missing required option '--snapshot'.";
+                return false;
+            }
+
+            if (outputPath == null)
+            {
+                error = "Missing required option '-o/--output'.";
+                return false;
+            }
+
+            options = new IndexSnapshotsCommandOptions(snapshotPaths, outputPath);
+            return true;
+        }
+
         private static bool TryParseCompareSnapshotsArguments(
             string[] args, out CompareSnapshotsCommandOptions options, out string error)
         {
@@ -583,6 +693,11 @@ namespace OrzioClashReport.Cli
         private static bool IsRecognizedCompareSnapshotsOption(string argument) =>
             argument == "--previous-snapshot"
             || argument == "--current-snapshot"
+            || argument == "-o"
+            || argument == "--output";
+
+        private static bool IsRecognizedIndexSnapshotsOption(string argument) =>
+            argument == "--snapshot"
             || argument == "-o"
             || argument == "--output";
 
@@ -696,6 +811,20 @@ namespace OrzioClashReport.Cli
             public string PreviousSnapshotPath { get; }
             public string CurrentSnapshotPath { get; }
             public string? OutputPath { get; }
+        }
+
+        private sealed class IndexSnapshotsCommandOptions
+        {
+            public static readonly IndexSnapshotsCommandOptions Empty = new IndexSnapshotsCommandOptions(Array.Empty<string>(), string.Empty);
+
+            public IndexSnapshotsCommandOptions(IReadOnlyList<string> snapshotPaths, string outputPath)
+            {
+                SnapshotPaths = snapshotPaths;
+                OutputPath = outputPath;
+            }
+
+            public IReadOnlyList<string> SnapshotPaths { get; }
+            public string OutputPath { get; }
         }
     }
 }

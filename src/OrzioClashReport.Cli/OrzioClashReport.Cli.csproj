@@ -5,6 +5,7 @@
     <ProjectReference Include="..\OrzioClashReport.Input.NavisworksXml\OrzioClashReport.Input.NavisworksXml.csproj" />
     <ProjectReference Include="..\OrzioClashReport.Input.RunManifestJson\OrzioClashReport.Input.RunManifestJson.csproj" />
     <ProjectReference Include="..\OrzioClashReport.Output.Html\OrzioClashReport.Output.Html.csproj" />
+    <ProjectReference Include="..\OrzioClashReport.Persistence.RunIndexJson\OrzioClashReport.Persistence.RunIndexJson.csproj" />
     <ProjectReference Include="..\OrzioClashReport.Persistence.RunSnapshotJson\OrzioClashReport.Persistence.RunSnapshotJson.csproj" />
   </ItemGroup>
 

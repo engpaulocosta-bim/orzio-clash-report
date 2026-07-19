@@ -394,12 +394,61 @@ link, a duplicate link, or any non-canonical order as a single structural check 
 rematching.
 
 This is the smallest possible longitudinal observation: a link never asserts the underlying
-clash is the same clash, and there is no chain assembly, track assembly, or transitive
-identity across non-adjacent boundaries. No persistent or stable clash identity, no
-fingerprinting, no Clash Ledger, no `Reopened`. Links are derived and recalculable, never
-persisted. No CLI command and no HTML renderer consumes this projection yet --
-`compare-index` stdout is unchanged and `Program.cs` is untouched by it. Sequential real
-Navisworks export validation remains unverified.
+clash is the same clash. Derived maximal continuity path assembly exists (see below);
+persistent tracking, ledger, identity, lifecycle aggregation, and `Reopened` still do not.
+Links are derived and recalculable, never persisted. No CLI command and no HTML renderer
+consumes this projection yet -- `compare-index` stdout is unchanged and `Program.cs` is
+untouched by it. Sequential real Navisworks export validation remains unverified.
+
+## Deterministic maximal continuity path assembly (Core-only, not yet wired into any CLI)
+
+`IClashRunSequenceContinuityPathAssembler` assembles an already-derived
+`ClashRunSequenceContinuityResult` into the complete set of disjoint maximal continuity
+paths implied by its links: two links belong to the same path only when the first link's
+`OutgoingSelectedMatch` is the exact same object reference as the second link's
+`IncomingSelectedMatch` at the immediately following comparison boundary
+(`next.IncomingComparisonIndex == current.OutgoingComparisonIndex`). The assembler knows no
+JSON, snapshot, or filesystem, and calls no `IClashMatcher`, `IClashRunComparer`,
+`IClashLifecycleClassifier`, `IClashRunSequenceComparer`, or
+`IClashRunSequenceContinuityProjector` -- matching, run comparison, lifecycle
+classification, sequence comparison, and continuity projection have already happened by the
+time it runs.
+
+`DeterministicSelectedMatchContinuityPathAssembler` is the sole current implementation, with
+a public parameterless constructor (no dependencies at all). For each link in
+`ContinuityResult.Links` canonical order, it checks for an exact predecessor; a link with no
+predecessor starts a new path, which then follows its chain of exact successors until none
+remains. Connectivity never uses `RunId`, `CreatedAt`, candidate indices alone, occurrence
+reference alone, candidate or assessment value equality, source clash GUID, confidence,
+evidence, `ToString`, hash, or fingerprint -- only exact selected-match object-reference
+identity. Zero links produce zero paths, and no zero-link path is ever created. Because the
+current invariants guarantee at most one exact predecessor and one exact successor per link,
+the assembler defensively detects more than one of either (impossible under normal
+construction, but a guard against corruption or future regression) and throws
+`InvalidOperationException` rather than silently picking the first match.
+
+`SelectedMatchContinuityPath` is an immutable maximal sequence of
+`SelectedMatchContinuityLink`s connected only by this exact-reference rule, with
+`SelectedMatches` derived from `Links` (never supplied), and `StartComparisonIndex`/
+`EndComparisonIndex`/`StartRunIndex`/`EndRunIndex` derived from the first and last link. It
+carries no id, status, fingerprint, or aggregated confidence.
+
+`ClashRunSequenceContinuityPathsResult` is the immutable output: the exact
+`ContinuityResult` reference plus the complete, canonically ordered set of `Paths` (ordered
+by each path's first link position in `ContinuityResult.Links`). It independently
+re-validates the complete maximal partition, rejecting a missing path, an extra path, a
+duplicate path, a wrong path order, a foreign or equivalent-but-distinct link, a missing or
+extra link inside a path, duplicate link coverage, a split of one maximal path, a merge of
+disconnected paths, and a non-maximal path, all through a single structural comparison --
+never rematching or re-invoking the assembler.
+
+A continuity path is a derived, maximal, and fully recalculable sequence of exact
+selected-match continuity links; it is not a persistent clash identity, a stable clash
+identity, a Clash Ledger, or a persistent track, has no history or multi-run lifecycle, and
+does not imply `Reopened`. A selected match with no continuity link never appears in any
+path, and no zero-link path is ever created. This is Core-only: no CLI command and no HTML
+renderer consumes it yet, `compare-index`'s stdout is unchanged, and `Program.cs` is
+untouched. Sequential real Navisworks export validation remains unverified.
 
 ## Anti-patterns that fail review
 

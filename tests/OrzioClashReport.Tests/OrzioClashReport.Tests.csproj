@@ -53,6 +53,9 @@
     <None Include="Golden\lifecycle-report.golden.html">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Golden\longitudinal-report.golden.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Golden\coordination-run-snapshot.golden.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

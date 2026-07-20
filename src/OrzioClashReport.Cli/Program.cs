@@ -19,7 +19,7 @@ namespace OrzioClashReport.Cli
     {
         private const string LegacyUsage = "Usage: orzioclash <input.xml> -o <output.html>";
         private const string CompareUsage = "Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json> [-o <output.html> | --output <output.html>]";
-        private const string CompareIndexUsage = "Usage: orzioclash compare-index --index <run-index.json>";
+        private const string CompareIndexUsage = "Usage: orzioclash compare-index --index <run-index.json> [-o <output.html> | --output <output.html>]";
         private const string CompareSnapshotsUsage = "Usage: orzioclash compare-snapshots --previous-snapshot <previous.json> --current-snapshot <current.json> [-o <output.html> | --output <output.html>]";
         private const string IndexSnapshotsUsage = "Usage: orzioclash index-snapshots --snapshot <run-snapshot.json> [--snapshot <run-snapshot.json> ...] (-o <run-index.json> | --output <run-index.json>)";
         private const string SnapshotUsage = "Usage: orzioclash snapshot --xml <input.xml> --manifest <run-manifest.json> (-o <run-snapshot.json> | --output <run-snapshot.json>)";
@@ -247,12 +247,23 @@ namespace OrzioClashReport.Cli
                     new DeterministicClashRunSequencePresentationProjector();
                 ClashRunSequencePresentationResult presentationResult = presentationProjector.Project(analysisResult);
 
+                if (options.OutputPath != null)
+                {
+                    string html = new HtmlLongitudinalClashReportRenderer().Render(presentationResult);
+                    File.WriteAllText(options.OutputPath, html);
+                }
+
                 WriteLongitudinalSummary(presentationResult);
 
                 foreach (var transition in presentationResult.Transitions)
                 {
                     Console.WriteLine($"Comparison {transition.ComparisonIndex + 1}/{presentationResult.AdjacentComparisonCount}");
                     WriteComparisonSummary(transition.Comparison);
+                }
+
+                if (options.OutputPath != null)
+                {
+                    Console.WriteLine($"Longitudinal report written to {options.OutputPath}");
                 }
 
                 return 0;
@@ -695,6 +706,7 @@ namespace OrzioClashReport.Cli
             error = string.Empty;
 
             string? indexPath = null;
+            string? outputPath = null;
 
             for (int i = 1; i < args.Length; i++)
             {
@@ -725,6 +737,16 @@ namespace OrzioClashReport.Cli
 
                         indexPath = value;
                         break;
+                    case "-o":
+                    case "--output":
+                        if (outputPath != null)
+                        {
+                            error = "Duplicate option '-o/--output'.";
+                            return false;
+                        }
+
+                        outputPath = value;
+                        break;
                     default:
                         error = $"Unrecognized compare-index argument '{argument}'.";
                         return false;
@@ -739,7 +761,7 @@ namespace OrzioClashReport.Cli
                 return false;
             }
 
-            options = new CompareIndexCommandOptions(indexPath);
+            options = new CompareIndexCommandOptions(indexPath, outputPath);
             return true;
         }
 
@@ -840,7 +862,9 @@ namespace OrzioClashReport.Cli
             || argument == "--output";
 
         private static bool IsRecognizedCompareIndexOption(string argument) =>
-            argument == "--index";
+            argument == "--index"
+            || argument == "-o"
+            || argument == "--output";
 
         private static bool IsRecognizedCompareSnapshotsOption(string argument) =>
             argument == "--previous-snapshot"
@@ -967,14 +991,16 @@ namespace OrzioClashReport.Cli
 
         private sealed class CompareIndexCommandOptions
         {
-            public static readonly CompareIndexCommandOptions Empty = new CompareIndexCommandOptions(string.Empty);
+            public static readonly CompareIndexCommandOptions Empty = new CompareIndexCommandOptions(string.Empty, null);
 
-            public CompareIndexCommandOptions(string indexPath)
+            public CompareIndexCommandOptions(string indexPath, string? outputPath)
             {
                 IndexPath = indexPath;
+                OutputPath = outputPath;
             }
 
             public string IndexPath { get; }
+            public string? OutputPath { get; }
         }
 
         private sealed class IndexSnapshotsCommandOptions

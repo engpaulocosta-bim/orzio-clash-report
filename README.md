@@ -114,7 +114,8 @@ Consumir um run index explícito e comparar apenas transições adjacentes:
 ```bash
 dotnet run --project src/OrzioClashReport.Cli -- \
   compare-index \
-  --index run-index.json
+  --index run-index.json \
+  -o longitudinal-report.html
 ```
 
 Regras do contrato:
@@ -140,9 +141,15 @@ Regras do contrato:
 11. O comando escreve primeiro o summary longitudinal determinístico de 12 linhas e depois
     reutiliza o mesmo summary pairwise determinístico de 11 linhas já usado por `compare` e
     `compare-snapshots`, uma vez por transição adjacente.
-12. `compare-index` é console-only nesta etapa: não aceita `-o`/`--output` e não gera HTML.
-13. Não há discovery automático, inferência cronológica, latest/previous lookup,
-    comparação non-adjacent, all-vs-all, Clash Ledger, `Reopened` nem persistent clash ID.
+12. `compare-index` aceita `-o`/`--output` opcional para gravar o HTML longitudinal
+    autocontido. Sem output, o stdout permanece byte a byte igual ao contrato anterior; com
+    output, a unica linha adicional e `Longitudinal report written to {OutputPath}`, emitida
+    por ultimo e somente depois da escrita bem-sucedida.
+13. O render e a escrita do HTML, quando solicitados, terminam antes da primeira linha de
+    stdout.
+14. Nao ha discovery automatico, inferencia cronologica, latest/previous lookup,
+    comparacao non-adjacent, all-vs-all, Clash Ledger, `Reopened`, persistent clash ID,
+    path ID, fingerprint, status/confidence agregados por path nem derived state persistido.
 
 O prefixo longitudinal do `compare-index` tem exatamente estas 12 linhas, nesta ordem:
 
@@ -395,11 +402,51 @@ Nunca por status, confidence, `RunId`, `CreatedAt`, GUID ou comprimento do path.
 Isto é apresentação de Core derivada de uma cadeia de análise já completa, não é history,
 ledger nem identidade persistente/estável de clash. Um continuity path apresentado aqui
 continua sendo apenas uma sequência máxima derivada de links por referência exata, nunca um
-clash persistente. `compare-index` consome essa projeção para o prefixo longitudinal
-determinístico de 12 linhas em stdout e depois imprime os summaries pairwise existentes sem
-alteração. Ainda não existe HTML longitudinal, persistência de estado derivado, agregação de
-lifecycle multi-run, Clash Ledger, persistent clash ID nem `Reopened`. Validação sequencial
-contra exports reais do Navisworks continua não verificada.
+clash persistente. `compare-index` consome essa projecao para o prefixo longitudinal
+deterministico de 12 linhas em stdout e, quando `-o`/`--output` e fornecido, para o renderer
+HTML longitudinal. Ainda nao existe persistencia de estado derivado, agregacao de lifecycle
+multi-run, Clash Ledger, persistent clash ID nem `Reopened`. Validacao sequencial contra
+exports reais do Navisworks continua nao verificada.
+
+### HTML longitudinal autocontido
+
+`HtmlLongitudinalClashReportRenderer` vive em `OrzioClashReport.Output.Html` e tem um unico
+contrato publico: `Render(ClashRunSequencePresentationResult result)`. Ele consome o
+`ClashRunSequencePresentationResult` completo recebido, nunca recalcula matching, lifecycle,
+links, paths, particoes ou contagens, e nao chama analyzer, comparer, classifier, continuity
+projector, path assembler nem presentation projector. O metodo e sincrono, nao faz I/O,
+clock, rede, aleatoriedade ou leitura de filesystem; o `compare-index` continua responsavel
+por `File.WriteAllText`.
+
+O documento gerado e HTML5, `lang="en"`, UTF-8, titulo `Orzio Clash Longitudinal Report`,
+deterministico byte a byte, autocontido, responsivo, imprimivel, com todo CSS inline em um
+unico `<style>`, sem JavaScript e sem links, fontes, imagens, stylesheets ou assets externos.
+Todo conteudo dinamico e HTML-encoded. O renderer pode mostrar `RunId`, `CreatedAt` em
+formato `"O"` com invariant culture, contagens, modelos declarados em ordem,
+Company/Discipline/ModelName/Revision/SourceFileName, clash tests e clashes, elementos,
+niveis, distancia, ponto, source clash GUID rotulado como evidence only, confidence,
+lifecycle evidence e match evidence com valores previous/current. Ele nao mostra
+`ModelRevision.SourceFilePath`, `ModelRevision.ContentHash`, `ClashObject.Properties`,
+caminhos locais ou de rede, campos inventados, timestamp de geracao nem caminho do index.
+
+As nove secoes principais aparecem sempre nesta ordem e com classes estaveis:
+`longitudinal-header`, `longitudinal-summary-section`, `interpretation-warning`,
+`run-sequence-section`, `continuity-paths-section`, `standalone-selected-matches-section`,
+`non-path-lifecycle-section`, `transition-sections` e `longitudinal-classification-note`.
+O renderer preserva a ordem recebida de runs, paths, selected matches em paths, standalone
+selected matches, non-path lifecycle entries, transitions, lifecycle entries e evidence.
+Ordinais visuais sao apenas posicao de apresentacao, nunca IDs.
+
+O HTML apresenta a sequencia explicita de runs, revisoes declaradas, summary longitudinal,
+avisos de interpretacao, continuity paths maximos, selected matches isolados, lifecycle
+entries fora de paths e todas as transicoes adjacentes com `New`, `StillOpen`, `Resolved`,
+`Unverifiable`, confidence, lifecycle evidence e match evidence. O texto deixa claro que
+continuity paths sao derivados de selected matches recalculados em comparacoes adjacentes,
+nao provam identidade e sao recalculaveis e nao persistidos; `High` nao e confirmacao
+humana; `Unverifiable` significa evidencia insuficiente ou competicao entre candidates;
+source GUID e evidence only; ainda nao ha Clash Ledger, `Reopened`, lifecycle multi-run
+agregado, persistent clash identity, fingerprint, path ID, status agregado de path ou
+confidence agregada de path.
 
 O HTML revision-aware apresenta:
 
@@ -754,9 +801,12 @@ Limites honestos desta etapa:
   comparações são carregados e calculados antes do primeiro output.
 - A travessia adjacente do `compare-index` agora é formalizada e apresentada por uma cadeia
   explícita: sequence comparer, continuity projector, continuity path assembler, sequence
-  analyzer e presentation projector. O stdout agora começa com o prefixo longitudinal
-  determinístico de 12 linhas; os blocos pairwise existentes permanecem preservados depois
-  desse prefixo, na ordem das transições.
+  analyzer e presentation projector. O stdout sem output continua com o prefixo
+  longitudinal determinístico de 12 linhas; os blocos pairwise existentes permanecem
+  preservados depois desse prefixo, na ordem das transições.
+- `compare-index` aceita `-o`/`--output` opcional para gravar um HTML longitudinal
+  autocontido; render e escrita terminam antes do primeiro stdout, e a unica linha extra e
+  `Longitudinal report written to ...` no final.
 - Ainda não há discovery automático, inferência cronológica, latest/previous lookup,
   comparação non-adjacent, all-vs-all, lifecycle multi-run ou derived state persistido.
 - Ainda não há Clash Ledger.

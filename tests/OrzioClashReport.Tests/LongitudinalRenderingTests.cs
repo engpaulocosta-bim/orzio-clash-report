@@ -177,6 +177,17 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
+        public void Render_StandaloneNotes_AreNestedInsideCorrespondingListItems()
+        {
+            string html = new HtmlLongitudinalClashReportRenderer().Render(CreateGoldenPresentation());
+            string standaloneSection = ExtractSection(html, "standalone-selected-matches-section");
+
+            Assert.DoesNotContain("</li>\n<p class=\"standalone-note\">", standaloneSection, StringComparison.Ordinal);
+            AssertStandaloneNoteIsInsideListItem(standaloneSection, "Standalone clash in run A");
+            AssertStandaloneNoteIsInsideListItem(standaloneSection, "Ambiguous clash primary A");
+        }
+
+        [Fact]
         public void Render_NonPathLifecycleEntriesAppearInReceivedOrder()
         {
             string html = new HtmlLongitudinalClashReportRenderer().Render(CreateGoldenPresentation());
@@ -485,6 +496,26 @@ namespace OrzioClashReport.Tests
                 Assert.True(currentIndex > previousIndex, $"Expected fragment '{fragment}' after index {previousIndex}.");
                 previousIndex = currentIndex;
             }
+        }
+
+        private static void AssertStandaloneNoteIsInsideListItem(string standaloneSection, string marker)
+        {
+            int markerIndex = standaloneSection.IndexOf(marker, StringComparison.Ordinal);
+            Assert.True(markerIndex >= 0, $"Expected marker '{marker}' in standalone section.");
+
+            int itemStart = standaloneSection.LastIndexOf("<li class=\"standalone-selected-match ", markerIndex, StringComparison.Ordinal);
+            Assert.True(itemStart >= 0, $"Expected marker '{marker}' inside a standalone selected match item.");
+
+            int nextItemStart = standaloneSection.IndexOf("<li class=\"standalone-selected-match ", itemStart + 1, StringComparison.Ordinal);
+            int sectionListEnd = standaloneSection.LastIndexOf("</ol>\n</section>", StringComparison.Ordinal);
+            Assert.True(sectionListEnd > itemStart, $"Expected standalone selected matches list to close after marker '{marker}'.");
+
+            int itemLimit = nextItemStart >= 0 ? nextItemStart : sectionListEnd;
+            int itemEnd = standaloneSection.LastIndexOf("</li>", itemLimit - 1, StringComparison.Ordinal);
+            Assert.True(itemEnd > markerIndex, $"Expected closing list item after marker '{marker}'.");
+
+            int noteIndex = standaloneSection.IndexOf("<p class=\"standalone-note\">", markerIndex, StringComparison.Ordinal);
+            Assert.True(noteIndex > markerIndex && noteIndex < itemEnd, $"Expected standalone note before the closing list item for marker '{marker}'.");
         }
 
         private static string ExtractSection(string html, string cssClass)

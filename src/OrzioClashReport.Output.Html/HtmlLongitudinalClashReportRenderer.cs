@@ -186,7 +186,6 @@ namespace OrzioClashReport.Output.Html
                 foreach (var entry in result.StandaloneSelectedMatches)
                 {
                     AppendLifecycleEntry(html, result, entry, "standalone-selected-match");
-                    html.Append("<p class=\"standalone-note\">This selected match does not participate in any continuity link or path.</p>\n");
                 }
 
                 html.Append("</ol>\n");
@@ -327,6 +326,11 @@ namespace OrzioClashReport.Output.Html
             if (entry.LifecycleEntry.SelectedMatch != null)
             {
                 AppendMatchEvidence(html, entry.LifecycleEntry.SelectedMatch.Assessment.Evidence);
+            }
+
+            if (string.Equals(cssClass, "standalone-selected-match", StringComparison.Ordinal))
+            {
+                html.Append("<p class=\"standalone-note\">This selected match does not participate in any continuity link or path.</p>\n");
             }
 
             html.Append("</li>\n");

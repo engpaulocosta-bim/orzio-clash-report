@@ -478,6 +478,55 @@ adds no ids, statuses, fingerprints, aggregate confidence, history, ledger, pers
 metadata, lifecycle aggregation, or aliases. No CLI command and no HTML renderer consumes
 this analyzer yet.
 
+## Longitudinal presentation model (Core-only, not yet wired into any CLI)
+
+`IClashRunSequencePresentationProjector` projects an already-complete
+`ClashRunSequenceAnalysisResult` onto a lossless presentation view -- ordered runs,
+comparisons, continuity links, continuity paths, every lifecycle entry, and the entries and
+selected matches that fall outside any continuity path -- without recomputing matching,
+lifecycle classification, continuity projection, or path assembly. It only indexes and
+relates the exact references it is given, in the exact order they already have.
+
+`DeterministicClashRunSequencePresentationProjector` is the sole current implementation,
+with a public parameterless constructor (no dependencies). It associates a selected match
+with its continuity path only through an exact `ClashRunMatchCandidate` reference lookup
+built from `ContinuityPathsResult.Paths[*].SelectedMatches` -- never `RunId`, `CreatedAt`,
+GUID, value equality, `ToString`, hash, or fingerprint. The same exact selected-match
+reference appearing in two different paths is a structural impossibility given
+`ClashRunSequenceContinuityPathsResult`'s own disjoint partition; the projector fails fast
+with `InvalidOperationException` rather than silently picking one.
+
+Four new immutable model types carry the presentation, all with `internal` constructors:
+`ClashRunSequenceLifecycleEntryPresentation` (one entry at its exact position, with an
+optional exact continuity-path reference and no status/confidence of its own),
+`ClashRunSequenceTransitionPresentation` (one comparison plus the complete ordered
+presentation of every one of its entries), `ClashRunSequenceContinuityPathPresentation`
+(one path plus the presentation of the lifecycle entry behind each of its selected
+matches), and `ClashRunSequencePresentationResult`, the aggregate.
+
+`ClashRunSequencePresentationResult` preserves `Runs`/`Comparisons`/`ContinuityLinks`/
+`ContinuityPaths` as the exact canonical references from `AnalysisResult`, and exposes
+indexed views: `Transitions`, the complete `LifecycleEntries` (no loss, duplication, or
+reorder), `PathPresentations`, `StandaloneSelectedMatches`, and `NonPathLifecycleEntries`.
+Every selected match belongs to exactly one of a path's `SelectedMatchEntries` or
+`StandaloneSelectedMatches`; every entry outside a path -- including every unmatched `New`,
+`Resolved`, and `Unverifiable` entry -- is in `NonPathLifecycleEntries`, of which
+`StandaloneSelectedMatches` is an exact subset. Standalone and non-path views reuse the
+exact same presentation item references as `LifecycleEntries`, never copies. Twelve derived
+counters (run/comparison/selected-match/link/path/standalone/entry/non-path counts plus one
+per lifecycle status) are computed exclusively from the already-projected collections, never
+supplied by the caller. Canonical order follows `ComparisonIndex` then `EntryIndex`
+ascending for entries, and the underlying `ContinuityPathsResult.Paths` order for paths --
+never status, confidence, `RunId`, `CreatedAt`, GUID, or path length.
+
+This is Core-only, derived presentation over an already-complete analysis chain -- not
+history, a ledger, or persistent/stable clash identity. A continuity path presented here is
+still just a derived maximal sequence of exact-reference links, never a persistent clash. No
+CLI command and no HTML renderer consumes this projection yet; `compare-index`'s stdout is
+unchanged and `Program.cs` is untouched. There is still no `compare-index` integration, no
+longitudinal HTML, no multi-run lifecycle aggregation, and no `Reopened`. Sequential real
+Navisworks export validation remains unverified.
+
 ## Anti-patterns that fail review
 
 - Core with a `using System.Xml.Linq`, a Navisworks reference, or any HTML string.

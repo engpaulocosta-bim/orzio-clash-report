@@ -544,6 +544,62 @@ adds no ids, statuses, fingerprints, aggregate confidence, history, ledger, pers
 metadata, lifecycle aggregation, or aliases. No CLI command and no HTML renderer consumes
 this analyzer yet.
 
+## Longitudinal presentation model (Core-only, not yet wired into any CLI)
+
+`IClashRunSequencePresentationProjector`
+(`src/OrzioClashReport.Core/Abstractions/IClashRunSequencePresentationProjector.cs`) projects an
+already-complete `ClashRunSequenceAnalysisResult` onto a lossless presentation view without recomputing
+matching, lifecycle classification, continuity projection, or path assembly. It only indexes and relates
+the exact references it is given, preserving run/comparison/entry/link/path order exactly.
+
+`DeterministicClashRunSequencePresentationProjector`
+(`src/OrzioClashReport.Core/Presentation/DeterministicClashRunSequencePresentationProjector.cs`) is the
+sole current implementation, with a public parameterless constructor (no dependencies). For every
+`ClashLifecycleResult` in `SequenceComparison.Comparisons` order, and every `ClashLifecycleEntry` in that
+comparison's `Entries` order, it builds one presentation item; a selected match is associated with its
+continuity path only by an exact `ClashRunMatchCandidate` reference lookup built from
+`ContinuityPathsResult.Paths[*].SelectedMatches` -- never `RunId`, `CreatedAt`, GUID, value equality,
+`ToString`, hash, or fingerprint. If the same exact selected-match reference were ever found in two
+different paths (a structural impossibility given `ClashRunSequenceContinuityPathsResult`'s own disjoint
+partition), it fails fast with `InvalidOperationException` instead of silently picking one.
+
+Four new immutable model types (`src/OrzioClashReport.Core/Model/`), all with `internal` constructors:
+
+- `ClashRunSequenceLifecycleEntryPresentation`: one lifecycle entry at its exact `(ComparisonIndex,
+  EntryIndex)` position, with an optional exact `ContinuityPath` reference
+  (`IsInContinuityPath => ContinuityPath != null`). Adds no id, status, or confidence of its own --
+  `LifecycleEntry` stays the sole authority.
+- `ClashRunSequenceTransitionPresentation`: one comparison plus the complete, ordered presentation of
+  every one of its entries.
+- `ClashRunSequenceContinuityPathPresentation`: one continuity path plus the presentation of the
+  lifecycle entry behind each of its selected matches, in path order.
+- `ClashRunSequencePresentationResult`: the aggregate. `Runs`/`Comparisons`/`ContinuityLinks`/
+  `ContinuityPaths` are the exact canonical references from `AnalysisResult`. `Transitions`,
+  `LifecycleEntries` (complete, no loss/duplication/reorder), `PathPresentations`,
+  `StandaloneSelectedMatches`, and `NonPathLifecycleEntries` are the indexed presentation views. Every
+  selected match belongs to exactly one of `PathPresentations[*].SelectedMatchEntries` or
+  `StandaloneSelectedMatches`; every entry outside a path (including every unmatched `New`, `Resolved`,
+  and `Unverifiable` entry) is in `NonPathLifecycleEntries`; `StandaloneSelectedMatches` is an exact
+  subset of it. Standalone and non-path views reuse the exact same presentation item references as
+  `LifecycleEntries`, never copies. Twelve derived counters (`RunCount`, `AdjacentComparisonCount`,
+  `SelectedMatchCount`, `ContinuityLinkCount`, `ContinuityPathCount`, `StandaloneSelectedMatchCount`,
+  `LifecycleEntryCount`, `NonPathLifecycleEntryCount`, `StillOpenCount`, `NewCount`, `ResolvedCount`,
+  `UnverifiableCount`) are computed exclusively from the already-projected collections, never supplied by
+  the caller.
+
+Canonical order: `Transitions` by `ComparisonIndex` ascending; `LifecycleEntries` by `ComparisonIndex`
+ascending then `EntryIndex` ascending; `PathPresentations` by `ContinuityPathsResult.Paths` order;
+`SelectedMatchEntries` of each path by `SelectedMatchContinuityPath.SelectedMatches` order;
+`StandaloneSelectedMatches` and `NonPathLifecycleEntries` by the order they appear in the global
+`LifecycleEntries` list. Never by status, confidence, `RunId`, `CreatedAt`, GUID, or path length.
+
+This is Core-only, presentation derived from an already-complete analysis chain -- not history, a ledger,
+or persistent/stable clash identity. A continuity path presented here is still just a derived maximal
+sequence of exact-reference links, never a persistent clash. No CLI command and no HTML renderer consumes
+this projection yet; `compare-index`'s stdout is unchanged, and `Program.cs` is untouched. There is still
+no `compare-index` integration, no longitudinal HTML, no multi-run lifecycle aggregation, and no
+`Reopened`. Sequential real Navisworks export validation remains unverified.
+
 ## Two-run comparison CLI
 
 The legacy single-XML HTML command remains supported.

@@ -312,6 +312,67 @@ ids, status, fingerprint, confidence agregada, history, ledger, metadata de pers
 lifecycle agregado nem aliases. Nenhum comando CLI e nenhum renderer HTML consome esse
 analyzer ainda.
 
+### Modelo de apresentação longitudinal (somente Core, ainda não exposto em nenhuma CLI)
+
+`IClashRunSequencePresentationProjector`
+(`src/OrzioClashReport.Core/Abstractions/IClashRunSequencePresentationProjector.cs`) projeta
+um `ClashRunSequenceAnalysisResult` já completo numa visão de apresentação sem perdas —
+runs ordenadas, comparações adjacentes, continuity links, continuity paths, todas as
+lifecycle entries, e as entries/selected matches que ficam fora de qualquer path — sem
+recalcular matching, lifecycle, continuity projection ou path assembly. A projeção apenas
+indexa e relaciona as referências exatas que recebe, preservando a ordem já existente.
+
+`DeterministicClashRunSequencePresentationProjector`
+(`src/OrzioClashReport.Core/Presentation/DeterministicClashRunSequencePresentationProjector.cs`)
+é a única implementação atual, com construtor público sem dependências. A associação entre
+um selected match e o seu continuity path usa somente `ReferenceEquals` sobre
+`ContinuityPathsResult.Paths[*].SelectedMatches` — nunca `RunId`, `CreatedAt`, GUID, value
+equality, `ToString`, hash ou fingerprint. O mesmo selected match exato aparecer em dois
+paths diferentes é uma impossibilidade estrutural dada a partição disjunta já garantida por
+`ClashRunSequenceContinuityPathsResult`; a projeção falha rápido com
+`InvalidOperationException` em vez de escolher um silenciosamente.
+
+Quatro novos tipos imutáveis carregam a apresentação, todos com construtor `internal`:
+
+- `ClashRunSequenceLifecycleEntryPresentation`: uma lifecycle entry na sua posição exata
+  (`ComparisonIndex`/`EntryIndex`), com referência opcional exata ao continuity path
+  (`IsInContinuityPath`). Não adiciona status, confidence nem identidade próprios — a
+  entry original continua sendo a única autoridade.
+- `ClashRunSequenceTransitionPresentation`: uma comparação mais a apresentação completa e
+  ordenada de todas as suas entries.
+- `ClashRunSequenceContinuityPathPresentation`: um continuity path mais a apresentação da
+  lifecycle entry por trás de cada um dos seus selected matches, na ordem do path.
+- `ClashRunSequencePresentationResult`: o agregado. `Runs`/`Comparisons`/`ContinuityLinks`/
+  `ContinuityPaths` são as referências canônicas exatas vindas de `AnalysisResult`.
+  `Transitions`, `LifecycleEntries` (completa, sem perda, duplicação ou reordenação),
+  `PathPresentations`, `StandaloneSelectedMatches` e `NonPathLifecycleEntries` são as visões
+  indexadas. Todo selected match pertence a exatamente um dos grupos — path ou standalone —
+  e toda entry fora de um path, incluindo toda entry `New`, `Resolved` e `Unverifiable` sem
+  match, está em `NonPathLifecycleEntries`, do qual `StandaloneSelectedMatches` é um
+  subconjunto exato. As visões standalone e non-path reutilizam as mesmas referências de
+  presentation item de `LifecycleEntries`, nunca cópias. Doze contagens derivadas
+  (`RunCount`, `AdjacentComparisonCount`, `SelectedMatchCount`, `ContinuityLinkCount`,
+  `ContinuityPathCount`, `StandaloneSelectedMatchCount`, `LifecycleEntryCount`,
+  `NonPathLifecycleEntryCount`, `StillOpenCount`, `NewCount`, `ResolvedCount`,
+  `UnverifiableCount`) são calculadas exclusivamente a partir das coleções já projetadas,
+  nunca fornecidas pelo chamador.
+
+Ordem canônica: `Transitions` por `ComparisonIndex` crescente; `LifecycleEntries` por
+`ComparisonIndex` crescente e depois `EntryIndex` crescente; `PathPresentations` pela ordem
+de `ContinuityPathsResult.Paths`; `SelectedMatchEntries` de cada path pela ordem de
+`SelectedMatchContinuityPath.SelectedMatches`; `StandaloneSelectedMatches` e
+`NonPathLifecycleEntries` pela ordem em que aparecem na lista global `LifecycleEntries`.
+Nunca por status, confidence, `RunId`, `CreatedAt`, GUID ou comprimento do path.
+
+Isto é somente Core: apresentação derivada de uma cadeia de análise já completa, não é
+history, ledger nem identidade persistente/estável de clash. Um continuity path apresentado
+aqui continua sendo apenas uma sequência máxima derivada de links por referência exata,
+nunca um clash persistente. Nenhum comando CLI e nenhum renderer HTML consome essa projeção
+ainda; o stdout do `compare-index` permanece inalterado, e `Program.cs` não é tocado. Ainda
+não existe integração com `compare-index`, HTML longitudinal, agregação de lifecycle
+multi-run nem `Reopened`. Validação sequencial contra exports reais do Navisworks continua
+não verificada.
+
 O HTML revision-aware apresenta:
 
 1. metadados das runs previous/current;

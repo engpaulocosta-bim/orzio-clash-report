@@ -6,7 +6,16 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using OrzioClashReport.Cli;
+using OrzioClashReport.Core.Abstractions;
+using OrzioClashReport.Core.Analysis;
+using OrzioClashReport.Core.Continuity;
+using OrzioClashReport.Core.Lifecycle;
+using OrzioClashReport.Core.Matching;
+using OrzioClashReport.Core.Model;
+using OrzioClashReport.Core.Presentation;
+using OrzioClashReport.Output.Html;
 using OrzioClashReport.Persistence.RunIndexJson;
+using OrzioClashReport.Persistence.RunSnapshotJson;
 
 namespace OrzioClashReport.Tests
 {
@@ -14,7 +23,7 @@ namespace OrzioClashReport.Tests
     public sealed class CliRunIndexComparisonTests
     {
         private static readonly MethodInfo MainMethod = ResolveMainMethod();
-        private const string CompareIndexUsage = "Usage: orzioclash compare-index --index <run-index.json>";
+        private const string CompareIndexUsage = "Usage: orzioclash compare-index --index <run-index.json> [-o <output.html> | --output <output.html>]";
         private const int LongitudinalSummaryLineCount = 12;
         private static readonly string ExpectedCompareSummary = string.Join(
             "\n",
@@ -126,6 +135,83 @@ namespace OrzioClashReport.Tests
                 AssertLongitudinalSummary(lines, ExpectedTwoRunLongitudinalSummary);
                 Assert.Equal("Comparison 1/1", lines[LongitudinalSummaryLineCount]);
                 Assert.Equal(ExpectedCompareSummary, string.Join("\n", lines[13..]), StringComparer.Ordinal);
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CompareIndexMode_WithShortOutput_WritesHtmlAndAppendsSingleFinalLine()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string firstSnapshotPath = Path.Combine(tempDirectory, "snapshots", "first.json");
+            string secondSnapshotPath = Path.Combine(tempDirectory, "snapshots", "second.json");
+            string thirdSnapshotPath = Path.Combine(tempDirectory, "snapshots", "third.json");
+            string indexPath = Path.Combine(tempDirectory, "run-index.json");
+            string outputPath = Path.Combine(tempDirectory, "longitudinal.html");
+
+            try
+            {
+                CreateFixtureSnapshot(firstSnapshotPath);
+                CreateFixtureSnapshot(secondSnapshotPath);
+                CreateFixtureSnapshot(thirdSnapshotPath);
+                CreateRunIndexWithCommand(indexPath, firstSnapshotPath, secondSnapshotPath, thirdSnapshotPath);
+
+                string expectedHtml = RenderExpectedLongitudinalHtml(indexPath);
+                var result = InvokeMain("compare-index", "--index", indexPath, "-o", outputPath);
+
+                Assert.Equal(0, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdErr);
+                Assert.True(File.Exists(outputPath));
+                Assert.Equal(expectedHtml, File.ReadAllText(outputPath), StringComparer.Ordinal);
+
+                string[] lines = SplitStdOutLines(result.StdOut);
+                Assert.Equal(37, lines.Length);
+                AssertLongitudinalSummary(lines, ExpectedThreeRunLongitudinalSummary);
+                Assert.Equal("Comparison 1/2", lines[LongitudinalSummaryLineCount]);
+                Assert.Equal("Comparison 2/2", lines[24]);
+                Assert.Equal($"Longitudinal report written to {outputPath}", lines[^1]);
+                Assert.Equal(1, CountExactLine(result.StdOut, $"Longitudinal report written to {outputPath}"));
+                Assert.Contains("<h3>Continuity paths</h3><p>5</p>", expectedHtml, StringComparison.Ordinal);
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CompareIndexMode_WithLongOutput_WritesHtmlAndAppendsSingleFinalLine()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string firstSnapshotPath = Path.Combine(tempDirectory, "snapshots", "first.json");
+            string secondSnapshotPath = Path.Combine(tempDirectory, "snapshots", "second.json");
+            string indexPath = Path.Combine(tempDirectory, "run-index.json");
+            string outputPath = Path.Combine(tempDirectory, "longitudinal-two-run.html");
+
+            try
+            {
+                CreateFixtureSnapshot(firstSnapshotPath);
+                CreateFixtureSnapshot(secondSnapshotPath);
+                CreateRunIndexWithCommand(indexPath, firstSnapshotPath, secondSnapshotPath);
+
+                string expectedHtml = RenderExpectedLongitudinalHtml(indexPath);
+                var result = InvokeMain("compare-index", "--index", indexPath, "--output", outputPath);
+
+                Assert.Equal(0, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdErr);
+                Assert.True(File.Exists(outputPath));
+                Assert.Equal(expectedHtml, File.ReadAllText(outputPath), StringComparer.Ordinal);
+
+                string[] lines = SplitStdOutLines(result.StdOut);
+                Assert.Equal(25, lines.Length);
+                AssertLongitudinalSummary(lines, ExpectedTwoRunLongitudinalSummary);
+                Assert.Equal("Comparison 1/1", lines[LongitudinalSummaryLineCount]);
+                Assert.Equal($"Longitudinal report written to {outputPath}", lines[^1]);
+                Assert.Contains("<h3>Continuity paths</h3><p>0</p>", expectedHtml, StringComparison.Ordinal);
+                Assert.Contains("Zero continuity paths.", expectedHtml, StringComparison.Ordinal);
             }
             finally
             {
@@ -380,17 +466,18 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
-        public void Main_CompareIndexMode_UnsupportedOutputOption_IsRejectedAsUnknownArgument()
+        public void Main_CompareIndexMode_CombinedOutputAliases_AreRejectedAsDuplicate()
         {
             var result = InvokeMain(
                 "compare-index",
                 "--index", "run-index.json",
-                "-o", "comparison.html");
+                "-o", "short.html",
+                "--output", "long.html");
 
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(string.Empty, result.StdOut);
             AssertNoLongitudinalLabels(result.StdOut);
-            Assert.Contains("Unrecognized compare-index argument '-o'.", result.StdErr);
+            Assert.Contains("Duplicate option '-o/--output'.", result.StdErr);
             Assert.Contains(CompareIndexUsage, result.StdErr);
         }
 
@@ -410,17 +497,80 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
-        public void Main_CompareIndexMode_LongOutputOption_IsRejectedAsUnknownArgument()
+        public void Main_CompareIndexMode_RepeatedShortOutputOption_IsRejectedAsDuplicate()
         {
             var result = InvokeMain(
                 "compare-index",
                 "--index", "run-index.json",
-                "--output", "comparison.html");
+                "-o", "first.html",
+                "-o", "second.html");
 
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(string.Empty, result.StdOut);
             AssertNoLongitudinalLabels(result.StdOut);
-            Assert.Contains("Unrecognized compare-index argument '--output'.", result.StdErr);
+            Assert.Contains("Duplicate option '-o/--output'.", result.StdErr);
+            Assert.Contains(CompareIndexUsage, result.StdErr);
+        }
+
+        [Fact]
+        public void Main_CompareIndexMode_RepeatedLongOutputOption_IsRejectedAsDuplicate()
+        {
+            var result = InvokeMain(
+                "compare-index",
+                "--index", "run-index.json",
+                "--output", "first.html",
+                "--output", "second.html");
+
+            Assert.Equal(1, result.ExitCode);
+            Assert.Equal(string.Empty, result.StdOut);
+            AssertNoLongitudinalLabels(result.StdOut);
+            Assert.Contains("Duplicate option '-o/--output'.", result.StdErr);
+            Assert.Contains(CompareIndexUsage, result.StdErr);
+        }
+
+        [Fact]
+        public void Main_CompareIndexMode_MissingShortOutputValue_ReturnsUsageError()
+        {
+            var result = InvokeMain(
+                "compare-index",
+                "--index", "run-index.json",
+                "-o");
+
+            Assert.Equal(1, result.ExitCode);
+            Assert.Equal(string.Empty, result.StdOut);
+            AssertNoLongitudinalLabels(result.StdOut);
+            Assert.Contains("Missing value for '-o'.", result.StdErr);
+            Assert.Contains(CompareIndexUsage, result.StdErr);
+        }
+
+        [Fact]
+        public void Main_CompareIndexMode_MissingLongOutputValue_ReturnsUsageError()
+        {
+            var result = InvokeMain(
+                "compare-index",
+                "--index", "run-index.json",
+                "--output");
+
+            Assert.Equal(1, result.ExitCode);
+            Assert.Equal(string.Empty, result.StdOut);
+            AssertNoLongitudinalLabels(result.StdOut);
+            Assert.Contains("Missing value for '--output'.", result.StdErr);
+            Assert.Contains(CompareIndexUsage, result.StdErr);
+        }
+
+        [Fact]
+        public void Main_CompareIndexMode_RecognizedOutputOptionAsNextToken_CountsAsMissingValue()
+        {
+            var result = InvokeMain(
+                "compare-index",
+                "--index", "run-index.json",
+                "-o",
+                "--output", "long.html");
+
+            Assert.Equal(1, result.ExitCode);
+            Assert.Equal(string.Empty, result.StdOut);
+            AssertNoLongitudinalLabels(result.StdOut);
+            Assert.Contains("Missing value for '-o'.", result.StdErr);
             Assert.Contains(CompareIndexUsage, result.StdErr);
         }
 
@@ -452,6 +602,59 @@ namespace OrzioClashReport.Tests
                 Assert.Contains("Failed to compare run index:", result.StdErr);
                 Assert.Contains("Run index file not found:", result.StdErr, StringComparison.Ordinal);
                 Assert.Contains(missingIndexPath, result.StdErr, StringComparison.Ordinal);
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CompareIndexMode_MissingRunIndexFileWithOutput_FailsWithoutStdOutOrSuccessMessage()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string missingIndexPath = Path.Combine(tempDirectory, "missing-run-index.json");
+            string outputPath = Path.Combine(tempDirectory, "longitudinal.html");
+
+            try
+            {
+                var result = InvokeMain("compare-index", "--index", missingIndexPath, "-o", outputPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                AssertNoLongitudinalLabels(result.StdOut);
+                Assert.Contains("Failed to compare run index:", result.StdErr);
+                Assert.Contains("Run index file not found:", result.StdErr, StringComparison.Ordinal);
+                Assert.DoesNotContain("Longitudinal report written to", result.StdOut, StringComparison.Ordinal);
+                Assert.False(File.Exists(outputPath));
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CompareIndexMode_OutputWriteFailure_FailsWithoutStdOut()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string firstSnapshotPath = Path.Combine(tempDirectory, "snapshots", "first.json");
+            string secondSnapshotPath = Path.Combine(tempDirectory, "snapshots", "second.json");
+            string indexPath = Path.Combine(tempDirectory, "run-index.json");
+
+            try
+            {
+                CreateFixtureSnapshot(firstSnapshotPath);
+                CreateFixtureSnapshot(secondSnapshotPath);
+                CreateRunIndexWithCommand(indexPath, firstSnapshotPath, secondSnapshotPath);
+
+                var result = InvokeMain("compare-index", "--index", indexPath, "-o", tempDirectory);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                AssertNoLongitudinalLabels(result.StdOut);
+                Assert.Contains("Failed to compare run index:", result.StdErr);
+                Assert.DoesNotContain("Longitudinal report written to", result.StdOut, StringComparison.Ordinal);
             }
             finally
             {
@@ -624,6 +827,36 @@ namespace OrzioClashReport.Tests
                 Assert.DoesNotContain("Adjacent comparisons:", result.StdOut, StringComparison.Ordinal);
                 Assert.DoesNotContain("Comparison 1/1", result.StdOut, StringComparison.Ordinal);
                 Assert.DoesNotContain("Previous run:", result.StdOut, StringComparison.Ordinal);
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CompareIndexMode_InvalidSnapshotWithOutput_FailsWithoutStdOutOrSuccessMessage()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string invalidFirstSnapshotPath = Path.Combine(tempDirectory, "snapshots", "invalid-a.json");
+            string validSecondSnapshotPath = Path.Combine(tempDirectory, "snapshots", "valid-b.json");
+            string indexPath = Path.Combine(tempDirectory, "run-index.json");
+            string outputPath = Path.Combine(tempDirectory, "longitudinal.html");
+
+            try
+            {
+                WriteInvalidSnapshotFile(invalidFirstSnapshotPath);
+                CreateFixtureSnapshot(validSecondSnapshotPath);
+                CreateRunIndexWithSerializer(indexPath, invalidFirstSnapshotPath, validSecondSnapshotPath);
+
+                var result = InvokeMain("compare-index", "--index", indexPath, "--output", outputPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                AssertNoLongitudinalLabels(result.StdOut);
+                Assert.Contains("Failed to compare run index:", result.StdErr);
+                Assert.DoesNotContain("Longitudinal report written to", result.StdOut, StringComparison.Ordinal);
+                Assert.False(File.Exists(outputPath));
             }
             finally
             {
@@ -829,6 +1062,39 @@ namespace OrzioClashReport.Tests
             }
         }
 
+        [Fact]
+        public void Main_CompareIndexMode_OutputHtmlIsDeterministicAcrossEquivalentRuns()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string firstSnapshotPath = Path.Combine(tempDirectory, "snapshots", "first.json");
+            string secondSnapshotPath = Path.Combine(tempDirectory, "snapshots", "second.json");
+            string thirdSnapshotPath = Path.Combine(tempDirectory, "snapshots", "third.json");
+            string indexPath = Path.Combine(tempDirectory, "run-index.json");
+            string firstOutputPath = Path.Combine(tempDirectory, "first.html");
+            string secondOutputPath = Path.Combine(tempDirectory, "second.html");
+
+            try
+            {
+                CreateFixtureSnapshot(firstSnapshotPath);
+                CreateFixtureSnapshot(secondSnapshotPath);
+                CreateFixtureSnapshot(thirdSnapshotPath);
+                CreateRunIndexWithCommand(indexPath, firstSnapshotPath, secondSnapshotPath, thirdSnapshotPath);
+
+                var firstResult = InvokeMain("compare-index", "--index", indexPath, "-o", firstOutputPath);
+                var secondResult = InvokeMain("compare-index", "--index", indexPath, "-o", secondOutputPath);
+
+                Assert.Equal(0, firstResult.ExitCode);
+                Assert.Equal(0, secondResult.ExitCode);
+                Assert.Equal(string.Empty, firstResult.StdErr);
+                Assert.Equal(string.Empty, secondResult.StdErr);
+                Assert.Equal(File.ReadAllText(firstOutputPath), File.ReadAllText(secondOutputPath), StringComparer.Ordinal);
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
         private static void WriteStrictInvalidRunIndexJson(string outputPath)
         {
             string? parentDirectory = Path.GetDirectoryName(outputPath);
@@ -970,6 +1236,40 @@ namespace OrzioClashReport.Tests
             }
 
             new JsonRunIndexSerializer().Save(new RunIndexDocument(references), outputPath);
+        }
+
+        private static string RenderExpectedLongitudinalHtml(string indexPath)
+        {
+            var indexSerializer = new JsonRunIndexSerializer();
+            var pathResolver = new RunIndexSnapshotPathResolver();
+            var snapshotSerializer = new JsonCoordinationRunSnapshotSerializer();
+            RunIndexDocument index = indexSerializer.Load(indexPath);
+            var runs = new List<CoordinationRun>(index.SnapshotPaths.Count);
+
+            for (int i = 0; i < index.SnapshotPaths.Count; i++)
+            {
+                string resolvedPath = pathResolver.ResolveReference(indexPath, index.SnapshotPaths[i]);
+                runs.Add(snapshotSerializer.Load(resolvedPath));
+            }
+
+            IClashMatcher matcher = new ConservativeClashMatcher();
+            IClashRunComparer runComparer = new DeterministicClashRunComparer(matcher);
+            IClashLifecycleClassifier lifecycleClassifier = new ConservativeClashLifecycleClassifier();
+            IClashRunSequenceComparer sequenceComparer =
+                new DeterministicAdjacentClashRunSequenceComparer(runComparer, lifecycleClassifier);
+            IClashRunSequenceContinuityProjector continuityProjector =
+                new DeterministicSelectedMatchContinuityProjector();
+            IClashRunSequenceContinuityPathAssembler continuityPathAssembler =
+                new DeterministicSelectedMatchContinuityPathAssembler();
+            IClashRunSequenceAnalyzer sequenceAnalyzer =
+                new DeterministicClashRunSequenceAnalyzer(sequenceComparer, continuityProjector, continuityPathAssembler);
+            IClashRunSequencePresentationProjector presentationProjector =
+                new DeterministicClashRunSequencePresentationProjector();
+
+            ClashRunSequencePresentationResult presentationResult =
+                presentationProjector.Project(sequenceAnalyzer.Analyze(runs));
+
+            return new HtmlLongitudinalClashReportRenderer().Render(presentationResult);
         }
 
         private static void WriteSnapshotCopyWithMetadata(string sourcePath, string destinationPath, string runId, string createdAt)

@@ -1,0 +1,1231 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Orzio Clash Longitudinal Report</title>
+<style>
+*{box-sizing:border-box;}
+body{margin:0;background:#f6f5f2;color:#1d2733;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.45;}
+body{max-width:1280px;margin:0 auto;padding:28px 20px;}
+h1,h2,h3,h4,h5,p,ol,ul,dl{margin-top:0;}
+h1{font-size:2rem;}
+h2{font-size:1.35rem;border-bottom:2px solid #d8dee7;padding-bottom:8px;}
+h3{font-size:1.1rem;}
+section,article,footer,header{overflow-wrap:anywhere;}
+.longitudinal-header,.interpretation-warning,.longitudinal-classification-note{background:#fff;border:1px solid #d8dee7;padding:20px;margin-bottom:22px;}
+.run-flow{display:flex;flex-wrap:wrap;gap:10px;padding-left:24px;margin-bottom:0;}
+.run-flow li{padding:6px 10px;background:#eef6ff;border:1px solid #bdd7f5;}
+.longitudinal-summary-section,.run-sequence-section,.continuity-paths-section,.standalone-selected-matches-section,.non-path-lifecycle-section,.transition-sections{margin-bottom:24px;}
+.summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+.summary-card,.run-card,.continuity-path,.transition-section,.path-selected-match,.standalone-selected-match,.transition-lifecycle-entry,.non-path-entry{background:#fff;border:1px solid #d8dee7;padding:16px;margin-bottom:14px;}
+.summary-card h3{font-size:.95rem;margin-bottom:6px;color:#4b5563;}
+.summary-card p{font-size:1.6rem;font-weight:800;margin:0;}
+dl{display:grid;grid-template-columns:minmax(150px,240px) minmax(0,1fr);gap:6px 12px;}
+dt{font-weight:700;color:#334155;}
+dd{margin:0;}
+.model-list li{margin-bottom:10px;}
+.model-label,.model-source{display:block;}
+.model-source{color:#52606d;font-size:.94rem;}
+.ordinal-note,.standalone-note,.empty-message{color:#475569;font-style:italic;}
+.entry-list{padding-left:22px;}
+.entry-header{border-bottom:1px solid #e3e8ef;margin-bottom:12px;}
+.entry-status{font-weight:700;}
+.occurrence-panel,.selected-match-section,.evidence-section{border:1px solid #e3e8ef;background:#fbfcfe;padding:12px;margin:10px 0;}
+.status-stillopen{border-left:6px solid #2563eb;}
+.status-new{border-left:6px solid #f97316;}
+.status-resolved{border-left:6px solid #15803d;}
+.status-unverifiable{border-left:6px solid #64748b;}
+.run-pair{font-weight:700;}
+@media (max-width:860px){
+  body{padding:18px 12px;}
+  .summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  dl{grid-template-columns:1fr;}
+}
+@media (max-width:520px){
+  .summary-grid{grid-template-columns:1fr;}
+}
+@media print{
+  body{background:#fff;padding:0;}
+  .summary-card,.run-card,.continuity-path,.transition-section,.path-selected-match,.standalone-selected-match,.transition-lifecycle-entry,.non-path-entry{break-inside:avoid;}
+}
+</style>
+</head>
+<body>
+<header class="longitudinal-header">
+<h1>Orzio Clash Longitudinal Report</h1>
+<p>The run order below was explicitly declared by the run index.</p>
+<ol class="run-flow">
+<li>run-A &lt;alpha&gt;</li>
+<li>run-B</li>
+<li>run-C</li>
+<li>run-D</li>
+</ol>
+</header>
+<section class="longitudinal-summary-section">
+<h2>Longitudinal summary</h2>
+<div class="summary-grid">
+<article class="summary-card"><h3>Indexed runs</h3><p>4</p></article>
+<article class="summary-card"><h3>Adjacent comparisons</h3><p>3</p></article>
+<article class="summary-card"><h3>Selected matches</h3><p>5</p></article>
+<article class="summary-card"><h3>Continuity links</h3><p>2</p></article>
+<article class="summary-card"><h3>Continuity paths</h3><p>1</p></article>
+<article class="summary-card"><h3>Standalone selected matches</h3><p>2</p></article>
+<article class="summary-card"><h3>Lifecycle entries</h3><p>10</p></article>
+<article class="summary-card"><h3>Non-path lifecycle entries</h3><p>7</p></article>
+<article class="summary-card"><h3>StillOpen</h3><p>4</p></article>
+<article class="summary-card"><h3>New</h3><p>1</p></article>
+<article class="summary-card"><h3>Resolved</h3><p>3</p></article>
+<article class="summary-card"><h3>Unverifiable</h3><p>2</p></article>
+</div>
+</section>
+<section class="interpretation-warning">
+<h2>Interpretation warnings</h2>
+<ul>
+<li>Continuity paths are derived from selected matches recalculated in adjacent comparisons.</li>
+<li>Continuity is not a persistent or stable identity for a clash.</li>
+<li>High confidence is not human confirmation.</li>
+<li>Unverifiable means available evidence or candidate competition blocks safe automatic classification.</li>
+<li>This report does not implement Clash Ledger, Reopened, or aggregate multi-run lifecycle.</li>
+<li>Source clash GUID is evidence only.</li>
+</ul>
+</section>
+<section class="run-sequence-section">
+<h2>Run sequence</h2>
+<article class="run-card">
+<h3>Run 1</h3>
+<p class="ordinal-note">Presentation ordinal only; not an ID.</p>
+<dl>
+<dt>Run ID</dt><dd>run-A &lt;alpha&gt;</dd>
+<dt>Created at</dt><dd>2026-07-01T08:00:00.0000000+00:00</dd>
+<dt>Occurrences</dt><dd>5</dd>
+<dt>Executed clash tests</dt><dd>1</dd>
+</dl>
+<h4>Declared model revisions</h4>
+<ol class="model-list">
+<li><span class="model-label">Sigma / Structure / Main &amp; Core @ R01</span><span class="model-source">SourceFileName: Sigma_Main_R01.nwc</span></li>
+<li><span class="model-label">Alfa / HVAC / Coordination @ R01</span><span class="model-source">SourceFileName: Alfa_HVAC_R01.nwc</span></li>
+</ol>
+</article>
+<article class="run-card">
+<h3>Run 2</h3>
+<p class="ordinal-note">Presentation ordinal only; not an ID.</p>
+<dl>
+<dt>Run ID</dt><dd>run-B</dd>
+<dt>Created at</dt><dd>2026-07-02T08:00:00.0000000+00:00</dd>
+<dt>Occurrences</dt><dd>3</dd>
+<dt>Executed clash tests</dt><dd>1</dd>
+</dl>
+<h4>Declared model revisions</h4>
+<ol class="model-list">
+<li><span class="model-label">Sigma / Structure / Main &amp; Core @ R02</span><span class="model-source">SourceFileName: Sigma_Main_R02.nwc</span></li>
+<li><span class="model-label">Alfa / HVAC / Coordination @ R02</span><span class="model-source">SourceFileName: Alfa_HVAC_R02.nwc</span></li>
+</ol>
+</article>
+<article class="run-card">
+<h3>Run 3</h3>
+<p class="ordinal-note">Presentation ordinal only; not an ID.</p>
+<dl>
+<dt>Run ID</dt><dd>run-C</dd>
+<dt>Created at</dt><dd>2026-07-03T08:00:00.0000000+00:00</dd>
+<dt>Occurrences</dt><dd>1</dd>
+<dt>Executed clash tests</dt><dd>1</dd>
+</dl>
+<h4>Declared model revisions</h4>
+<ol class="model-list">
+<li><span class="model-label">Sigma / Structure / Main &amp; Core @ R03</span><span class="model-source">SourceFileName: Sigma_Main_R03.nwc</span></li>
+<li><span class="model-label">Alfa / HVAC / Coordination @ R03</span><span class="model-source">SourceFileName: Alfa_HVAC_R03.nwc</span></li>
+</ol>
+</article>
+<article class="run-card">
+<h3>Run 4</h3>
+<p class="ordinal-note">Presentation ordinal only; not an ID.</p>
+<dl>
+<dt>Run ID</dt><dd>run-D</dd>
+<dt>Created at</dt><dd>2026-07-04T08:00:00.0000000+00:00</dd>
+<dt>Occurrences</dt><dd>2</dd>
+<dt>Executed clash tests</dt><dd>1</dd>
+</dl>
+<h4>Declared model revisions</h4>
+<ol class="model-list">
+<li><span class="model-label">Sigma / Structure / Main &amp; Core @ R04</span><span class="model-source">SourceFileName: Sigma_Main_R04.nwc</span></li>
+<li><span class="model-label">Alfa / HVAC / Coordination @ R04</span><span class="model-source">SourceFileName: Alfa_HVAC_R04.nwc</span></li>
+</ol>
+</article>
+</section>
+<section class="continuity-paths-section">
+<h2>Continuity paths</h2>
+<article class="continuity-path">
+<h3>Continuity path 1</h3>
+<p class="ordinal-note">This is a presentation ordinal, not an identifier for the path.</p>
+<dl>
+<dt>Start run</dt><dd>1</dd>
+<dt>End run</dt><dd>4</dd>
+<dt>Start comparison</dt><dd>1</dd>
+<dt>End comparison</dt><dd>3</dd>
+<dt>Links</dt><dd>2</dd>
+<dt>Selected matches</dt><dd>3</dd>
+</dl>
+<ol class="entry-list">
+<li class="path-selected-match status-stillopen">
+<header class="entry-header">
+<h4>Transition 1 / Entry 1</h4>
+<p>run-A &lt;alpha&gt; -&gt; run-B</p>
+<p>Slots: previous[0] / current[0]</p>
+<p>Continuity path: 1 (presentation ordinal only)</p>
+</header>
+<p class="entry-status">Status: StillOpen</p>
+<section class="occurrence-panel">
+<h5>Previous occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Path clash in run A</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R01</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R01</dd>
+<dt>Element A</dt><dd>PATH-A<br>Name: Pipe &lt;Path&gt; &amp; Valve<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>PATH-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-path</dd>
+</dl>
+</section>
+<section class="occurrence-panel">
+<h5>Current occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Path clash in run B</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R02</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R02</dd>
+<dt>Element A</dt><dd>PATH-A<br>Name: Pipe &lt;Path&gt; &amp; Valve<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>PATH-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-path</dd>
+</dl>
+</section>
+<section class="selected-match-section">
+<h5>Selected match</h5>
+<dl>
+<dt>Previous slot</dt><dd>0</dd>
+<dt>Current slot</dt><dd>0</dd>
+<dt>Confidence</dt><dd>High</dd>
+</dl>
+</section>
+<section class="evidence-section lifecycle-evidence">
+<h5>Lifecycle evidence</h5>
+<ol>
+<li>SelectedMatch / SupportsClassification: This previous/current pair was selected as a one-to-one match.</li>
+<li>MatchConfidence / SupportsClassification: Match confidence is High. This is not treated as exact, only as sufficient to proceed.</li>
+<li>CandidateAmbiguity / SupportsClassification: No alternative candidate shares this match&#39;s previous or current index.</li>
+</ol>
+</section>
+<section class="evidence-section match-evidence">
+<h5>Match evidence</h5>
+<ol>
+<li>ClashTestName / Supports: Clash test names match using ordinal case-insensitive comparison.<dl><dt>Previous value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Current value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+</dl></li>
+<li>ModelIdentityPair / Supports: Revision-free model identities match directly (A to A, B to B) across the two exports.<dl><dt>Previous value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+<dt>Current value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+</dl></li>
+<li>ElementIdentifierPair / Supports: Element identifiers match directly (A to A, B to B), consistent with the accepted model alignment.<dl><dt>Previous value</dt><dd>PATH-A | PATH-B</dd>
+<dt>Current value</dt><dd>PATH-A | PATH-B</dd>
+</dl></li>
+<li>SourceClashGuid / Supports: Source clash GUIDs are equal. Source GUID is supplemental evidence only and has not been proven as stable cross-run identity.<dl><dt>Previous value</dt><dd>guid-path</dd>
+<dt>Current value</dt><dd>guid-path</dd>
+</dl></li>
+</ol>
+</section>
+</li>
+<li class="path-selected-match status-stillopen">
+<header class="entry-header">
+<h4>Transition 2 / Entry 1</h4>
+<p>run-B -&gt; run-C</p>
+<p>Slots: previous[0] / current[0]</p>
+<p>Continuity path: 1 (presentation ordinal only)</p>
+</header>
+<p class="entry-status">Status: StillOpen</p>
+<section class="occurrence-panel">
+<h5>Previous occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Path clash in run B</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R02</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R02</dd>
+<dt>Element A</dt><dd>PATH-A<br>Name: Pipe &lt;Path&gt; &amp; Valve<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>PATH-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-path</dd>
+</dl>
+</section>
+<section class="occurrence-panel">
+<h5>Current occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Path clash in run C</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R03</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R03</dd>
+<dt>Element A</dt><dd>PATH-A<br>Name: Pipe &lt;Path&gt; &amp; Valve<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>PATH-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-path</dd>
+</dl>
+</section>
+<section class="selected-match-section">
+<h5>Selected match</h5>
+<dl>
+<dt>Previous slot</dt><dd>0</dd>
+<dt>Current slot</dt><dd>0</dd>
+<dt>Confidence</dt><dd>High</dd>
+</dl>
+</section>
+<section class="evidence-section lifecycle-evidence">
+<h5>Lifecycle evidence</h5>
+<ol>
+<li>SelectedMatch / SupportsClassification: This previous/current pair was selected as a one-to-one match.</li>
+<li>MatchConfidence / SupportsClassification: Match confidence is High. This is not treated as exact, only as sufficient to proceed.</li>
+<li>CandidateAmbiguity / SupportsClassification: No alternative candidate shares this match&#39;s previous or current index.</li>
+</ol>
+</section>
+<section class="evidence-section match-evidence">
+<h5>Match evidence</h5>
+<ol>
+<li>ClashTestName / Supports: Clash test names match using ordinal case-insensitive comparison.<dl><dt>Previous value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Current value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+</dl></li>
+<li>ModelIdentityPair / Supports: Revision-free model identities match directly (A to A, B to B) across the two exports.<dl><dt>Previous value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+<dt>Current value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+</dl></li>
+<li>ElementIdentifierPair / Supports: Element identifiers match directly (A to A, B to B), consistent with the accepted model alignment.<dl><dt>Previous value</dt><dd>PATH-A | PATH-B</dd>
+<dt>Current value</dt><dd>PATH-A | PATH-B</dd>
+</dl></li>
+<li>SourceClashGuid / Supports: Source clash GUIDs are equal. Source GUID is supplemental evidence only and has not been proven as stable cross-run identity.<dl><dt>Previous value</dt><dd>guid-path</dd>
+<dt>Current value</dt><dd>guid-path</dd>
+</dl></li>
+</ol>
+</section>
+</li>
+<li class="path-selected-match status-stillopen">
+<header class="entry-header">
+<h4>Transition 3 / Entry 1</h4>
+<p>run-C -&gt; run-D</p>
+<p>Slots: previous[0] / current[0]</p>
+<p>Continuity path: 1 (presentation ordinal only)</p>
+</header>
+<p class="entry-status">Status: StillOpen</p>
+<section class="occurrence-panel">
+<h5>Previous occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Path clash in run C</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R03</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R03</dd>
+<dt>Element A</dt><dd>PATH-A<br>Name: Pipe &lt;Path&gt; &amp; Valve<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>PATH-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-path</dd>
+</dl>
+</section>
+<section class="occurrence-panel">
+<h5>Current occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Path clash in run D</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R04</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R04</dd>
+<dt>Element A</dt><dd>PATH-A<br>Name: Pipe &lt;Path&gt; &amp; Valve<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>PATH-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-path</dd>
+</dl>
+</section>
+<section class="selected-match-section">
+<h5>Selected match</h5>
+<dl>
+<dt>Previous slot</dt><dd>0</dd>
+<dt>Current slot</dt><dd>0</dd>
+<dt>Confidence</dt><dd>High</dd>
+</dl>
+</section>
+<section class="evidence-section lifecycle-evidence">
+<h5>Lifecycle evidence</h5>
+<ol>
+<li>SelectedMatch / SupportsClassification: This previous/current pair was selected as a one-to-one match.</li>
+<li>MatchConfidence / SupportsClassification: Match confidence is High. This is not treated as exact, only as sufficient to proceed.</li>
+<li>CandidateAmbiguity / SupportsClassification: No alternative candidate shares this match&#39;s previous or current index.</li>
+</ol>
+</section>
+<section class="evidence-section match-evidence">
+<h5>Match evidence</h5>
+<ol>
+<li>ClashTestName / Supports: Clash test names match using ordinal case-insensitive comparison.<dl><dt>Previous value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Current value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+</dl></li>
+<li>ModelIdentityPair / Supports: Revision-free model identities match directly (A to A, B to B) across the two exports.<dl><dt>Previous value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+<dt>Current value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+</dl></li>
+<li>ElementIdentifierPair / Supports: Element identifiers match directly (A to A, B to B), consistent with the accepted model alignment.<dl><dt>Previous value</dt><dd>PATH-A | PATH-B</dd>
+<dt>Current value</dt><dd>PATH-A | PATH-B</dd>
+</dl></li>
+<li>SourceClashGuid / Supports: Source clash GUIDs are equal. Source GUID is supplemental evidence only and has not been proven as stable cross-run identity.<dl><dt>Previous value</dt><dd>guid-path</dd>
+<dt>Current value</dt><dd>guid-path</dd>
+</dl></li>
+</ol>
+</section>
+</li>
+</ol>
+</article>
+</section>
+<section class="standalone-selected-matches-section">
+<h2>Standalone selected matches</h2>
+<ol class="entry-list">
+<li class="standalone-selected-match status-stillopen">
+<header class="entry-header">
+<h4>Transition 1 / Entry 2</h4>
+<p>run-A &lt;alpha&gt; -&gt; run-B</p>
+<p>Slots: previous[1] / current[1]</p>
+<p>Continuity path: none</p>
+</header>
+<p class="entry-status">Status: StillOpen</p>
+<section class="occurrence-panel">
+<h5>Previous occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Standalone clash in run A</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R01</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R01</dd>
+<dt>Element A</dt><dd>STAND-A<br>Name: Standalone duct<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>STAND-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-standalone</dd>
+</dl>
+</section>
+<section class="occurrence-panel">
+<h5>Current occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Standalone clash in run B</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R02</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R02</dd>
+<dt>Element A</dt><dd>STAND-A<br>Name: Standalone duct<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>STAND-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-standalone</dd>
+</dl>
+</section>
+<section class="selected-match-section">
+<h5>Selected match</h5>
+<dl>
+<dt>Previous slot</dt><dd>1</dd>
+<dt>Current slot</dt><dd>1</dd>
+<dt>Confidence</dt><dd>High</dd>
+</dl>
+</section>
+<section class="evidence-section lifecycle-evidence">
+<h5>Lifecycle evidence</h5>
+<ol>
+<li>SelectedMatch / SupportsClassification: This previous/current pair was selected as a one-to-one match.</li>
+<li>MatchConfidence / SupportsClassification: Match confidence is High. This is not treated as exact, only as sufficient to proceed.</li>
+<li>CandidateAmbiguity / SupportsClassification: No alternative candidate shares this match&#39;s previous or current index.</li>
+</ol>
+</section>
+<section class="evidence-section match-evidence">
+<h5>Match evidence</h5>
+<ol>
+<li>ClashTestName / Supports: Clash test names match using ordinal case-insensitive comparison.<dl><dt>Previous value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Current value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+</dl></li>
+<li>ModelIdentityPair / Supports: Revision-free model identities match directly (A to A, B to B) across the two exports.<dl><dt>Previous value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+<dt>Current value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+</dl></li>
+<li>ElementIdentifierPair / Supports: Element identifiers match directly (A to A, B to B), consistent with the accepted model alignment.<dl><dt>Previous value</dt><dd>STAND-A | STAND-B</dd>
+<dt>Current value</dt><dd>STAND-A | STAND-B</dd>
+</dl></li>
+<li>SourceClashGuid / Supports: Source clash GUIDs are equal. Source GUID is supplemental evidence only and has not been proven as stable cross-run identity.<dl><dt>Previous value</dt><dd>guid-standalone</dd>
+<dt>Current value</dt><dd>guid-standalone</dd>
+</dl></li>
+</ol>
+</section>
+</li>
+<p class="standalone-note">This selected match does not participate in any continuity link or path.</p>
+<li class="standalone-selected-match status-unverifiable">
+<header class="entry-header">
+<h4>Transition 1 / Entry 3</h4>
+<p>run-A &lt;alpha&gt; -&gt; run-B</p>
+<p>Slots: previous[3] / current[2]</p>
+<p>Continuity path: none</p>
+</header>
+<p class="entry-status">Status: Unverifiable</p>
+<section class="occurrence-panel">
+<h5>Previous occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Ambiguous clash primary A</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R01</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R01</dd>
+<dt>Element A</dt><dd>AMB-A<br>Name: Ambiguous primary<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>AMB-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-ambiguous</dd>
+</dl>
+</section>
+<section class="occurrence-panel">
+<h5>Current occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Ambiguous clash in run B</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R02</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R02</dd>
+<dt>Element A</dt><dd>AMB-A<br>Name: Ambiguous current<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>AMB-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-ambiguous</dd>
+</dl>
+</section>
+<section class="selected-match-section">
+<h5>Selected match</h5>
+<dl>
+<dt>Previous slot</dt><dd>3</dd>
+<dt>Current slot</dt><dd>2</dd>
+<dt>Confidence</dt><dd>High</dd>
+</dl>
+</section>
+<section class="evidence-section lifecycle-evidence">
+<h5>Lifecycle evidence</h5>
+<ol>
+<li>SelectedMatch / SupportsClassification: This previous/current pair was selected as a one-to-one match.</li>
+<li>MatchConfidence / SupportsClassification: Match confidence is High. This is not treated as exact, only as sufficient to proceed.</li>
+<li>CandidateAmbiguity / BlocksClassification: 1 alternative candidate(s) share this match&#39;s previous or current index.</li>
+</ol>
+</section>
+<section class="evidence-section match-evidence">
+<h5>Match evidence</h5>
+<ol>
+<li>ClashTestName / Supports: Clash test names match using ordinal case-insensitive comparison.<dl><dt>Previous value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Current value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+</dl></li>
+<li>ModelIdentityPair / Supports: Revision-free model identities match directly (A to A, B to B) across the two exports.<dl><dt>Previous value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+<dt>Current value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+</dl></li>
+<li>ElementIdentifierPair / Supports: Element identifiers match directly (A to A, B to B), consistent with the accepted model alignment.<dl><dt>Previous value</dt><dd>AMB-A | AMB-B</dd>
+<dt>Current value</dt><dd>AMB-A | AMB-B</dd>
+</dl></li>
+<li>SourceClashGuid / Supports: Source clash GUIDs are equal. Source GUID is supplemental evidence only and has not been proven as stable cross-run identity.<dl><dt>Previous value</dt><dd>guid-ambiguous</dd>
+<dt>Current value</dt><dd>guid-ambiguous</dd>
+</dl></li>
+</ol>
+</section>
+</li>
+<p class="standalone-note">This selected match does not participate in any continuity link or path.</p>
+</ol>
+</section>
+<section class="non-path-lifecycle-section">
+<h2>Lifecycle entries outside continuity paths</h2>
+<ol class="entry-list">
+<li class="non-path-entry">
+<header class="entry-header">
+<h4>Transition 1 / Entry 2</h4>
+<p>run-A &lt;alpha&gt; -&gt; run-B</p>
+<p>Slots: previous[1] / current[1]</p>
+<p>Continuity path: none</p>
+</header>
+<p>Status: StillOpen</p>
+<p>Has selected match: Yes</p>
+</li>
+<li class="non-path-entry">
+<header class="entry-header">
+<h4>Transition 1 / Entry 3</h4>
+<p>run-A &lt;alpha&gt; -&gt; run-B</p>
+<p>Slots: previous[3] / current[2]</p>
+<p>Continuity path: none</p>
+</header>
+<p>Status: Unverifiable</p>
+<p>Has selected match: Yes</p>
+</li>
+<li class="non-path-entry">
+<header class="entry-header">
+<h4>Transition 1 / Entry 4</h4>
+<p>run-A &lt;alpha&gt; -&gt; run-B</p>
+<p>Slots: previous[2] / current[-]</p>
+<p>Continuity path: none</p>
+</header>
+<p>Status: Resolved</p>
+<p>Has selected match: No</p>
+</li>
+<li class="non-path-entry">
+<header class="entry-header">
+<h4>Transition 1 / Entry 5</h4>
+<p>run-A &lt;alpha&gt; -&gt; run-B</p>
+<p>Slots: previous[4] / current[-]</p>
+<p>Continuity path: none</p>
+</header>
+<p>Status: Unverifiable</p>
+<p>Has selected match: No</p>
+</li>
+<li class="non-path-entry">
+<header class="entry-header">
+<h4>Transition 2 / Entry 2</h4>
+<p>run-B -&gt; run-C</p>
+<p>Slots: previous[1] / current[-]</p>
+<p>Continuity path: none</p>
+</header>
+<p>Status: Resolved</p>
+<p>Has selected match: No</p>
+</li>
+<li class="non-path-entry">
+<header class="entry-header">
+<h4>Transition 2 / Entry 3</h4>
+<p>run-B -&gt; run-C</p>
+<p>Slots: previous[2] / current[-]</p>
+<p>Continuity path: none</p>
+</header>
+<p>Status: Resolved</p>
+<p>Has selected match: No</p>
+</li>
+<li class="non-path-entry">
+<header class="entry-header">
+<h4>Transition 3 / Entry 2</h4>
+<p>run-C -&gt; run-D</p>
+<p>Slots: previous[-] / current[1]</p>
+<p>Continuity path: none</p>
+</header>
+<p>Status: New</p>
+<p>Has selected match: No</p>
+</li>
+</ol>
+</section>
+<section class="transition-sections">
+<h2>Adjacent transitions</h2>
+<article class="transition-section">
+<h3>Transition 1 of 3</h3>
+<p class="run-pair">run-A &lt;alpha&gt; -&gt; run-B</p>
+<dl>
+<dt>Previous occurrences</dt><dd>5</dd>
+<dt>Current occurrences</dt><dd>3</dd>
+<dt>Candidates</dt><dd>4</dd>
+<dt>Selected matches</dt><dd>3</dd>
+<dt>Alternative candidates</dt><dd>1</dd>
+<dt>StillOpen</dt><dd>2</dd>
+<dt>New</dt><dd>0</dd>
+<dt>Resolved</dt><dd>1</dd>
+<dt>Unverifiable</dt><dd>2</dd>
+</dl>
+<ol class="entry-list">
+<li class="transition-lifecycle-entry status-stillopen">
+<header class="entry-header">
+<h4>Transition 1 / Entry 1</h4>
+<p>run-A &lt;alpha&gt; -&gt; run-B</p>
+<p>Slots: previous[0] / current[0]</p>
+<p>Continuity path: 1 (presentation ordinal only)</p>
+</header>
+<p class="entry-status">Status: StillOpen</p>
+<section class="occurrence-panel">
+<h5>Previous occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Path clash in run A</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R01</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R01</dd>
+<dt>Element A</dt><dd>PATH-A<br>Name: Pipe &lt;Path&gt; &amp; Valve<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>PATH-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-path</dd>
+</dl>
+</section>
+<section class="occurrence-panel">
+<h5>Current occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Path clash in run B</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R02</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R02</dd>
+<dt>Element A</dt><dd>PATH-A<br>Name: Pipe &lt;Path&gt; &amp; Valve<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>PATH-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-path</dd>
+</dl>
+</section>
+<section class="selected-match-section">
+<h5>Selected match</h5>
+<dl>
+<dt>Previous slot</dt><dd>0</dd>
+<dt>Current slot</dt><dd>0</dd>
+<dt>Confidence</dt><dd>High</dd>
+</dl>
+</section>
+<section class="evidence-section lifecycle-evidence">
+<h5>Lifecycle evidence</h5>
+<ol>
+<li>SelectedMatch / SupportsClassification: This previous/current pair was selected as a one-to-one match.</li>
+<li>MatchConfidence / SupportsClassification: Match confidence is High. This is not treated as exact, only as sufficient to proceed.</li>
+<li>CandidateAmbiguity / SupportsClassification: No alternative candidate shares this match&#39;s previous or current index.</li>
+</ol>
+</section>
+<section class="evidence-section match-evidence">
+<h5>Match evidence</h5>
+<ol>
+<li>ClashTestName / Supports: Clash test names match using ordinal case-insensitive comparison.<dl><dt>Previous value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Current value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+</dl></li>
+<li>ModelIdentityPair / Supports: Revision-free model identities match directly (A to A, B to B) across the two exports.<dl><dt>Previous value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+<dt>Current value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+</dl></li>
+<li>ElementIdentifierPair / Supports: Element identifiers match directly (A to A, B to B), consistent with the accepted model alignment.<dl><dt>Previous value</dt><dd>PATH-A | PATH-B</dd>
+<dt>Current value</dt><dd>PATH-A | PATH-B</dd>
+</dl></li>
+<li>SourceClashGuid / Supports: Source clash GUIDs are equal. Source GUID is supplemental evidence only and has not been proven as stable cross-run identity.<dl><dt>Previous value</dt><dd>guid-path</dd>
+<dt>Current value</dt><dd>guid-path</dd>
+</dl></li>
+</ol>
+</section>
+</li>
+<li class="transition-lifecycle-entry status-stillopen">
+<header class="entry-header">
+<h4>Transition 1 / Entry 2</h4>
+<p>run-A &lt;alpha&gt; -&gt; run-B</p>
+<p>Slots: previous[1] / current[1]</p>
+<p>Continuity path: none</p>
+</header>
+<p class="entry-status">Status: StillOpen</p>
+<section class="occurrence-panel">
+<h5>Previous occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Standalone clash in run A</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R01</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R01</dd>
+<dt>Element A</dt><dd>STAND-A<br>Name: Standalone duct<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>STAND-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-standalone</dd>
+</dl>
+</section>
+<section class="occurrence-panel">
+<h5>Current occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Standalone clash in run B</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R02</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R02</dd>
+<dt>Element A</dt><dd>STAND-A<br>Name: Standalone duct<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>STAND-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-standalone</dd>
+</dl>
+</section>
+<section class="selected-match-section">
+<h5>Selected match</h5>
+<dl>
+<dt>Previous slot</dt><dd>1</dd>
+<dt>Current slot</dt><dd>1</dd>
+<dt>Confidence</dt><dd>High</dd>
+</dl>
+</section>
+<section class="evidence-section lifecycle-evidence">
+<h5>Lifecycle evidence</h5>
+<ol>
+<li>SelectedMatch / SupportsClassification: This previous/current pair was selected as a one-to-one match.</li>
+<li>MatchConfidence / SupportsClassification: Match confidence is High. This is not treated as exact, only as sufficient to proceed.</li>
+<li>CandidateAmbiguity / SupportsClassification: No alternative candidate shares this match&#39;s previous or current index.</li>
+</ol>
+</section>
+<section class="evidence-section match-evidence">
+<h5>Match evidence</h5>
+<ol>
+<li>ClashTestName / Supports: Clash test names match using ordinal case-insensitive comparison.<dl><dt>Previous value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Current value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+</dl></li>
+<li>ModelIdentityPair / Supports: Revision-free model identities match directly (A to A, B to B) across the two exports.<dl><dt>Previous value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+<dt>Current value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+</dl></li>
+<li>ElementIdentifierPair / Supports: Element identifiers match directly (A to A, B to B), consistent with the accepted model alignment.<dl><dt>Previous value</dt><dd>STAND-A | STAND-B</dd>
+<dt>Current value</dt><dd>STAND-A | STAND-B</dd>
+</dl></li>
+<li>SourceClashGuid / Supports: Source clash GUIDs are equal. Source GUID is supplemental evidence only and has not been proven as stable cross-run identity.<dl><dt>Previous value</dt><dd>guid-standalone</dd>
+<dt>Current value</dt><dd>guid-standalone</dd>
+</dl></li>
+</ol>
+</section>
+</li>
+<li class="transition-lifecycle-entry status-unverifiable">
+<header class="entry-header">
+<h4>Transition 1 / Entry 3</h4>
+<p>run-A &lt;alpha&gt; -&gt; run-B</p>
+<p>Slots: previous[3] / current[2]</p>
+<p>Continuity path: none</p>
+</header>
+<p class="entry-status">Status: Unverifiable</p>
+<section class="occurrence-panel">
+<h5>Previous occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Ambiguous clash primary A</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R01</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R01</dd>
+<dt>Element A</dt><dd>AMB-A<br>Name: Ambiguous primary<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>AMB-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-ambiguous</dd>
+</dl>
+</section>
+<section class="occurrence-panel">
+<h5>Current occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Ambiguous clash in run B</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R02</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R02</dd>
+<dt>Element A</dt><dd>AMB-A<br>Name: Ambiguous current<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>AMB-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-ambiguous</dd>
+</dl>
+</section>
+<section class="selected-match-section">
+<h5>Selected match</h5>
+<dl>
+<dt>Previous slot</dt><dd>3</dd>
+<dt>Current slot</dt><dd>2</dd>
+<dt>Confidence</dt><dd>High</dd>
+</dl>
+</section>
+<section class="evidence-section lifecycle-evidence">
+<h5>Lifecycle evidence</h5>
+<ol>
+<li>SelectedMatch / SupportsClassification: This previous/current pair was selected as a one-to-one match.</li>
+<li>MatchConfidence / SupportsClassification: Match confidence is High. This is not treated as exact, only as sufficient to proceed.</li>
+<li>CandidateAmbiguity / BlocksClassification: 1 alternative candidate(s) share this match&#39;s previous or current index.</li>
+</ol>
+</section>
+<section class="evidence-section match-evidence">
+<h5>Match evidence</h5>
+<ol>
+<li>ClashTestName / Supports: Clash test names match using ordinal case-insensitive comparison.<dl><dt>Previous value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Current value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+</dl></li>
+<li>ModelIdentityPair / Supports: Revision-free model identities match directly (A to A, B to B) across the two exports.<dl><dt>Previous value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+<dt>Current value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+</dl></li>
+<li>ElementIdentifierPair / Supports: Element identifiers match directly (A to A, B to B), consistent with the accepted model alignment.<dl><dt>Previous value</dt><dd>AMB-A | AMB-B</dd>
+<dt>Current value</dt><dd>AMB-A | AMB-B</dd>
+</dl></li>
+<li>SourceClashGuid / Supports: Source clash GUIDs are equal. Source GUID is supplemental evidence only and has not been proven as stable cross-run identity.<dl><dt>Previous value</dt><dd>guid-ambiguous</dd>
+<dt>Current value</dt><dd>guid-ambiguous</dd>
+</dl></li>
+</ol>
+</section>
+</li>
+<li class="transition-lifecycle-entry status-resolved">
+<header class="entry-header">
+<h4>Transition 1 / Entry 4</h4>
+<p>run-A &lt;alpha&gt; -&gt; run-B</p>
+<p>Slots: previous[2] / current[-]</p>
+<p>Continuity path: none</p>
+</header>
+<p class="entry-status">Status: Resolved</p>
+<section class="occurrence-panel">
+<h5>Previous occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Resolved only clash in run A</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R01</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R01</dd>
+<dt>Element A</dt><dd>RES-A<br>Name: Resolved pipe<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>RES-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-resolved</dd>
+</dl>
+</section>
+<section class="occurrence-panel">
+<h5>Current occurrence</h5>
+<p>No current occurrence.</p>
+</section>
+<p class="missing-selected-match">No selected match.</p>
+<section class="evidence-section lifecycle-evidence">
+<h5>Lifecycle evidence</h5>
+<ol>
+<li>CandidateAmbiguity / SupportsClassification: No alternative candidate references this previous slot.</li>
+<li>ModelIdentityPresence / SupportsClassification: ModelA identity &#39;Sigma / Structure / Main &amp; Core&#39; is declared in the other run&#39;s manifest, regardless of revision.</li>
+<li>ModelIdentityPresence / SupportsClassification: ModelB identity &#39;Alfa / HVAC / Coordination&#39; is declared in the other run&#39;s manifest, regardless of revision.</li>
+<li>ClashTestPresence / SupportsClassification: Clash test &#39;Coordination &amp; Clearance &lt;Main&gt;&#39; is explicitly declared as executed for this revision-free model pair in the other run&#39;s manifest.</li>
+<li>SelectedMatch / SupportsClassification: No selected match consumes this previous slot.</li>
+</ol>
+</section>
+</li>
+<li class="transition-lifecycle-entry status-unverifiable">
+<header class="entry-header">
+<h4>Transition 1 / Entry 5</h4>
+<p>run-A &lt;alpha&gt; -&gt; run-B</p>
+<p>Slots: previous[4] / current[-]</p>
+<p>Continuity path: none</p>
+</header>
+<p class="entry-status">Status: Unverifiable</p>
+<section class="occurrence-panel">
+<h5>Previous occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Ambiguous clash secondary A</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R01</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R01</dd>
+<dt>Element A</dt><dd>AMB-A<br>Name: Ambiguous secondary<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>AMB-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-ambiguous</dd>
+</dl>
+</section>
+<section class="occurrence-panel">
+<h5>Current occurrence</h5>
+<p>No current occurrence.</p>
+</section>
+<p class="missing-selected-match">No selected match.</p>
+<section class="evidence-section lifecycle-evidence">
+<h5>Lifecycle evidence</h5>
+<ol>
+<li>CandidateAmbiguity / BlocksClassification: 1 alternative candidate(s) reference this previous slot.</li>
+<li>ModelIdentityPresence / SupportsClassification: ModelA identity &#39;Sigma / Structure / Main &amp; Core&#39; is declared in the other run&#39;s manifest, regardless of revision.</li>
+<li>ModelIdentityPresence / SupportsClassification: ModelB identity &#39;Alfa / HVAC / Coordination&#39; is declared in the other run&#39;s manifest, regardless of revision.</li>
+<li>ClashTestPresence / SupportsClassification: Clash test &#39;Coordination &amp; Clearance &lt;Main&gt;&#39; is explicitly declared as executed for this revision-free model pair in the other run&#39;s manifest.</li>
+<li>SelectedMatch / SupportsClassification: No selected match consumes this previous slot.</li>
+</ol>
+</section>
+</li>
+</ol>
+</article>
+<article class="transition-section">
+<h3>Transition 2 of 3</h3>
+<p class="run-pair">run-B -&gt; run-C</p>
+<dl>
+<dt>Previous occurrences</dt><dd>3</dd>
+<dt>Current occurrences</dt><dd>1</dd>
+<dt>Candidates</dt><dd>1</dd>
+<dt>Selected matches</dt><dd>1</dd>
+<dt>Alternative candidates</dt><dd>0</dd>
+<dt>StillOpen</dt><dd>1</dd>
+<dt>New</dt><dd>0</dd>
+<dt>Resolved</dt><dd>2</dd>
+<dt>Unverifiable</dt><dd>0</dd>
+</dl>
+<ol class="entry-list">
+<li class="transition-lifecycle-entry status-stillopen">
+<header class="entry-header">
+<h4>Transition 2 / Entry 1</h4>
+<p>run-B -&gt; run-C</p>
+<p>Slots: previous[0] / current[0]</p>
+<p>Continuity path: 1 (presentation ordinal only)</p>
+</header>
+<p class="entry-status">Status: StillOpen</p>
+<section class="occurrence-panel">
+<h5>Previous occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Path clash in run B</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R02</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R02</dd>
+<dt>Element A</dt><dd>PATH-A<br>Name: Pipe &lt;Path&gt; &amp; Valve<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>PATH-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-path</dd>
+</dl>
+</section>
+<section class="occurrence-panel">
+<h5>Current occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Path clash in run C</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R03</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R03</dd>
+<dt>Element A</dt><dd>PATH-A<br>Name: Pipe &lt;Path&gt; &amp; Valve<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>PATH-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-path</dd>
+</dl>
+</section>
+<section class="selected-match-section">
+<h5>Selected match</h5>
+<dl>
+<dt>Previous slot</dt><dd>0</dd>
+<dt>Current slot</dt><dd>0</dd>
+<dt>Confidence</dt><dd>High</dd>
+</dl>
+</section>
+<section class="evidence-section lifecycle-evidence">
+<h5>Lifecycle evidence</h5>
+<ol>
+<li>SelectedMatch / SupportsClassification: This previous/current pair was selected as a one-to-one match.</li>
+<li>MatchConfidence / SupportsClassification: Match confidence is High. This is not treated as exact, only as sufficient to proceed.</li>
+<li>CandidateAmbiguity / SupportsClassification: No alternative candidate shares this match&#39;s previous or current index.</li>
+</ol>
+</section>
+<section class="evidence-section match-evidence">
+<h5>Match evidence</h5>
+<ol>
+<li>ClashTestName / Supports: Clash test names match using ordinal case-insensitive comparison.<dl><dt>Previous value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Current value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+</dl></li>
+<li>ModelIdentityPair / Supports: Revision-free model identities match directly (A to A, B to B) across the two exports.<dl><dt>Previous value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+<dt>Current value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+</dl></li>
+<li>ElementIdentifierPair / Supports: Element identifiers match directly (A to A, B to B), consistent with the accepted model alignment.<dl><dt>Previous value</dt><dd>PATH-A | PATH-B</dd>
+<dt>Current value</dt><dd>PATH-A | PATH-B</dd>
+</dl></li>
+<li>SourceClashGuid / Supports: Source clash GUIDs are equal. Source GUID is supplemental evidence only and has not been proven as stable cross-run identity.<dl><dt>Previous value</dt><dd>guid-path</dd>
+<dt>Current value</dt><dd>guid-path</dd>
+</dl></li>
+</ol>
+</section>
+</li>
+<li class="transition-lifecycle-entry status-resolved">
+<header class="entry-header">
+<h4>Transition 2 / Entry 2</h4>
+<p>run-B -&gt; run-C</p>
+<p>Slots: previous[1] / current[-]</p>
+<p>Continuity path: none</p>
+</header>
+<p class="entry-status">Status: Resolved</p>
+<section class="occurrence-panel">
+<h5>Previous occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Standalone clash in run B</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R02</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R02</dd>
+<dt>Element A</dt><dd>STAND-A<br>Name: Standalone duct<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>STAND-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-standalone</dd>
+</dl>
+</section>
+<section class="occurrence-panel">
+<h5>Current occurrence</h5>
+<p>No current occurrence.</p>
+</section>
+<p class="missing-selected-match">No selected match.</p>
+<section class="evidence-section lifecycle-evidence">
+<h5>Lifecycle evidence</h5>
+<ol>
+<li>CandidateAmbiguity / SupportsClassification: No alternative candidate references this previous slot.</li>
+<li>ModelIdentityPresence / SupportsClassification: ModelA identity &#39;Sigma / Structure / Main &amp; Core&#39; is declared in the other run&#39;s manifest, regardless of revision.</li>
+<li>ModelIdentityPresence / SupportsClassification: ModelB identity &#39;Alfa / HVAC / Coordination&#39; is declared in the other run&#39;s manifest, regardless of revision.</li>
+<li>ClashTestPresence / SupportsClassification: Clash test &#39;Coordination &amp; Clearance &lt;Main&gt;&#39; is explicitly declared as executed for this revision-free model pair in the other run&#39;s manifest.</li>
+<li>SelectedMatch / SupportsClassification: No selected match consumes this previous slot.</li>
+</ol>
+</section>
+</li>
+<li class="transition-lifecycle-entry status-resolved">
+<header class="entry-header">
+<h4>Transition 2 / Entry 3</h4>
+<p>run-B -&gt; run-C</p>
+<p>Slots: previous[2] / current[-]</p>
+<p>Continuity path: none</p>
+</header>
+<p class="entry-status">Status: Resolved</p>
+<section class="occurrence-panel">
+<h5>Previous occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Ambiguous clash in run B</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R02</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R02</dd>
+<dt>Element A</dt><dd>AMB-A<br>Name: Ambiguous current<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>AMB-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-ambiguous</dd>
+</dl>
+</section>
+<section class="occurrence-panel">
+<h5>Current occurrence</h5>
+<p>No current occurrence.</p>
+</section>
+<p class="missing-selected-match">No selected match.</p>
+<section class="evidence-section lifecycle-evidence">
+<h5>Lifecycle evidence</h5>
+<ol>
+<li>CandidateAmbiguity / SupportsClassification: No alternative candidate references this previous slot.</li>
+<li>ModelIdentityPresence / SupportsClassification: ModelA identity &#39;Sigma / Structure / Main &amp; Core&#39; is declared in the other run&#39;s manifest, regardless of revision.</li>
+<li>ModelIdentityPresence / SupportsClassification: ModelB identity &#39;Alfa / HVAC / Coordination&#39; is declared in the other run&#39;s manifest, regardless of revision.</li>
+<li>ClashTestPresence / SupportsClassification: Clash test &#39;Coordination &amp; Clearance &lt;Main&gt;&#39; is explicitly declared as executed for this revision-free model pair in the other run&#39;s manifest.</li>
+<li>SelectedMatch / SupportsClassification: No selected match consumes this previous slot.</li>
+</ol>
+</section>
+</li>
+</ol>
+</article>
+<article class="transition-section">
+<h3>Transition 3 of 3</h3>
+<p class="run-pair">run-C -&gt; run-D</p>
+<dl>
+<dt>Previous occurrences</dt><dd>1</dd>
+<dt>Current occurrences</dt><dd>2</dd>
+<dt>Candidates</dt><dd>1</dd>
+<dt>Selected matches</dt><dd>1</dd>
+<dt>Alternative candidates</dt><dd>0</dd>
+<dt>StillOpen</dt><dd>1</dd>
+<dt>New</dt><dd>1</dd>
+<dt>Resolved</dt><dd>0</dd>
+<dt>Unverifiable</dt><dd>0</dd>
+</dl>
+<ol class="entry-list">
+<li class="transition-lifecycle-entry status-stillopen">
+<header class="entry-header">
+<h4>Transition 3 / Entry 1</h4>
+<p>run-C -&gt; run-D</p>
+<p>Slots: previous[0] / current[0]</p>
+<p>Continuity path: 1 (presentation ordinal only)</p>
+</header>
+<p class="entry-status">Status: StillOpen</p>
+<section class="occurrence-panel">
+<h5>Previous occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Path clash in run C</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R03</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R03</dd>
+<dt>Element A</dt><dd>PATH-A<br>Name: Pipe &lt;Path&gt; &amp; Valve<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>PATH-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-path</dd>
+</dl>
+</section>
+<section class="occurrence-panel">
+<h5>Current occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>Path clash in run D</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R04</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R04</dd>
+<dt>Element A</dt><dd>PATH-A<br>Name: Pipe &lt;Path&gt; &amp; Valve<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>PATH-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-path</dd>
+</dl>
+</section>
+<section class="selected-match-section">
+<h5>Selected match</h5>
+<dl>
+<dt>Previous slot</dt><dd>0</dd>
+<dt>Current slot</dt><dd>0</dd>
+<dt>Confidence</dt><dd>High</dd>
+</dl>
+</section>
+<section class="evidence-section lifecycle-evidence">
+<h5>Lifecycle evidence</h5>
+<ol>
+<li>SelectedMatch / SupportsClassification: This previous/current pair was selected as a one-to-one match.</li>
+<li>MatchConfidence / SupportsClassification: Match confidence is High. This is not treated as exact, only as sufficient to proceed.</li>
+<li>CandidateAmbiguity / SupportsClassification: No alternative candidate shares this match&#39;s previous or current index.</li>
+</ol>
+</section>
+<section class="evidence-section match-evidence">
+<h5>Match evidence</h5>
+<ol>
+<li>ClashTestName / Supports: Clash test names match using ordinal case-insensitive comparison.<dl><dt>Previous value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Current value</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+</dl></li>
+<li>ModelIdentityPair / Supports: Revision-free model identities match directly (A to A, B to B) across the two exports.<dl><dt>Previous value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+<dt>Current value</dt><dd>Sigma / Structure / Main &amp; Core | Alfa / HVAC / Coordination</dd>
+</dl></li>
+<li>ElementIdentifierPair / Supports: Element identifiers match directly (A to A, B to B), consistent with the accepted model alignment.<dl><dt>Previous value</dt><dd>PATH-A | PATH-B</dd>
+<dt>Current value</dt><dd>PATH-A | PATH-B</dd>
+</dl></li>
+<li>SourceClashGuid / Supports: Source clash GUIDs are equal. Source GUID is supplemental evidence only and has not been proven as stable cross-run identity.<dl><dt>Previous value</dt><dd>guid-path</dd>
+<dt>Current value</dt><dd>guid-path</dd>
+</dl></li>
+</ol>
+</section>
+</li>
+<li class="transition-lifecycle-entry status-new">
+<header class="entry-header">
+<h4>Transition 3 / Entry 2</h4>
+<p>run-C -&gt; run-D</p>
+<p>Slots: previous[-] / current[1]</p>
+<p>Continuity path: none</p>
+</header>
+<p class="entry-status">Status: New</p>
+<section class="occurrence-panel">
+<h5>Previous occurrence</h5>
+<p>No previous occurrence.</p>
+</section>
+<section class="occurrence-panel">
+<h5>Current occurrence</h5>
+<dl>
+<dt>Clash test</dt><dd>Coordination &amp; Clearance &lt;Main&gt;</dd>
+<dt>Clash name</dt><dd>New only clash in run D</dd>
+<dt>Raw clash status</dt><dd>Active</dd>
+<dt>Model A</dt><dd>Sigma / Structure / Main &amp; Core @ R04</dd>
+<dt>Model B</dt><dd>Alfa / HVAC / Coordination @ R04</dd>
+<dt>Element A</dt><dd>NEW-A<br>Name: New diffuser<br>Level: Level &lt;01&gt;</dd>
+<dt>Element B</dt><dd>NEW-B<br>Name: Duct &amp; Sleeve<br>Level: Level &lt;01&gt;</dd>
+<dt>Distance</dt><dd>0.125</dd>
+<dt>Point</dt><dd>1.250, 2.500, 3.750</dd>
+<dt>Source GUID (evidence only)</dt><dd>guid-new</dd>
+</dl>
+</section>
+<p class="missing-selected-match">No selected match.</p>
+<section class="evidence-section lifecycle-evidence">
+<h5>Lifecycle evidence</h5>
+<ol>
+<li>CandidateAmbiguity / SupportsClassification: No alternative candidate references this current slot.</li>
+<li>ModelIdentityPresence / SupportsClassification: ModelA identity &#39;Sigma / Structure / Main &amp; Core&#39; is declared in the other run&#39;s manifest, regardless of revision.</li>
+<li>ModelIdentityPresence / SupportsClassification: ModelB identity &#39;Alfa / HVAC / Coordination&#39; is declared in the other run&#39;s manifest, regardless of revision.</li>
+<li>ClashTestPresence / SupportsClassification: Clash test &#39;Coordination &amp; Clearance &lt;Main&gt;&#39; is explicitly declared as executed for this revision-free model pair in the other run&#39;s manifest.</li>
+<li>SelectedMatch / SupportsClassification: No selected match consumes this current slot.</li>
+</ol>
+</section>
+</li>
+</ol>
+</article>
+</section>
+<footer class="longitudinal-classification-note">
+<h2>Classification note</h2>
+<p>Results are derived from explicitly supplied runs, and the run index order is the only sequence authority.</p>
+<p>Confidence is evidence-based, not human confirmation, and source GUID is evidence only.</p>
+<p>Continuity paths are recalculable and not persisted.</p>
+<p>This report has no Reopened classification, persisted clash identifier, Clash Ledger, or aggregate multi-run lifecycle.</p>
+</footer>
+</body>
+</html>

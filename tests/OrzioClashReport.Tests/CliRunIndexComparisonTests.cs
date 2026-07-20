@@ -15,6 +15,7 @@ namespace OrzioClashReport.Tests
     {
         private static readonly MethodInfo MainMethod = ResolveMainMethod();
         private const string CompareIndexUsage = "Usage: orzioclash compare-index --index <run-index.json>";
+        private const int LongitudinalSummaryLineCount = 12;
         private static readonly string ExpectedCompareSummary = string.Join(
             "\n",
             "Previous run: coordination-sample-clash-xml",
@@ -28,6 +29,36 @@ namespace OrzioClashReport.Tests
             "New: 0",
             "Resolved: 0",
             "Unverifiable: 0");
+        private static readonly string[] ExpectedThreeRunLongitudinalSummary =
+        {
+            "Indexed runs: 3",
+            "Adjacent comparisons: 2",
+            "Selected matches: 10",
+            "Continuity links: 5",
+            "Continuity paths: 5",
+            "Standalone selected matches: 0",
+            "Lifecycle entries: 10",
+            "Non-path lifecycle entries: 0",
+            "StillOpen: 10",
+            "New: 0",
+            "Resolved: 0",
+            "Unverifiable: 0",
+        };
+        private static readonly string[] ExpectedTwoRunLongitudinalSummary =
+        {
+            "Indexed runs: 2",
+            "Adjacent comparisons: 1",
+            "Selected matches: 5",
+            "Continuity links: 0",
+            "Continuity paths: 0",
+            "Standalone selected matches: 5",
+            "Lifecycle entries: 5",
+            "Non-path lifecycle entries: 5",
+            "StillOpen: 5",
+            "New: 0",
+            "Resolved: 0",
+            "Unverifiable: 0",
+        };
 
         private static string SamplesDirectory => Path.Combine(AppContext.BaseDirectory, "samples");
 
@@ -36,7 +67,7 @@ namespace OrzioClashReport.Tests
         private static string SampleClashManifestPath => Path.Combine(SamplesDirectory, "sample-clash.run-manifest.json");
 
         [Fact]
-        public void Main_CompareIndexMode_WithThreeFreshSnapshots_WritesExpectedTwentySixLineStructure()
+        public void Main_CompareIndexMode_WithThreeFreshSnapshots_WritesExpectedThirtySixLineStructure()
         {
             string tempDirectory = CreateTempDirectory();
             string firstSnapshotPath = Path.Combine(tempDirectory, "snapshots", "first.json");
@@ -57,13 +88,44 @@ namespace OrzioClashReport.Tests
                 Assert.Equal(string.Empty, result.StdErr);
                 Assert.DoesNotContain("Comparison report written to", result.StdOut, StringComparison.Ordinal);
 
-                string[] lines = result.StdOut.Split('\n', StringSplitOptions.None);
-                Assert.Equal(26, lines.Length);
-                Assert.Equal("Indexed runs: 3", lines[0]);
-                Assert.Equal("Adjacent comparisons: 2", lines[1]);
-                Assert.Equal("Comparison 1/2", lines[2]);
-                Assert.Equal("Comparison 2/2", lines[14]);
-                Assert.DoesNotContain(lines, static line => line.Length == 0);
+                string[] lines = SplitStdOutLines(result.StdOut);
+                Assert.Equal(36, lines.Length);
+                AssertLongitudinalSummary(lines, ExpectedThreeRunLongitudinalSummary);
+                Assert.Equal("Comparison 1/2", lines[LongitudinalSummaryLineCount]);
+                Assert.Equal(ExpectedCompareSummary, string.Join("\n", lines[13..24]), StringComparer.Ordinal);
+                Assert.Equal("Comparison 2/2", lines[24]);
+                Assert.Equal(ExpectedCompareSummary, string.Join("\n", lines[25..]), StringComparer.Ordinal);
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CompareIndexMode_WithTwoFreshSnapshots_WritesExpectedTwentyFourLineStructure()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string firstSnapshotPath = Path.Combine(tempDirectory, "snapshots", "first.json");
+            string secondSnapshotPath = Path.Combine(tempDirectory, "snapshots", "second.json");
+            string indexPath = Path.Combine(tempDirectory, "run-index.json");
+
+            try
+            {
+                CreateFixtureSnapshot(firstSnapshotPath);
+                CreateFixtureSnapshot(secondSnapshotPath);
+                CreateRunIndexWithCommand(indexPath, firstSnapshotPath, secondSnapshotPath);
+
+                var result = InvokeMain("compare-index", "--index", indexPath);
+
+                Assert.Equal(0, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdErr);
+
+                string[] lines = SplitStdOutLines(result.StdOut);
+                Assert.Equal(24, lines.Length);
+                AssertLongitudinalSummary(lines, ExpectedTwoRunLongitudinalSummary);
+                Assert.Equal("Comparison 1/1", lines[LongitudinalSummaryLineCount]);
+                Assert.Equal(ExpectedCompareSummary, string.Join("\n", lines[13..]), StringComparer.Ordinal);
             }
             finally
             {
@@ -94,13 +156,13 @@ namespace OrzioClashReport.Tests
                 Assert.Equal(0, result.ExitCode);
                 Assert.Equal(string.Empty, result.StdErr);
 
-                string[] lines = result.StdOut.Split('\n', StringSplitOptions.None);
-                Assert.Equal("Comparison 1/2", lines[2]);
-                Assert.Equal("Previous run: run-A", lines[3]);
-                Assert.Equal("Current run: run-B", lines[4]);
-                Assert.Equal("Comparison 2/2", lines[14]);
-                Assert.Equal("Previous run: run-B", lines[15]);
-                Assert.Equal("Current run: run-C", lines[16]);
+                string[] lines = SplitStdOutLines(result.StdOut);
+                Assert.Equal("Comparison 1/2", lines[12]);
+                Assert.Equal("Previous run: run-A", lines[13]);
+                Assert.Equal("Current run: run-B", lines[14]);
+                Assert.Equal("Comparison 2/2", lines[24]);
+                Assert.Equal("Previous run: run-B", lines[25]);
+                Assert.Equal("Current run: run-C", lines[26]);
                 Assert.DoesNotContain("Previous run: run-A\nCurrent run: run-C", result.StdOut, StringComparison.Ordinal);
             }
             finally
@@ -110,7 +172,7 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
-        public void Main_CompareIndexMode_MatchesCompareSnapshotsSummaryAfterThreeLineHeader()
+        public void Main_CompareIndexMode_MatchesCompareSnapshotsSummaryAfterLongitudinalPrefixAndComparisonHeader()
         {
             string tempDirectory = CreateTempDirectory();
             string previousSnapshotPath = Path.Combine(tempDirectory, "snapshots", "previous.json");
@@ -135,10 +197,10 @@ namespace OrzioClashReport.Tests
                 Assert.Equal(string.Empty, snapshotResult.StdErr);
                 Assert.Equal(string.Empty, indexResult.StdErr);
 
-                string[] indexLines = indexResult.StdOut.Split('\n', StringSplitOptions.None);
-                Assert.Equal(14, indexLines.Length);
+                string[] indexLines = SplitStdOutLines(indexResult.StdOut);
+                Assert.Equal(24, indexLines.Length);
 
-                string compareIndexSummary = string.Join("\n", indexLines[3..]);
+                string compareIndexSummary = string.Join("\n", indexLines[13..]);
                 Assert.Equal(snapshotResult.StdOut, compareIndexSummary, StringComparer.Ordinal);
             }
             finally
@@ -168,9 +230,9 @@ namespace OrzioClashReport.Tests
                 Assert.Equal(0, result.ExitCode);
                 Assert.Equal(string.Empty, result.StdErr);
 
-                string[] lines = result.StdOut.Split('\n', StringSplitOptions.None);
-                Assert.Equal("Previous run: run-later", lines[3]);
-                Assert.Equal("Current run: run-earlier", lines[4]);
+                string[] lines = SplitStdOutLines(result.StdOut);
+                Assert.Equal("Previous run: run-later", lines[13]);
+                Assert.Equal("Current run: run-earlier", lines[14]);
             }
             finally
             {
@@ -199,9 +261,9 @@ namespace OrzioClashReport.Tests
                 Assert.Equal(0, result.ExitCode);
                 Assert.Equal(string.Empty, result.StdErr);
 
-                string[] lines = result.StdOut.Split('\n', StringSplitOptions.None);
-                Assert.Equal("Previous run: zzz-run", lines[3]);
-                Assert.Equal("Current run: aaa-run", lines[4]);
+                string[] lines = SplitStdOutLines(result.StdOut);
+                Assert.Equal("Previous run: zzz-run", lines[13]);
+                Assert.Equal("Current run: aaa-run", lines[14]);
             }
             finally
             {
@@ -226,12 +288,11 @@ namespace OrzioClashReport.Tests
                 Assert.Equal(0, result.ExitCode);
                 Assert.Equal(string.Empty, result.StdErr);
 
-                string[] lines = result.StdOut.Split('\n', StringSplitOptions.None);
-                Assert.Equal(14, lines.Length);
-                Assert.Equal("Indexed runs: 2", lines[0]);
-                Assert.Equal("Adjacent comparisons: 1", lines[1]);
-                Assert.Equal("Comparison 1/1", lines[2]);
-                Assert.Equal(ExpectedCompareSummary, string.Join("\n", lines[3..]), StringComparer.Ordinal);
+                string[] lines = SplitStdOutLines(result.StdOut);
+                Assert.Equal(24, lines.Length);
+                AssertLongitudinalSummary(lines, ExpectedTwoRunLongitudinalSummary);
+                Assert.Equal("Comparison 1/1", lines[12]);
+                Assert.Equal(ExpectedCompareSummary, string.Join("\n", lines[13..]), StringComparer.Ordinal);
             }
             finally
             {
@@ -271,6 +332,7 @@ namespace OrzioClashReport.Tests
 
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(string.Empty, result.StdOut);
+            AssertNoLongitudinalLabels(result.StdOut);
             Assert.Contains("Missing required option '--index'.", result.StdErr);
             Assert.Contains(CompareIndexUsage, result.StdErr);
         }
@@ -285,6 +347,7 @@ namespace OrzioClashReport.Tests
 
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(string.Empty, result.StdOut);
+            AssertNoLongitudinalLabels(result.StdOut);
             Assert.Contains("Duplicate option '--index'.", result.StdErr);
             Assert.Contains(CompareIndexUsage, result.StdErr);
         }
@@ -296,6 +359,7 @@ namespace OrzioClashReport.Tests
 
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(string.Empty, result.StdOut);
+            AssertNoLongitudinalLabels(result.StdOut);
             Assert.Contains("Missing value for '--index'.", result.StdErr);
             Assert.Contains(CompareIndexUsage, result.StdErr);
         }
@@ -310,6 +374,7 @@ namespace OrzioClashReport.Tests
 
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(string.Empty, result.StdOut);
+            AssertNoLongitudinalLabels(result.StdOut);
             Assert.Contains("Missing value for '--index'.", result.StdErr);
             Assert.Contains(CompareIndexUsage, result.StdErr);
         }
@@ -324,6 +389,7 @@ namespace OrzioClashReport.Tests
 
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(string.Empty, result.StdOut);
+            AssertNoLongitudinalLabels(result.StdOut);
             Assert.Contains("Unrecognized compare-index argument '-o'.", result.StdErr);
             Assert.Contains(CompareIndexUsage, result.StdErr);
         }
@@ -338,6 +404,7 @@ namespace OrzioClashReport.Tests
 
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(string.Empty, result.StdOut);
+            AssertNoLongitudinalLabels(result.StdOut);
             Assert.Contains("Unrecognized compare-index argument '--bogus'.", result.StdErr);
             Assert.Contains(CompareIndexUsage, result.StdErr);
         }
@@ -352,6 +419,7 @@ namespace OrzioClashReport.Tests
 
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(string.Empty, result.StdOut);
+            AssertNoLongitudinalLabels(result.StdOut);
             Assert.Contains("Unrecognized compare-index argument '--output'.", result.StdErr);
             Assert.Contains(CompareIndexUsage, result.StdErr);
         }
@@ -363,6 +431,7 @@ namespace OrzioClashReport.Tests
 
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(string.Empty, result.StdOut);
+            AssertNoLongitudinalLabels(result.StdOut);
             Assert.Contains("Unrecognized compare-index argument 'run-index.json'.", result.StdErr);
             Assert.Contains(CompareIndexUsage, result.StdErr);
         }
@@ -379,6 +448,7 @@ namespace OrzioClashReport.Tests
 
                 Assert.Equal(1, result.ExitCode);
                 Assert.Equal(string.Empty, result.StdOut);
+                AssertNoLongitudinalLabels(result.StdOut);
                 Assert.Contains("Failed to compare run index:", result.StdErr);
                 Assert.Contains("Run index file not found:", result.StdErr, StringComparison.Ordinal);
                 Assert.Contains(missingIndexPath, result.StdErr, StringComparison.Ordinal);
@@ -404,6 +474,7 @@ namespace OrzioClashReport.Tests
 
                 Assert.Equal(1, result.ExitCode);
                 Assert.Equal(string.Empty, result.StdOut);
+                AssertNoLongitudinalLabels(result.StdOut);
                 Assert.Contains("Failed to compare run index:", result.StdErr);
             }
             finally
@@ -426,6 +497,7 @@ namespace OrzioClashReport.Tests
 
                 Assert.Equal(1, result.ExitCode);
                 Assert.Equal(string.Empty, result.StdOut);
+                AssertNoLongitudinalLabels(result.StdOut);
                 Assert.Contains("Failed to compare run index:", result.StdErr);
             }
             finally
@@ -453,6 +525,7 @@ namespace OrzioClashReport.Tests
 
                 Assert.Equal(1, result.ExitCode);
                 Assert.Equal(string.Empty, result.StdOut);
+                AssertNoLongitudinalLabels(result.StdOut);
                 Assert.Contains("Failed to compare run index:", result.StdErr);
                 Assert.Contains(
                     "Run index must contain at least two snapshot references to compare adjacent runs.",
@@ -484,6 +557,7 @@ namespace OrzioClashReport.Tests
 
                 Assert.Equal(1, result.ExitCode);
                 Assert.Equal(string.Empty, result.StdOut);
+                AssertNoLongitudinalLabels(result.StdOut);
                 Assert.Contains("Failed to compare run index:", result.StdErr);
                 Assert.DoesNotContain("Indexed runs:", result.StdErr, StringComparison.Ordinal);
                 Assert.DoesNotContain("Adjacent comparisons:", result.StdErr, StringComparison.Ordinal);
@@ -513,6 +587,7 @@ namespace OrzioClashReport.Tests
 
                 Assert.Equal(1, result.ExitCode);
                 Assert.Equal(string.Empty, result.StdOut);
+                AssertNoLongitudinalLabels(result.StdOut);
                 Assert.Contains("Failed to compare run index:", result.StdErr);
                 Assert.DoesNotContain("Indexed runs:", result.StdOut, StringComparison.Ordinal);
                 Assert.DoesNotContain("Adjacent comparisons:", result.StdOut, StringComparison.Ordinal);
@@ -543,6 +618,7 @@ namespace OrzioClashReport.Tests
 
                 Assert.Equal(1, result.ExitCode);
                 Assert.Equal(string.Empty, result.StdOut);
+                AssertNoLongitudinalLabels(result.StdOut);
                 Assert.Contains("Failed to compare run index:", result.StdErr);
                 Assert.DoesNotContain("Indexed runs:", result.StdOut, StringComparison.Ordinal);
                 Assert.DoesNotContain("Adjacent comparisons:", result.StdOut, StringComparison.Ordinal);
@@ -575,6 +651,7 @@ namespace OrzioClashReport.Tests
 
                 Assert.Equal(1, result.ExitCode);
                 Assert.Equal(string.Empty, result.StdOut);
+                AssertNoLongitudinalLabels(result.StdOut);
                 Assert.Contains("Failed to compare run index:", result.StdErr);
                 Assert.DoesNotContain("Indexed runs:", result.StdOut, StringComparison.Ordinal);
                 Assert.DoesNotContain("Adjacent comparisons:", result.StdOut, StringComparison.Ordinal);
@@ -607,6 +684,7 @@ namespace OrzioClashReport.Tests
 
                 Assert.Equal(1, result.ExitCode);
                 Assert.Equal(string.Empty, result.StdOut);
+                AssertNoLongitudinalLabels(result.StdOut);
                 Assert.Contains("Failed to compare run index:", result.StdErr);
                 Assert.DoesNotContain("Indexed runs:", result.StdOut, StringComparison.Ordinal);
                 Assert.DoesNotContain("Adjacent comparisons:", result.StdOut, StringComparison.Ordinal);
@@ -638,11 +716,10 @@ namespace OrzioClashReport.Tests
                 Assert.Equal(0, result.ExitCode);
                 Assert.Equal(string.Empty, result.StdErr);
 
-                string[] lines = result.StdOut.Split('\n', StringSplitOptions.None);
-                Assert.Equal(14, lines.Length);
-                Assert.Equal("Indexed runs: 2", lines[0]);
-                Assert.Equal("Adjacent comparisons: 1", lines[1]);
-                Assert.Equal("Comparison 1/1", lines[2]);
+                string[] lines = SplitStdOutLines(result.StdOut);
+                Assert.Equal(24, lines.Length);
+                AssertLongitudinalSummary(lines, ExpectedTwoRunLongitudinalSummary);
+                Assert.Equal("Comparison 1/1", lines[12]);
             }
             finally
             {
@@ -671,13 +748,13 @@ namespace OrzioClashReport.Tests
                 Assert.Equal(0, result.ExitCode);
                 Assert.Equal(string.Empty, result.StdErr);
 
-                string[] lines = result.StdOut.Split('\n', StringSplitOptions.None);
-                Assert.Equal("Comparison 1/2", lines[2]);
-                Assert.Equal("Previous run: run-A", lines[3]);
-                Assert.Equal("Current run: run-A", lines[4]);
-                Assert.Equal("Comparison 2/2", lines[14]);
-                Assert.Equal("Previous run: run-A", lines[15]);
-                Assert.Equal("Current run: run-B", lines[16]);
+                string[] lines = SplitStdOutLines(result.StdOut);
+                Assert.Equal("Comparison 1/2", lines[12]);
+                Assert.Equal("Previous run: run-A", lines[13]);
+                Assert.Equal("Current run: run-A", lines[14]);
+                Assert.Equal("Comparison 2/2", lines[24]);
+                Assert.Equal("Previous run: run-A", lines[25]);
+                Assert.Equal("Current run: run-B", lines[26]);
             }
             finally
             {
@@ -710,11 +787,41 @@ namespace OrzioClashReport.Tests
                 Assert.Equal(2, CountExactLine(result.StdOut, "Previous run: duplicate-run"));
                 Assert.Equal(2, CountExactLine(result.StdOut, "Current run: duplicate-run"));
 
-                string[] lines = result.StdOut.Split('\n', StringSplitOptions.None);
-                Assert.Equal("Indexed runs: 3", lines[0]);
-                Assert.Equal("Adjacent comparisons: 2", lines[1]);
-                Assert.Equal("Comparison 1/2", lines[2]);
-                Assert.Equal("Comparison 2/2", lines[14]);
+                string[] lines = SplitStdOutLines(result.StdOut);
+                AssertLongitudinalSummary(lines, ExpectedThreeRunLongitudinalSummary);
+                Assert.Equal("Comparison 1/2", lines[12]);
+                Assert.Equal("Comparison 2/2", lines[24]);
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CompareIndexMode_RepeatedRuns_AreDeterministic()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string firstSnapshotPath = Path.Combine(tempDirectory, "snapshots", "first.json");
+            string secondSnapshotPath = Path.Combine(tempDirectory, "snapshots", "second.json");
+            string thirdSnapshotPath = Path.Combine(tempDirectory, "snapshots", "third.json");
+            string indexPath = Path.Combine(tempDirectory, "run-index.json");
+
+            try
+            {
+                CreateFixtureSnapshot(firstSnapshotPath);
+                CreateFixtureSnapshot(secondSnapshotPath);
+                CreateFixtureSnapshot(thirdSnapshotPath);
+                CreateRunIndexWithCommand(indexPath, firstSnapshotPath, secondSnapshotPath, thirdSnapshotPath);
+
+                var firstResult = InvokeMain("compare-index", "--index", indexPath);
+                var secondResult = InvokeMain("compare-index", "--index", indexPath);
+
+                Assert.Equal(0, firstResult.ExitCode);
+                Assert.Equal(0, secondResult.ExitCode);
+                Assert.Equal(string.Empty, firstResult.StdErr);
+                Assert.Equal(string.Empty, secondResult.StdErr);
+                Assert.Equal(firstResult.StdOut, secondResult.StdOut, StringComparer.Ordinal);
             }
             finally
             {
@@ -914,6 +1021,40 @@ namespace OrzioClashReport.Tests
             }
 
             return count;
+        }
+
+        private static string[] SplitStdOutLines(string stdout)
+        {
+            string[] lines = stdout.Split('\n', StringSplitOptions.None);
+            Assert.DoesNotContain(lines, static line => line.Length == 0);
+            return lines;
+        }
+
+        private static void AssertLongitudinalSummary(string[] lines, string[] expectedSummary)
+        {
+            Assert.True(lines.Length >= LongitudinalSummaryLineCount);
+            Assert.Equal(LongitudinalSummaryLineCount, expectedSummary.Length);
+
+            for (int i = 0; i < LongitudinalSummaryLineCount; i++)
+            {
+                Assert.Equal(expectedSummary[i], lines[i]);
+            }
+        }
+
+        private static void AssertNoLongitudinalLabels(string stdout)
+        {
+            Assert.DoesNotContain("Indexed runs:", stdout, StringComparison.Ordinal);
+            Assert.DoesNotContain("Adjacent comparisons:", stdout, StringComparison.Ordinal);
+            Assert.DoesNotContain("Selected matches:", stdout, StringComparison.Ordinal);
+            Assert.DoesNotContain("Continuity links:", stdout, StringComparison.Ordinal);
+            Assert.DoesNotContain("Continuity paths:", stdout, StringComparison.Ordinal);
+            Assert.DoesNotContain("Standalone selected matches:", stdout, StringComparison.Ordinal);
+            Assert.DoesNotContain("Lifecycle entries:", stdout, StringComparison.Ordinal);
+            Assert.DoesNotContain("Non-path lifecycle entries:", stdout, StringComparison.Ordinal);
+            Assert.DoesNotContain("StillOpen:", stdout, StringComparison.Ordinal);
+            Assert.DoesNotContain("New:", stdout, StringComparison.Ordinal);
+            Assert.DoesNotContain("Resolved:", stdout, StringComparison.Ordinal);
+            Assert.DoesNotContain("Unverifiable:", stdout, StringComparison.Ordinal);
         }
 
         private static string NormalizeLineEndings(string value) =>

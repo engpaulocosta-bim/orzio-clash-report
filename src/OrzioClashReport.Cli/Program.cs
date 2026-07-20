@@ -1,9 +1,12 @@
 using OrzioClashReport.Core.Abstractions;
+using OrzioClashReport.Core.Analysis;
 using OrzioClashReport.Core.Assembly;
+using OrzioClashReport.Core.Continuity;
 using OrzioClashReport.Core.Grouping;
 using OrzioClashReport.Core.Lifecycle;
 using OrzioClashReport.Core.Matching;
 using OrzioClashReport.Core.Model;
+using OrzioClashReport.Core.Presentation;
 using OrzioClashReport.Input.NavisworksXml;
 using OrzioClashReport.Input.RunManifestJson;
 using OrzioClashReport.Output.Html;
@@ -232,16 +235,24 @@ namespace OrzioClashReport.Cli
                 IClashLifecycleClassifier lifecycleClassifier = new ConservativeClashLifecycleClassifier();
                 IClashRunSequenceComparer sequenceComparer =
                     new DeterministicAdjacentClashRunSequenceComparer(runComparer, lifecycleClassifier);
+                IClashRunSequenceContinuityProjector continuityProjector =
+                    new DeterministicSelectedMatchContinuityProjector();
+                IClashRunSequenceContinuityPathAssembler continuityPathAssembler =
+                    new DeterministicSelectedMatchContinuityPathAssembler();
+                IClashRunSequenceAnalyzer sequenceAnalyzer =
+                    new DeterministicClashRunSequenceAnalyzer(sequenceComparer, continuityProjector, continuityPathAssembler);
 
-                ClashRunSequenceComparisonResult sequenceResult = sequenceComparer.Compare(runs);
+                ClashRunSequenceAnalysisResult analysisResult = sequenceAnalyzer.Analyze(runs);
+                IClashRunSequencePresentationProjector presentationProjector =
+                    new DeterministicClashRunSequencePresentationProjector();
+                ClashRunSequencePresentationResult presentationResult = presentationProjector.Project(analysisResult);
 
-                Console.WriteLine($"Indexed runs: {sequenceResult.Runs.Count}");
-                Console.WriteLine($"Adjacent comparisons: {sequenceResult.Comparisons.Count}");
+                WriteLongitudinalSummary(presentationResult);
 
-                for (int i = 0; i < sequenceResult.Comparisons.Count; i++)
+                foreach (var transition in presentationResult.Transitions)
                 {
-                    Console.WriteLine($"Comparison {i + 1}/{sequenceResult.Comparisons.Count}");
-                    WriteComparisonSummary(sequenceResult.Comparisons[i]);
+                    Console.WriteLine($"Comparison {transition.ComparisonIndex + 1}/{presentationResult.AdjacentComparisonCount}");
+                    WriteComparisonSummary(transition.Comparison);
                 }
 
                 return 0;
@@ -317,6 +328,22 @@ namespace OrzioClashReport.Cli
             Console.WriteLine($"New: {newCount}");
             Console.WriteLine($"Resolved: {resolvedCount}");
             Console.WriteLine($"Unverifiable: {unverifiableCount}");
+        }
+
+        private static void WriteLongitudinalSummary(ClashRunSequencePresentationResult presentationResult)
+        {
+            Console.WriteLine($"Indexed runs: {presentationResult.RunCount}");
+            Console.WriteLine($"Adjacent comparisons: {presentationResult.AdjacentComparisonCount}");
+            Console.WriteLine($"Selected matches: {presentationResult.SelectedMatchCount}");
+            Console.WriteLine($"Continuity links: {presentationResult.ContinuityLinkCount}");
+            Console.WriteLine($"Continuity paths: {presentationResult.ContinuityPathCount}");
+            Console.WriteLine($"Standalone selected matches: {presentationResult.StandaloneSelectedMatchCount}");
+            Console.WriteLine($"Lifecycle entries: {presentationResult.LifecycleEntryCount}");
+            Console.WriteLine($"Non-path lifecycle entries: {presentationResult.NonPathLifecycleEntryCount}");
+            Console.WriteLine($"StillOpen: {presentationResult.StillOpenCount}");
+            Console.WriteLine($"New: {presentationResult.NewCount}");
+            Console.WriteLine($"Resolved: {presentationResult.ResolvedCount}");
+            Console.WriteLine($"Unverifiable: {presentationResult.UnverifiableCount}");
         }
 
         private static ClashLifecycleResult CreateDerivedComparison(CoordinationRun previousRun, CoordinationRun currentRun)

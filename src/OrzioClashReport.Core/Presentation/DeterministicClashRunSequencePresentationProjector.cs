@@ -33,7 +33,9 @@ namespace OrzioClashReport.Core.Presentation
             {
                 var comparison = sequenceComparison.Comparisons[comparisonIndex];
                 var transitionEntries = new List<ClashRunSequenceLifecycleEntryPresentation>();
-                var candidateLookup = new Dictionary<ClashRunMatchCandidate, ClashRunSequenceLifecycleEntryPresentation>();
+                var candidateLookup =
+                    new Dictionary<ClashRunMatchCandidate, ClashRunSequenceLifecycleEntryPresentation>(
+                        ReferenceIdentityComparer<ClashRunMatchCandidate>.Instance);
 
                 for (int entryIndex = 0; entryIndex < comparison.Entries.Count; entryIndex++)
                 {
@@ -122,7 +124,8 @@ namespace OrzioClashReport.Core.Presentation
         private static Dictionary<ClashRunMatchCandidate, SelectedMatchContinuityPath> BuildPathByCandidateLookup(
             IReadOnlyList<SelectedMatchContinuityPath> paths)
         {
-            var lookup = new Dictionary<ClashRunMatchCandidate, SelectedMatchContinuityPath>();
+            var lookup = new Dictionary<ClashRunMatchCandidate, SelectedMatchContinuityPath>(
+                ReferenceIdentityComparer<ClashRunMatchCandidate>.Instance);
 
             foreach (var path in paths)
             {
@@ -140,6 +143,21 @@ namespace OrzioClashReport.Core.Presentation
             }
 
             return lookup;
+        }
+
+        private sealed class ReferenceIdentityComparer<T> : IEqualityComparer<T>
+            where T : class
+        {
+            public static ReferenceIdentityComparer<T> Instance { get; } = new ReferenceIdentityComparer<T>();
+
+            private ReferenceIdentityComparer()
+            {
+            }
+
+            public bool Equals(T? x, T? y) => ReferenceEquals(x, y);
+
+            public int GetHashCode(T obj) =>
+                System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj);
         }
     }
 }

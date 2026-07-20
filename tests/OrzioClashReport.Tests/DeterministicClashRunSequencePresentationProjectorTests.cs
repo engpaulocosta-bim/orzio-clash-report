@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using OrzioClashReport.Core.Abstractions;
 using OrzioClashReport.Core.Analysis;
 using OrzioClashReport.Core.Continuity;
@@ -19,6 +21,14 @@ namespace OrzioClashReport.Tests
     /// </summary>
     public class DeterministicClashRunSequencePresentationProjectorTests
     {
+        private static readonly ConstructorInfo PathConstructor =
+            typeof(SelectedMatchContinuityPath).GetConstructor(
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                binder: null,
+                types: new[] { typeof(IReadOnlyList<SelectedMatchContinuityLink>) },
+                modifiers: null)
+            ?? throw new InvalidOperationException("Could not find SelectedMatchContinuityPath internal constructor.");
+
         private static readonly DateTimeOffset DefaultCreatedAt = new DateTimeOffset(2026, 7, 10, 9, 0, 0, TimeSpan.Zero);
 
         private static readonly ModelRevision Sigma =
@@ -323,6 +333,25 @@ namespace OrzioClashReport.Tests
             }
         }
 
+        [Fact]
+        public void Project_SameExactSelectedMatchInTwoDifferentPaths_FailsFast()
+        {
+            var analysisResult = CreateFourRunChainFixture();
+            var firstPath = Assert.Single(analysisResult.ContinuityPathsResult.Paths);
+            var secondPath = CreatePathViaReflection(firstPath.Links);
+
+            Assert.NotSame(firstPath, secondPath);
+            Assert.Same(firstPath.SelectedMatches[0], secondPath.SelectedMatches[0]);
+
+            CorruptContinuityPathsResultPathsField(
+                analysisResult.ContinuityPathsResult,
+                new List<SelectedMatchContinuityPath> { firstPath, secondPath }.AsReadOnly());
+
+            var exception = Assert.Throws<InvalidOperationException>(() => CreateProjector().Project(analysisResult));
+            Assert.Contains("same exact selected-match reference", exception.Message, StringComparison.Ordinal);
+            Assert.Contains("different continuity paths", exception.Message, StringComparison.Ordinal);
+        }
+
         // ===================== 9. standalone / non-path reuse the same global reference =====================
 
         [Fact]
@@ -437,6 +466,19 @@ namespace OrzioClashReport.Tests
             Assert.Same(analysisResult.SequenceComparison.Comparisons, result.Comparisons);
             Assert.Same(analysisResult.ContinuityResult.Links, result.ContinuityLinks);
             Assert.Same(analysisResult.ContinuityPathsResult.Paths, result.ContinuityPaths);
+        }
+
+        private static SelectedMatchContinuityPath CreatePathViaReflection(IReadOnlyList<SelectedMatchContinuityLink> links) =>
+            (SelectedMatchContinuityPath)PathConstructor.Invoke(new object?[] { links });
+
+        private static void CorruptContinuityPathsResultPathsField(
+            ClashRunSequenceContinuityPathsResult continuityPathsResult,
+            IReadOnlyList<SelectedMatchContinuityPath> paths)
+        {
+            var field = typeof(ClashRunSequenceContinuityPathsResult).GetField(
+                "<Paths>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance)
+                ?? throw new InvalidOperationException("Could not find backing field for ClashRunSequenceContinuityPathsResult.Paths.");
+            field.SetValue(continuityPathsResult, paths);
         }
     }
 }

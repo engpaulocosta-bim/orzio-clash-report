@@ -245,8 +245,11 @@ namespace OrzioClashReport.Core.Model
             List<ClashRunSequenceLifecycleEntryPresentation> lifecycleEntries,
             List<ClashRunSequenceContinuityPathPresentation> pathPresentations)
         {
-            var lifecycleEntrySet = new HashSet<ClashRunSequenceLifecycleEntryPresentation>(lifecycleEntries);
-            var pathEntrySet = new HashSet<ClashRunSequenceLifecycleEntryPresentation>();
+            var lifecycleEntrySet = new HashSet<ClashRunSequenceLifecycleEntryPresentation>(
+                lifecycleEntries,
+                ReferenceIdentityComparer<ClashRunSequenceLifecycleEntryPresentation>.Instance);
+            var pathEntrySet = new HashSet<ClashRunSequenceLifecycleEntryPresentation>(
+                ReferenceIdentityComparer<ClashRunSequenceLifecycleEntryPresentation>.Instance);
 
             foreach (var pathPresentation in pathPresentations)
             {
@@ -335,5 +338,20 @@ namespace OrzioClashReport.Core.Model
         public override string ToString() =>
             $"{RunCount} runs, {AdjacentComparisonCount} adjacent comparisons, {LifecycleEntryCount} lifecycle entries, "
             + $"{ContinuityPathCount} continuity path(s), {StandaloneSelectedMatchCount} standalone selected match(es)";
+
+        private sealed class ReferenceIdentityComparer<T> : IEqualityComparer<T>
+            where T : class
+        {
+            public static ReferenceIdentityComparer<T> Instance { get; } = new ReferenceIdentityComparer<T>();
+
+            private ReferenceIdentityComparer()
+            {
+            }
+
+            public bool Equals(T? x, T? y) => ReferenceEquals(x, y);
+
+            public int GetHashCode(T obj) =>
+                System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj);
+        }
     }
 }

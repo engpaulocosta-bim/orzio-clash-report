@@ -357,19 +357,24 @@ ordered `CoordinationRun` list ->
 `DeterministicClashRunSequenceAnalyzer` ->
 `DeterministicClashRunSequencePresentationProjector` ->
 `ClashRunSequencePresentationResult` ->
+optional `HtmlLongitudinalClashReportRenderer.Render` + `File.WriteAllText` ->
 the deterministic twelve-line longitudinal summary, then the existing deterministic
 eleven-line pairwise summary reused once per adjacent transition.
-The command is `orzioclash compare-index --index <run-index.json>`.
+The command is `orzioclash compare-index --index <run-index.json> [-o <output.html> | --output <output.html>]`.
 The run-index order remains the sole sequence authority: the CLI never reorders by
 `CreatedAt`, `RunId`, revision, filename, or filesystem metadata. Duplicate references are
 preserved exactly as declared, so adjacent duplicate snapshots remain valid comparisons.
 Every snapshot is loaded, every adjacent comparison is computed, continuity is projected,
-continuity paths are assembled, analysis is completed, and presentation is projected before
-the first stdout line. The command is console-only in this stage: no `-o`/`--output`, no
-lifecycle HTML, no history JSON, and no persisted derived state. Explicit ordered index
-consumption and adjacent-pair traversal now exist; automatic discovery, chronology
-inference, latest/previous lookup, non-adjacent/all-vs-all comparison, aggregate multi-run
-lifecycle, Clash Ledger, `Reopened`, and persistent clash identity still do not.
+continuity paths are assembled, analysis is completed, presentation is projected, and any
+requested HTML render/write succeeds before the first stdout line. Without `-o`/`--output`,
+stdout remains byte-identical to the twelve-line longitudinal prefix plus pairwise blocks
+from the previous stage. With output, the only extra stdout line is
+`Longitudinal report written to {OutputPath}`, emitted last after the file is written. The
+command remains evidence-only and accepts indexes with two or more runs; automatic
+discovery, chronology inference, latest/previous lookup, non-adjacent/all-vs-all comparison,
+aggregate multi-run lifecycle, Clash Ledger, `Reopened`, persistent clash identity,
+fingerprints, path IDs, aggregate path status/confidence, and persisted derived state still
+do not exist.
 
 The longitudinal summary prefix is exactly twelve lines, in this order:
 
@@ -624,11 +629,53 @@ ascending then `EntryIndex` ascending; `PathPresentations` by `ContinuityPathsRe
 This is Core presentation derived from an already-complete analysis chain -- not history, a
 ledger, or persistent/stable clash identity. A continuity path presented here is still just a
 derived maximal sequence of exact-reference links, never a persistent clash. `compare-index`
-consumes this projection for its deterministic twelve-line longitudinal stdout prefix, then
-prints the existing pairwise summaries unchanged. There is still no longitudinal HTML, no
+consumes this projection for its deterministic twelve-line longitudinal stdout prefix and,
+when `-o`/`--output` is supplied, for the longitudinal HTML renderer. There is still no
 derived-state persistence, no aggregate multi-run lifecycle, no Clash Ledger, no persistent
 clash identity, and no `Reopened`. Sequential real Navisworks export validation remains
 unverified.
+
+## Longitudinal lifecycle HTML
+
+`HtmlLongitudinalClashReportRenderer` lives in `OrzioClashReport.Output.Html` and is a
+public sealed concrete adapter renderer with a public parameterless constructor and a single
+contract: `Render(ClashRunSequencePresentationResult result)`. It consumes the complete
+presentation result directly and never calls the analyzer, comparer, matcher, lifecycle
+classifier, continuity projector, path assembler, or presentation projector. It never
+recomputes matching, lifecycle, links, paths, partitions, or summary counters, performs no
+I/O, clock access, network access, randomness, or filesystem inspection, and returns one
+complete deterministic HTML string; `Program.cs` remains responsible for `File.WriteAllText`.
+
+The HTML is HTML5 (`<!doctype html>`), `lang="en"`, UTF-8, titled exactly
+`Orzio Clash Longitudinal Report`, self-contained, deterministic byte-for-byte, responsive,
+printable, has all CSS inline in one `<style>`, and has no JavaScript, external links,
+fonts, images, stylesheets, or assets. Dynamic content is HTML-encoded. The renderer may
+show run IDs, `CreatedAt` formatted with `"O"` and invariant culture, counts, declared
+models in order, company/discipline/model/revision/source file name, clash tests and names,
+elements, levels, distances, points, source clash GUID labeled evidence only, confidence,
+lifecycle evidence, and match evidence with previous/current values. It must not show
+`ModelRevision.SourceFilePath`, `ModelRevision.ContentHash`, `ClashObject.Properties`, local
+or network paths, invented fields, generation timestamps, or index file paths.
+
+The nine top-level sections are fixed and ordered by stable classes:
+`longitudinal-header`, `longitudinal-summary-section`, `interpretation-warning`,
+`run-sequence-section`, `continuity-paths-section`,
+`standalone-selected-matches-section`, `non-path-lifecycle-section`,
+`transition-sections`, and `longitudinal-classification-note`. The renderer preserves all
+presentation order it receives: runs, paths, selected-match entries, standalone selected
+matches, non-path entries, transitions, lifecycle entries, and evidence. Visible ordinals
+for runs, paths, transitions, and entries are presentation ordinals only, never IDs.
+
+The report presents the explicit run sequence and declared revisions, the twelve
+longitudinal counters, interpretation warnings, maximal continuity paths, standalone
+selected matches, lifecycle entries outside paths, and every adjacent transition with all
+lifecycle entries, `New`, `StillOpen`, `Resolved`, `Unverifiable`, confidence, lifecycle
+evidence, and match evidence. It states honestly that continuity paths are derived from
+recalculated adjacent selected matches, do not prove identity, and are recalculable and not
+persisted; `High` is not human confirmation; `Unverifiable` means available evidence or
+candidate competition blocks safe automatic classification; source GUID is evidence only;
+there is no Clash Ledger, `Reopened`, aggregate multi-run lifecycle, persistent clash
+identity, fingerprint, path ID, aggregate path status, or aggregate path confidence.
 
 ## Two-run comparison CLI
 

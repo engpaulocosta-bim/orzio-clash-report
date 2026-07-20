@@ -318,21 +318,47 @@ ordered `RunIndexDocument.SnapshotPaths` ->
 `RunIndexSnapshotPathResolver.ResolveReference` for every entry ->
 `JsonCoordinationRunSnapshotSerializer.Load` for every resolved snapshot ->
 ordered `CoordinationRun` list ->
-`DeterministicAdjacentClashRunSequenceComparer.Compare` (adjacent pairs `[i] -> [i + 1]` only,
-via `ConservativeClashMatcher` -> `DeterministicClashRunComparer` ->
-`ConservativeClashLifecycleClassifier` for each pair) ->
-`ClashRunSequenceComparisonResult` ->
-the existing deterministic eleven-line pairwise summary reused once per adjacent transition.
+`ConservativeClashMatcher` ->
+`DeterministicClashRunComparer` ->
+`ConservativeClashLifecycleClassifier` ->
+`DeterministicAdjacentClashRunSequenceComparer` ->
+`DeterministicSelectedMatchContinuityProjector` ->
+`DeterministicSelectedMatchContinuityPathAssembler` ->
+`DeterministicClashRunSequenceAnalyzer` ->
+`DeterministicClashRunSequencePresentationProjector` ->
+`ClashRunSequencePresentationResult` ->
+the deterministic twelve-line longitudinal summary, then the existing deterministic
+eleven-line pairwise summary reused once per adjacent transition.
 The command is `orzioclash compare-index --index <run-index.json>`.
 The run-index order remains the sole sequence authority: the CLI never reorders by
 `CreatedAt`, `RunId`, revision, filename, or filesystem metadata. Duplicate references are
 preserved exactly as declared, so adjacent duplicate snapshots remain valid comparisons.
-Every snapshot is loaded before output, the Core sequence comparer computes every adjacent
-comparison before output, and the command is console-only in this stage: no `-o`/`--output`,
-no lifecycle HTML, no history JSON, and no persisted derived state. Explicit ordered index
+Every snapshot is loaded, every adjacent comparison is computed, continuity is projected,
+continuity paths are assembled, analysis is completed, and presentation is projected before
+the first stdout line. The command is console-only in this stage: no `-o`/`--output`, no
+lifecycle HTML, no history JSON, and no persisted derived state. Explicit ordered index
 consumption and adjacent-pair traversal now exist; automatic discovery, chronology
-inference, latest/previous lookup, non-adjacent/all-vs-all comparison, multi-run lifecycle,
-Clash Ledger, `Reopened`, and persistent clash identity still do not.
+inference, latest/previous lookup, non-adjacent/all-vs-all comparison, aggregate multi-run
+lifecycle, Clash Ledger, `Reopened`, and persistent clash identity still do not.
+
+The longitudinal summary prefix is exactly twelve lines, in this order:
+
+1. `Indexed runs: {RunCount}`
+2. `Adjacent comparisons: {AdjacentComparisonCount}`
+3. `Selected matches: {SelectedMatchCount}`
+4. `Continuity links: {ContinuityLinkCount}`
+5. `Continuity paths: {ContinuityPathCount}`
+6. `Standalone selected matches: {StandaloneSelectedMatchCount}`
+7. `Lifecycle entries: {LifecycleEntryCount}`
+8. `Non-path lifecycle entries: {NonPathLifecycleEntryCount}`
+9. `StillOpen: {StillOpenCount}`
+10. `New: {NewCount}`
+11. `Resolved: {ResolvedCount}`
+12. `Unverifiable: {UnverifiableCount}`
+
+After that prefix, the existing pairwise blocks remain unchanged and are emitted in
+transition order as `Comparison {i + 1}/{AdjacentComparisonCount}` plus the eleven-line
+pairwise summary for that adjacent transition.
 
 ## Adjacent run sequence comparer (Core)
 
@@ -357,7 +383,7 @@ pairwise lifecycle results: no history, no multi-run lifecycle, no persistent cl
 no Clash Ledger, no `Reopened`. `compare-index` is the only current consumer; `compare` and
 `compare-snapshots` remain pairwise via the existing `CreateDerivedComparison` helper.
 
-## Selected-match continuity projection (Core-only, not yet wired into any CLI)
+## Selected-match continuity projection (Core, consumed by compare-index analysis)
 
 `IClashRunSequenceContinuityProjector` projects an already-derived
 `ClashRunSequenceComparisonResult` onto the set of `SelectedMatchContinuityLink`s at its
@@ -396,11 +422,12 @@ rematching.
 This is the smallest possible longitudinal observation: a link never asserts the underlying
 clash is the same clash. Derived maximal continuity path assembly exists (see below);
 persistent tracking, ledger, identity, lifecycle aggregation, and `Reopened` still do not.
-Links are derived and recalculable, never persisted. No CLI command and no HTML renderer
-consumes this projection yet -- `compare-index` stdout is unchanged and `Program.cs` is
-untouched by it. Sequential real Navisworks export validation remains unverified.
+Links are derived and recalculable, never persisted. `compare-index` consumes this
+projection indirectly through `DeterministicClashRunSequenceAnalyzer`; no HTML renderer
+consumes it, and no CLI calls it directly outside that analyzer composition. Sequential
+real Navisworks export validation remains unverified.
 
-## Deterministic maximal continuity path assembly (Core-only, not yet wired into any CLI)
+## Deterministic maximal continuity path assembly (Core, consumed by compare-index analysis)
 
 `IClashRunSequenceContinuityPathAssembler` assembles an already-derived
 `ClashRunSequenceContinuityResult` into the complete set of disjoint maximal continuity
@@ -446,11 +473,12 @@ A continuity path is a derived, maximal, and fully recalculable sequence of exac
 selected-match continuity links; it is not a persistent clash identity, a stable clash
 identity, a Clash Ledger, or a persistent track, has no history or multi-run lifecycle, and
 does not imply `Reopened`. A selected match with no continuity link never appears in any
-path, and no zero-link path is ever created. This is Core-only: no CLI command and no HTML
-renderer consumes it yet, `compare-index`'s stdout is unchanged, and `Program.cs` is
-untouched. Sequential real Navisworks export validation remains unverified.
+path, and no zero-link path is ever created. `compare-index` consumes this assembly
+indirectly through `DeterministicClashRunSequenceAnalyzer`; no HTML renderer consumes it,
+and no CLI calls it directly outside that analyzer composition. Sequential real Navisworks
+export validation remains unverified.
 
-## Longitudinal sequence analysis orchestrator (Core-only, not yet wired into any CLI)
+## Longitudinal sequence analysis orchestrator (Core, consumed by compare-index)
 
 `IClashRunSequenceAnalyzer` is the single Core boundary that composes the existing
 longitudinal stages in caller-declared order:
@@ -475,10 +503,10 @@ value-equivalent-but-distinct chains unless
 `ReferenceEquals(ContinuityResult.SequenceComparison, SequenceComparison)` and
 `ReferenceEquals(ContinuityPathsResult.ContinuityResult, ContinuityResult)` both hold. It
 adds no ids, statuses, fingerprints, aggregate confidence, history, ledger, persistence
-metadata, lifecycle aggregation, or aliases. No CLI command and no HTML renderer consumes
-this analyzer yet.
+metadata, lifecycle aggregation, or aliases. `compare-index` consumes this analyzer after
+loading every snapshot and before writing stdout; no HTML renderer consumes it.
 
-## Longitudinal presentation model (Core-only, not yet wired into any CLI)
+## Longitudinal presentation model (Core, consumed by compare-index)
 
 `IClashRunSequencePresentationProjector` projects an already-complete
 `ClashRunSequenceAnalysisResult` onto a lossless presentation view -- ordered runs,
@@ -519,13 +547,14 @@ supplied by the caller. Canonical order follows `ComparisonIndex` then `EntryInd
 ascending for entries, and the underlying `ContinuityPathsResult.Paths` order for paths --
 never status, confidence, `RunId`, `CreatedAt`, GUID, or path length.
 
-This is Core-only, derived presentation over an already-complete analysis chain -- not
-history, a ledger, or persistent/stable clash identity. A continuity path presented here is
-still just a derived maximal sequence of exact-reference links, never a persistent clash. No
-CLI command and no HTML renderer consumes this projection yet; `compare-index`'s stdout is
-unchanged and `Program.cs` is untouched. There is still no `compare-index` integration, no
-longitudinal HTML, no multi-run lifecycle aggregation, and no `Reopened`. Sequential real
-Navisworks export validation remains unverified.
+This is Core presentation derived from an already-complete analysis chain -- not history, a
+ledger, or persistent/stable clash identity. A continuity path presented here is still just a
+derived maximal sequence of exact-reference links, never a persistent clash. `compare-index`
+consumes this projection for its deterministic twelve-line longitudinal stdout prefix, then
+prints the existing pairwise summaries unchanged. There is still no longitudinal HTML, no
+derived-state persistence, no aggregate multi-run lifecycle, no Clash Ledger, no persistent
+clash identity, and no `Reopened`. Sequential real Navisworks export validation remains
+unverified.
 
 ## Anti-patterns that fail review
 

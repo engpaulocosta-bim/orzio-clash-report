@@ -16,7 +16,6 @@ namespace OrzioClashReport.Tests
         private static readonly MethodInfo MainMethod = ResolveMainMethod();
         private const string CompareIndexUsage = "Usage: orzioclash compare-index --index <run-index.json>";
         private const int LongitudinalSummaryLineCount = 12;
-        private const int ComparisonBlockLineCount = 12;
         private static readonly string ExpectedCompareSummary = string.Join(
             "\n",
             "Previous run: coordination-sample-clash-xml",
@@ -173,7 +172,7 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
-        public void Main_CompareIndexMode_MatchesCompareSnapshotsSummaryAfterThreeLineHeader()
+        public void Main_CompareIndexMode_MatchesCompareSnapshotsSummaryAfterLongitudinalPrefixAndComparisonHeader()
         {
             string tempDirectory = CreateTempDirectory();
             string previousSnapshotPath = Path.Combine(tempDirectory, "snapshots", "previous.json");

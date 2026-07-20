@@ -450,6 +450,34 @@ path, and no zero-link path is ever created. This is Core-only: no CLI command a
 renderer consumes it yet, `compare-index`'s stdout is unchanged, and `Program.cs` is
 untouched. Sequential real Navisworks export validation remains unverified.
 
+## Longitudinal sequence analysis orchestrator (Core-only, not yet wired into any CLI)
+
+`IClashRunSequenceAnalyzer` is the single Core boundary that composes the existing
+longitudinal stages in caller-declared order:
+`IClashRunSequenceComparer` -> `IClashRunSequenceContinuityProjector` ->
+`IClashRunSequenceContinuityPathAssembler`. The caller's run order remains the only
+authority; the analyzer never sorts, deduplicates, infers chronology, compares
+non-adjacent runs, persists derived state, or creates history, a Clash Ledger,
+multi-run lifecycle, `Reopened`, or stable/persistent clash identity.
+
+`DeterministicClashRunSequenceAnalyzer` is the current implementation. It receives the
+three ports through its constructor, rejects null dependencies, rejects null `runs` before
+invoking any dependency, calls each stage exactly once in order, passes the exact result
+reference from one stage to the next, and propagates exceptions without wrapping them or
+returning a partial result. It is synchronous, deterministic, and performs no I/O, clock
+access, network access, randomness, DI-container resolution, matching, lifecycle
+classification, continuity projection, or path assembly of its own.
+
+`ClashRunSequenceAnalysisResult` is the immutable aggregate: the exact `SequenceComparison`,
+exact `ContinuityResult`, and exact `ContinuityPathsResult` references from one coherent
+derived chain. Its internal constructor rejects null inputs and rejects
+value-equivalent-but-distinct chains unless
+`ReferenceEquals(ContinuityResult.SequenceComparison, SequenceComparison)` and
+`ReferenceEquals(ContinuityPathsResult.ContinuityResult, ContinuityResult)` both hold. It
+adds no ids, statuses, fingerprints, aggregate confidence, history, ledger, persistence
+metadata, lifecycle aggregation, or aliases. No CLI command and no HTML renderer consumes
+this analyzer yet.
+
 ## Anti-patterns that fail review
 
 - Core with a `using System.Xml.Linq`, a Navisworks reference, or any HTML string.

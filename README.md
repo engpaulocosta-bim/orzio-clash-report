@@ -281,6 +281,37 @@ nenhum path vazio é criado. Isso é somente Core: nenhum comando CLI e nenhum r
 consome ainda, o stdout do `compare-index` permanece inalterado, e `Program.cs` não é
 tocado. Validação sequencial contra exports reais do Navisworks continua não verificada.
 
+### Orquestrador de analise longitudinal de sequencia (somente Core, ainda nao exposto em nenhuma CLI)
+
+`IClashRunSequenceAnalyzer`
+(`src/OrzioClashReport.Core/Abstractions/IClashRunSequenceAnalyzer.cs`) e a fronteira unica
+do Core que compoe, na ordem declarada pelo chamador:
+`IClashRunSequenceComparer` -> `IClashRunSequenceContinuityProjector` ->
+`IClashRunSequenceContinuityPathAssembler`. A ordem recebida continua sendo a unica
+autoridade; o analyzer nao ordena, nao deduplica, nao infere cronologia, nao compara runs
+non-adjacent, nao persiste estado derivado e nao cria history, Clash Ledger, lifecycle
+multi-run, `Reopened` ou identidade estavel/persistente de clash.
+
+`DeterministicClashRunSequenceAnalyzer`
+(`src/OrzioClashReport.Core/Analysis/DeterministicClashRunSequenceAnalyzer.cs`) recebe as
+tres portas no construtor, rejeita dependencias nulas, rejeita `runs` nulo antes de chamar
+qualquer dependencia, chama cada estagio exatamente uma vez na ordem definida, passa a
+referencia exata do resultado de um estagio para o proximo, e propaga excecoes sem embrulhar
+nem devolver resultado parcial. Ele e sincrono, deterministico e nao faz I/O, clock, rede,
+aleatoriedade, DI container, matching, lifecycle classification, continuity projection ou
+path assembly por conta propria.
+
+`ClashRunSequenceAnalysisResult`
+(`src/OrzioClashReport.Core/Model/ClashRunSequenceAnalysisResult.cs`) e o aggregate imutavel:
+preserva as referencias exatas de `SequenceComparison`, `ContinuityResult` e
+`ContinuityPathsResult` de uma cadeia derivada coerente. O construtor interno rejeita nulos
+e rejeita cadeias equivalentes por valor mas compostas por referencias diferentes, exigindo
+`ReferenceEquals(ContinuityResult.SequenceComparison, SequenceComparison)` e
+`ReferenceEquals(ContinuityPathsResult.ContinuityResult, ContinuityResult)`. Ele nao adiciona
+ids, status, fingerprint, confidence agregada, history, ledger, metadata de persistencia,
+lifecycle agregado nem aliases. Nenhum comando CLI e nenhum renderer HTML consome esse
+analyzer ainda.
+
 O HTML revision-aware apresenta:
 
 1. metadados das runs previous/current;
@@ -299,8 +330,10 @@ Limites importantes do fluxo revision-aware:
 2. Source clash GUID aparece somente como evidência, não como stable identity.
 3. Ainda não existe `Reopened`.
 4. Ainda não existe persistent clash id.
-5. Já existe persistência de snapshot de uma única run (evidência imutável); ainda não
-   existe ledger, índice de runs nem histórico além de duas runs.
+5. Já existe persistência de snapshot de uma única run (evidência imutável), comparação
+   explícita de snapshots, criação de run index ordenado e consumo desse índice para
+   travessia adjacente; ainda não existe ledger, history, lifecycle multi-run, `Reopened`
+   nem persistent clash ID.
 
 ### Identidade de um grupo
 

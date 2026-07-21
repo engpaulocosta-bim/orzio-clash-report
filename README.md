@@ -5,6 +5,12 @@ complementary workflows: a single-run HTML report grouped by clash test, discipl
 and level, and a revision-aware comparison between two coordination runs with a
 deterministic console summary and optional lifecycle HTML.
 
+Current preview: `0.1.0-preview.1` for Windows `win-x64`. This is an internal preview, not
+a fully validated longitudinal MVP. Single-run parsing, grouping, and HTML were
+human-validated on one private real export. Longitudinal matching, lifecycle, continuity
+links, continuity paths, and longitudinal HTML have not been validated on three real
+historical exports and remain experimental.
+
 ## Architecture
 
 The project follows Ports and Adapters, also known as hexagonal architecture. The core
@@ -22,6 +28,28 @@ Requires the .NET SDK pinned in `global.json` (8.0.420).
 dotnet build
 dotnet test
 ```
+
+## Binary Quick Start
+
+The internal preview release ships as a Windows `win-x64` self-contained executable:
+`orzioclash.exe`. It is not a cross-platform binary. Other operating systems can still run
+from source with the .NET SDK.
+
+After downloading and verifying the ZIP, run the tool without the source repository:
+
+```powershell
+.\orzioclash.exe --version
+.\orzioclash.exe --help
+.\orzioclash.exe ".\inputs\clash-export.xml" -o ".\reports\single-run.html"
+```
+
+For operational steps, checksum verification, manifest preparation, snapshot creation,
+run-index creation, and longitudinal output, see
+[docs/operations/internal-preview.md](docs/operations/internal-preview.md). For release
+gates, see [docs/operations/release-checklist.md](docs/operations/release-checklist.md).
+
+The packaged preview does not provide persistent clash identity, Clash Ledger, `Reopened`,
+aggregate multi-run lifecycle, automatic chronology, or automatic clash responsibility.
 
 Generate a report from a Clash Detective XML export:
 
@@ -496,8 +524,16 @@ by parsing and grouping tests. See [samples/README.md](samples/README.md).
 
 ## CI
 
-`.github/workflows/ci.yml` runs `dotnet build` and `dotnet test` in Release on every push
-and pull request, using the SDK pinned in `global.json`.
+`.github/workflows/ci.yml` runs `dotnet build` and `dotnet test` in Release on Ubuntu for
+every push and pull request, using the SDK pinned in `global.json`. It also runs a separate
+Windows packaging smoke job that publishes the `win-x64` self-contained single-file
+`orzioclash.exe` and executes `scripts/smoke-release.ps1`.
+
+`.github/workflows/release.yml` packages the internal preview on Windows. Manual
+`workflow_dispatch` runs are packaging dry runs only and never create a GitHub Release.
+Tag-triggered runs for matching `v*` tags verify that the tag matches `orzioclash
+--version`, verify that the tagged commit belongs to `origin/master`, package the ZIP and
+checksum, and create a prerelease without overwriting an existing release.
 
 ## Run Manifest
 

@@ -25,3 +25,48 @@ jobs:
 
       - name: Test
         run: dotnet test --configuration Release --no-build
+
+  windows-packaging-smoke:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Publish win-x64 single-file CLI
+        run: >
+          dotnet publish src/OrzioClashReport.Cli/OrzioClashReport.Cli.csproj
+          --configuration Release
+          --runtime win-x64
+          --self-contained true
+          --output artifacts/publish/win-x64
+          -p:PublishSingleFile=true
+          -p:DebugType=None
+          -p:DebugSymbols=false
+
+      - name: Verify executable exists
+        shell: pwsh
+        run: |
+          $exe = Join-Path $PWD "artifacts/publish/win-x64/orzioclash.exe"
+          if (-not (Test-Path -LiteralPath $exe -PathType Leaf)) {
+            throw "Published executable was not produced: $exe"
+          }
+          if ((Get-Item -LiteralPath $exe).Length -le 0) {
+            throw "Published executable is empty: $exe"
+          }
+
+      - name: Run release smoke
+        shell: pwsh
+        run: |
+          $exe = Join-Path $PWD "artifacts/publish/win-x64/orzioclash.exe"
+          $workspace = Join-Path $env:RUNNER_TEMP "orzio-release-smoke"
+          New-Item -ItemType Directory -Force -Path $workspace | Out-Null
+          scripts/smoke-release.ps1 -ExecutablePath $exe -SmokeWorkspace $workspace

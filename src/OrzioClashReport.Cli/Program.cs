@@ -12,11 +12,13 @@ using OrzioClashReport.Input.RunManifestJson;
 using OrzioClashReport.Output.Html;
 using OrzioClashReport.Persistence.RunIndexJson;
 using OrzioClashReport.Persistence.RunSnapshotJson;
+using System.Reflection;
 
 namespace OrzioClashReport.Cli
 {
     internal static class Program
     {
+        private const string ProductName = "orzioclash";
         private const string LegacyUsage = "Usage: orzioclash <input.xml> -o <output.html>";
         private const string CompareUsage = "Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json> [-o <output.html> | --output <output.html>]";
         private const string CompareIndexUsage = "Usage: orzioclash compare-index --index <run-index.json> [-o <output.html> | --output <output.html>]";
@@ -26,6 +28,18 @@ namespace OrzioClashReport.Cli
 
         private static int Main(string[] args)
         {
+            if (args.Length == 1 && string.Equals(args[0], "--help", StringComparison.Ordinal))
+            {
+                WriteHelp();
+                return 0;
+            }
+
+            if (args.Length == 1 && string.Equals(args[0], "--version", StringComparison.Ordinal))
+            {
+                Console.WriteLine($"{ProductName} {GetDisplayVersion()}");
+                return 0;
+            }
+
             if (args.Length > 0 && string.Equals(args[0], "index-snapshots", StringComparison.OrdinalIgnoreCase))
             {
                 return RunIndexSnapshots(args);
@@ -52,6 +66,42 @@ namespace OrzioClashReport.Cli
             }
 
             return RunLegacyReport(args);
+        }
+
+        private static void WriteHelp()
+        {
+            Console.WriteLine("orzioclash - Navisworks Clash Detective report tooling");
+            Console.WriteLine();
+            Console.WriteLine("Usage:");
+            Console.WriteLine("  orzioclash <input.xml> -o <output.html>");
+            Console.WriteLine("  orzioclash <command> [options]");
+            Console.WriteLine();
+            Console.WriteLine("Commands:");
+            Console.WriteLine("  single-run report    Generate grouped HTML from one Clash Detective XML export.");
+            Console.WriteLine("  compare              Compare previous/current XML exports with explicit manifests.");
+            Console.WriteLine("  snapshot             Create one immutable coordination-run snapshot.");
+            Console.WriteLine("  compare-snapshots    Compare two persisted snapshots.");
+            Console.WriteLine("  index-snapshots      Create an explicitly ordered run index from snapshots.");
+            Console.WriteLine("  compare-index        Compare adjacent snapshot pairs from an explicit run index.");
+            Console.WriteLine();
+            Console.WriteLine("Run-index order is authoritative; runs are never reordered by timestamp, revision, or file name.");
+            Console.WriteLine("Longitudinal behavior is experimental until validated on sequential real exports.");
+            Console.WriteLine();
+            Console.WriteLine("Global options:");
+            Console.WriteLine("  --help               Show this help.");
+            Console.WriteLine("  --version            Show the application version.");
+        }
+
+        private static string GetDisplayVersion()
+        {
+            string version = typeof(Program).Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+                .InformationalVersion
+                ?? typeof(Program).Assembly.GetName().Version?.ToString()
+                ?? "unknown";
+
+            int metadataIndex = version.IndexOf('+');
+            return metadataIndex >= 0 ? version.Substring(0, metadataIndex) : version;
         }
 
         private static int RunLegacyReport(string[] args)

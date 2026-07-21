@@ -106,6 +106,29 @@ Three different claims. Never conflate them, never report a higher one than you 
 
 An agent can claim the first two. Only the human can claim the third.
 
+## Internal preview release contract
+
+Current internal preview target: `0.1.0-preview.1`, distributed as `orzioclash.exe` for
+Windows `win-x64`. The future release tag is `v0.1.0-preview.1`; release tags must point to
+commits contained in `master`.
+
+README and user-facing documentation remain English. Published CLI stdout/stderr contracts
+must not be silently broken after release.
+
+No real/private artifacts enter Git or release packages: validation XML, HTML, PDF, local
+paths, project names, model names, personal names, NWD, NWF, NWC, RVT, and images stay out.
+Private validation stays documented only through public aliases and scoped claims.
+
+Validation status is intentionally narrow: single-run parsing, grouping, and HTML were
+human-validated on one private real export. Longitudinal matching, lifecycle, continuity
+links, continuity paths, and longitudinal HTML remain unvalidated against three real
+historical exports and are experimental.
+
+The preview does not provide persistent clash identity, Clash Ledger, `Reopened`,
+aggregate multi-run lifecycle, automatic chronology, or automatic clash responsibility.
+`workflow_dispatch` release runs are packaging dry runs only. Responsibility/authorship
+remains deferred to a later human-governance stage.
+
 ## Anti-patterns that fail review
 
 - Core with a `using System.Xml.Linq`, a Navisworks reference, or any HTML string.

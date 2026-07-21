@@ -76,8 +76,11 @@ namespace OrzioClashReport.Cli
             Console.WriteLine("  orzioclash <input.xml> -o <output.html>");
             Console.WriteLine("  orzioclash <command> [options]");
             Console.WriteLine();
+            Console.WriteLine("Default workflow:");
+            Console.WriteLine("  orzioclash <input.xml> -o <output.html>");
+            Console.WriteLine("      Generate the grouped single-run HTML report from one Clash Detective XML export.");
+            Console.WriteLine();
             Console.WriteLine("Commands:");
-            Console.WriteLine("  single-run report    Generate grouped HTML from one Clash Detective XML export.");
             Console.WriteLine("  compare              Compare previous/current XML exports with explicit manifests.");
             Console.WriteLine("  snapshot             Create one immutable coordination-run snapshot.");
             Console.WriteLine("  compare-snapshots    Compare two persisted snapshots.");

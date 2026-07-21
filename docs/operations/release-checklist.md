@@ -9,7 +9,9 @@ Use this checklist before publishing an internal preview artifact or prerelease.
 - [ ] CI is green.
 - [ ] Application version from `orzioclash.exe --version` matches the intended tag.
 - [ ] `workflow_dispatch` was treated as a packaging dry run only.
+- [ ] `workflow_dispatch` did not publish a GitHub Release.
 - [ ] No tag was created by automation.
+- [ ] All external GitHub Actions are pinned by full 40-character commit SHA.
 
 ## Build and Package Gates
 
@@ -27,6 +29,8 @@ Use this checklist before publishing an internal preview artifact or prerelease.
 - [ ] ZIP contains anonymized sample XML and manifest files.
 - [ ] ZIP contains the run-index template.
 - [ ] SHA-256 checksum file was generated.
+- [ ] CI and package jobs run with read-only repository permissions.
+- [ ] `contents: write` is granted only to the tag-only prerelease publication job.
 
 ## Smoke Gates
 

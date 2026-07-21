@@ -58,8 +58,15 @@ Keep project inputs, snapshots, and reports in a controlled workspace:
 ```text
 coordination-work\
   inputs\
-    clash-export.xml
-    run-manifest.json
+    run-001\
+      clash-export.xml
+      run-manifest.json
+    run-002\
+      clash-export.xml
+      run-manifest.json
+    run-003\
+      clash-export.xml
+      run-manifest.json
   snapshots\
     run-001.json
     run-002.json
@@ -73,6 +80,12 @@ coordination-work\
 Do not store private XML, generated HTML, PDFs, real paths, project names, model names, or
 personal names in Git or shared release artifacts.
 
+For longitudinal work, prepare one XML export and one schema-version 2 manifest for each
+coordination run. The three exports must belong to the same project. The intended sequence
+`R1 -> R2 -> R3` is a human declaration represented by run-index order. The program does
+not infer chronology, discipline, revision, or clash-test renames from timestamps, file
+names, model names, or XML contents.
+
 ## Navisworks XML Preparation
 
 Export Clash Detective results as XML from Navisworks. Confirm that the export represents
@@ -81,10 +94,15 @@ object data. The current assembler resolves source models only by exact trimmed
 case-insensitive equality against declared manifest `sourceFileName` or `sourceFilePath`.
 It does not infer revisions or disciplines from file names.
 
+The `sourceFileName` or `sourceFilePath` declared for each model revision must match the
+source model token observed in the XML. Clash test names should remain coherent across
+runs when they represent the same test. If a test was renamed by humans, the preview will
+not infer that relationship automatically.
+
 ## Generate a Single-Run Report
 
 ```powershell
-.\orzioclash.exe ".\coordination-work\inputs\clash-export.xml" -o ".\coordination-work\reports\single-run.html"
+.\orzioclash.exe ".\coordination-work\inputs\run-001\clash-export.xml" -o ".\coordination-work\reports\single-run.html"
 ```
 
 Open the generated HTML locally in a browser. The file is self-contained and does not need
@@ -92,8 +110,9 @@ network access.
 
 ## Prepare a Schema-Version 2 Manifest
 
-Create one manifest per coordination run. The manifest declares the exact model revisions
-and the clash tests that were executed.
+Create one manifest per coordination run. Timestamps, revisions, model identity, and
+`executedClashTests` are human declarations. The manifest declares the exact model
+revisions and the clash tests that were executed.
 
 ```json
 {
@@ -124,11 +143,23 @@ create a competing manifest schema.
 
 ## Create Immutable Snapshots
 
+Create one snapshot for each XML/manifest pair:
+
 ```powershell
 .\orzioclash.exe snapshot `
-  --xml ".\coordination-work\inputs\clash-export.xml" `
-  --manifest ".\coordination-work\inputs\run-manifest.json" `
+  --xml ".\coordination-work\inputs\run-001\clash-export.xml" `
+  --manifest ".\coordination-work\inputs\run-001\run-manifest.json" `
   -o ".\coordination-work\snapshots\run-001.json"
+
+.\orzioclash.exe snapshot `
+  --xml ".\coordination-work\inputs\run-002\clash-export.xml" `
+  --manifest ".\coordination-work\inputs\run-002\run-manifest.json" `
+  -o ".\coordination-work\snapshots\run-002.json"
+
+.\orzioclash.exe snapshot `
+  --xml ".\coordination-work\inputs\run-003\clash-export.xml" `
+  --manifest ".\coordination-work\inputs\run-003\run-manifest.json" `
+  -o ".\coordination-work\snapshots\run-003.json"
 ```
 
 Snapshot output paths are create-new only. Existing files are refused.
@@ -137,6 +168,8 @@ Snapshot output paths are create-new only. Existing files are refused.
 
 Run-index order is authoritative. The tool never reorders runs by timestamp, file name,
 revision, or `RunId`.
+
+Declare the intended `R1 -> R2 -> R3` order explicitly:
 
 ```powershell
 .\orzioclash.exe index-snapshots `

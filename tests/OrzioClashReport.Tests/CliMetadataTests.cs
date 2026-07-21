@@ -17,13 +17,24 @@ namespace OrzioClashReport.Tests
 
             Assert.Equal(0, result.ExitCode);
             Assert.Equal(string.Empty, result.StdErr);
-            Assert.Contains("single-run report", result.StdOut, StringComparison.Ordinal);
+            Assert.Contains("Default workflow:", result.StdOut, StringComparison.Ordinal);
+            Assert.Contains("Generate the grouped single-run HTML report", result.StdOut, StringComparison.Ordinal);
             Assert.Contains("compare", result.StdOut, StringComparison.Ordinal);
             Assert.Contains("snapshot", result.StdOut, StringComparison.Ordinal);
             Assert.Contains("compare-snapshots", result.StdOut, StringComparison.Ordinal);
             Assert.Contains("index-snapshots", result.StdOut, StringComparison.Ordinal);
             Assert.Contains("compare-index", result.StdOut, StringComparison.Ordinal);
             Assert.Contains("Run-index order is authoritative", result.StdOut, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Main_Help_DoesNotAdvertiseSingleRunAsInvokableCommand()
+        {
+            var result = InvokeMain("--help");
+
+            Assert.Equal(0, result.ExitCode);
+            Assert.DoesNotContain("  single-run report", result.StdOut, StringComparison.Ordinal);
+            Assert.DoesNotContain("orzioclash single-run", result.StdOut, StringComparison.Ordinal);
         }
 
         [Fact]

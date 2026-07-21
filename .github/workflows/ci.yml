@@ -50,8 +50,11 @@ jobs:
           git config --local core.autocrlf false
           git checkout -- tests/OrzioClashReport.Tests/Golden
 
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
       - name: Test
-        run: dotnet test --configuration Release --no-restore
+        run: dotnet test --configuration Release --no-build
 
       - name: Publish win-x64 single-file CLI
         run: >

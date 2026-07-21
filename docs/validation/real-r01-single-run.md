@@ -40,7 +40,13 @@ the tables and the presented organization.
 
 ## Validation level
 
-Validated on a real model.
+Validated on one real single-run export.
+
+This validation covers only parsing, raw count, grouping, single-run presentation,
+legibility, and determinism for the private export reviewed under the Real Project R01
+alias. It does not validate pairwise matching, lifecycle classification, continuity links,
+continuity paths, or longitudinal HTML. It also does not generalize the result to every
+project or naming convention.
 
 This validation was performed by a human reviewer on private real-project artifacts. The
 agent may record this approval, but the private artifacts themselves are not committed.

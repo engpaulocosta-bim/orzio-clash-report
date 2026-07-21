@@ -990,3 +990,8 @@ Esta seção existe para registrar pedidos que não entram no MVP.
 - Adaptador da API do Navisworks (.NET API, leitura ao vivo)
 - Edição de status do clash dentro da ferramenta
 - Integração com CDE (Common Data Environment)
+- Ordenação futura do relatório com clashes internos da mesma disciplina antes de clashes
+  entre disciplinas
+- Mapeamento explícito entre source model, disciplina canónica e nome de modelo/sistema
+  para substituir labels derivados diretamente do nome do submodelo
+- Hardening do resolvedor de disciplinas sem inferência fuzzy

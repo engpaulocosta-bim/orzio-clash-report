@@ -44,6 +44,12 @@ jobs:
       - name: Restore
         run: dotnet restore
 
+      - name: Re-checkout golden files with LF
+        shell: pwsh
+        run: |
+          git config --local core.autocrlf false
+          git checkout -- tests/OrzioClashReport.Tests/Golden
+
       - name: Test
         run: dotnet test --configuration Release --no-restore
 

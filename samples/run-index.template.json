@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "snapshotPaths": [
+    "snapshots/run-001.json",
+    "snapshots/run-002.json",
+    "snapshots/run-003.json"
+  ]
+}

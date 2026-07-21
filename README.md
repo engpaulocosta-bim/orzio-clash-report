@@ -1,49 +1,55 @@
 # OrzioClashReport
 
-Lê clashes exportados do Navisworks Clash Detective e suporta dois fluxos complementares:
-um relatório HTML de uma única run, agrupado por clash test, par de disciplinas e nível, e
-uma comparação revision-aware entre duas coordination runs com summary determinístico no
-console e HTML lifecycle opcional.
+OrzioClashReport reads clashes exported from Navisworks Clash Detective and supports two
+complementary workflows: a single-run HTML report grouped by clash test, discipline pair,
+and level, and a revision-aware comparison between two coordination runs with a
+deterministic console summary and optional lifecycle HTML.
 
-## Arquitetura
+## Architecture
 
-Segue Ports and Adapters (arquitetura hexagonal). O core vive em netstandard2.0, sem dependências de terceiros, e não sabe nada sobre a origem dos dados nem sobre o formato de saída. Os adaptadores plugáveis entram nas bordas: parser do XML do Clash Detective como adapter de entrada, renderizador de HTML como adapter de saída. Isso permite trocar a fonte de dados (por exemplo, para a API do Navisworks no futuro) ou o formato de saída sem reescrever o domínio.
+The project follows Ports and Adapters, also known as hexagonal architecture. The core
+targets `netstandard2.0`, has no third-party dependencies, and knows nothing about input
+sources or output formats. Pluggable adapters live at the edges: the Clash Detective XML
+parser is an input adapter, and the HTML renderer is an output adapter. This keeps the
+domain stable when the data source changes later, for example to the Navisworks API, or
+when another output format is added.
 
-## Uso
+## Usage
 
-Requer o .NET SDK fixado em `global.json` (8.0.420).
+Requires the .NET SDK pinned in `global.json` (8.0.420).
 
 ```bash
 dotnet build
 dotnet test
 ```
 
-Gerar o relatório a partir de um export XML do Clash Detective:
+Generate a report from a Clash Detective XML export:
 
 ```bash
 dotnet run --project src/OrzioClashReport.Cli -- <input.xml> -o <output.html>
 ```
 
-Exemplo com os fixtures em `samples/`:
+Example with the fixtures in `samples/`:
 
 ```bash
 dotnet run --project src/OrzioClashReport.Cli -- samples/sample-clash.xml -o report.html
 ```
 
-A saída no console mostra a contagem bruta vs. agrupada, por exemplo:
+The console output shows the raw-vs-grouped count, for example:
 
-```
+```text
 1458 raw clashes -> 25 groups
 Report written to report.html
 ```
 
-Abra o `report.html` gerado em qualquer navegador — é um arquivo único e autocontido (sem CSS/JS externo).
+Open the generated `report.html` in any browser. It is a single self-contained file with no
+external CSS or JavaScript.
 
-## Comparar duas coordination runs
+## Compare Two Coordination Runs
 
-O comando `compare` recebe explicitamente os papéis previous/current. Sem output, ele
-produz o mesmo resumo determinístico no console. Com `-o`/`--output`, ele escreve esse
-mesmo resumo e também gera um HTML revision-aware autocontido:
+The `compare` command receives explicit previous/current roles. Without output, it prints
+the deterministic console summary. With `-o`/`--output`, it prints the same summary and also
+writes a self-contained revision-aware lifecycle HTML report:
 
 ```bash
 dotnet run --project src/OrzioClashReport.Cli -- \
@@ -55,29 +61,28 @@ dotnet run --project src/OrzioClashReport.Cli -- \
   -o comparison.html
 ```
 
-O pipeline composto pela CLI é:
+The CLI composition pipeline is:
 
-1. Previous/current são papéis explícitos da linha de comando.
-2. A CLI não reordena as runs por timestamp, `RunId`, revisão ou nome de arquivo.
-3. Cada XML é parseado separadamente por `NavisworksXmlClashSource`.
-4. Cada manifesto é carregado separadamente por `JsonRunManifestSource`.
-5. `ExactSourceModelCoordinationRunAssembler` resolve `SourceModel` para `ModelRevision`.
-6. `ConservativeClashMatcher` avalia candidate relationships par-a-par.
-7. `DeterministicClashRunComparer` seleciona um subconjunto one-to-one determinístico.
-8. `ConservativeClashLifecycleClassifier` produz os statuses finais.
-9. O console mostra contagens determinísticas de candidates, matches e lifecycle.
-10. `-o`/`--output` é opcional: sem output, só há summary; com output, o mesmo summary é
-    seguido por um HTML lifecycle revision-aware.
-11. Persistência de snapshot de uma única run já existe (ver "Snapshot imutável de uma
-    coordination run" abaixo), snapshots persistidos podem ser comparados explicitamente
-    pela CLI via `compare-snapshots`, e agora também existe um run index JSON ordenado e
-    explícito criado pela CLI via `index-snapshots`, além do consumo explícito desse
-    índice pela CLI via `compare-index`; a ordem do índice continua sendo a única
-    autoridade de sequência, não há discovery automático nem inferência cronológica, e
-    não existe ledger nem lifecycle multi-run persistido.
-12. Comparar o mesmo fixture nos dois lados é apenas um smoke sintético, não validação sequencial real.
+1. Previous/current are explicit command-line roles.
+2. The CLI never reorders runs by timestamp, `RunId`, revision, or file name.
+3. Each XML is parsed independently by `NavisworksXmlClashSource`.
+4. Each manifest is loaded independently by `JsonRunManifestSource`.
+5. `ExactSourceModelCoordinationRunAssembler` resolves `SourceModel` to `ModelRevision`.
+6. `ConservativeClashMatcher` evaluates candidate relationships pair by pair.
+7. `DeterministicClashRunComparer` selects a deterministic one-to-one subset.
+8. `ConservativeClashLifecycleClassifier` produces the final statuses.
+9. The console shows deterministic counts for candidates, matches, and lifecycle.
+10. `-o`/`--output` is optional. Without output, only the summary is printed; with output,
+    that same summary is followed by revision-aware lifecycle HTML.
+11. Single-run snapshot persistence already exists, persisted snapshots can be compared
+    explicitly with `compare-snapshots`, an explicit ordered run-index JSON can be created
+    with `index-snapshots`, and that index can be consumed explicitly with `compare-index`.
+    Index order remains the only sequence authority. There is no automatic discovery,
+    chronological inference, ledger, or persisted multi-run lifecycle.
+12. Comparing the same fixture on both sides is only a synthetic smoke test, not real
+    sequential validation.
 
-Comparar dois snapshots persistidos, sem reprocessar XML nem reler manifestos:
+Compare two persisted snapshots without reprocessing XML or reloading manifests:
 
 ```bash
 dotnet run --project src/OrzioClashReport.Cli -- \
@@ -87,13 +92,13 @@ dotnet run --project src/OrzioClashReport.Cli -- \
   -o comparison.html
 ```
 
-Este fluxo carrega dois `CoordinationRun` snapshots persistidos, preserva os papéis
-explícitos previous/current exatamente como vieram da linha de comando, recalcula matching
-e lifecycle a partir da evidência imutável, e opcionalmente escreve o mesmo HTML
-revision-aware do comando `compare`. Ele não cria run collection, run index, history
-traversal, ledger, `Reopened` nem persistent clash ID.
+This flow loads two persisted `CoordinationRun` snapshots, preserves the explicit
+previous/current command-line roles, recalculates matching and lifecycle from immutable
+evidence, and optionally writes the same revision-aware HTML used by `compare`. It does not
+create a run collection, run index, history traversal, ledger, `Reopened`, or persistent
+clash ID.
 
-Criar um run index ordenado e explícito a partir de snapshots persistidos:
+Create an explicit ordered run index from persisted snapshots:
 
 ```bash
 dotnet run --project src/OrzioClashReport.Cli -- \
@@ -103,13 +108,12 @@ dotnet run --project src/OrzioClashReport.Cli -- \
   -o run-index.json
 ```
 
-Este fluxo carrega cada snapshot explicitamente informado apenas para validar existência e
-contrato, preserva exatamente a ordem dos `--snapshot` da CLI, converte cada path para uma
-referência relativa canónica com `/`, e persiste um run index JSON que guarda somente
-`schemaVersion` + `snapshotPaths`. O índice não persiste matching, lifecycle, metadata de
-run nem qualquer forma de identidade estável de clash.
+This flow loads each supplied snapshot only to validate existence and contract, preserves
+the exact CLI order of `--snapshot`, converts each path to a canonical relative reference
+with `/`, and persists a run-index JSON containing only `schemaVersion` and `snapshotPaths`.
+The index does not persist matching, lifecycle, run metadata, or any stable clash identity.
 
-Consumir um run index explícito e comparar apenas transições adjacentes:
+Consume an explicit run index and compare only adjacent transitions:
 
 ```bash
 dotnet run --project src/OrzioClashReport.Cli -- \
@@ -118,40 +122,40 @@ dotnet run --project src/OrzioClashReport.Cli -- \
   -o longitudinal-report.html
 ```
 
-Regras do contrato:
+Contract rules:
 
-1. `--index` é obrigatório e único.
-2. `JsonRunIndexSerializer.Load` é a única autoridade para carregar o índice.
-3. A ordem de `snapshotPaths` é a única sequência autoritativa.
-4. Cada referência é resolvida por `RunIndexSnapshotPathResolver.ResolveReference`.
-5. Cada snapshot resolvido é carregado por `JsonCoordinationRunSnapshotSerializer.Load`.
-6. Todos os snapshots são carregados antes de qualquer output.
-7. A composição é feita explicitamente pela CLI nesta ordem:
+1. `--index` is required and unique.
+2. `JsonRunIndexSerializer.Load` is the only authority for loading the index.
+3. `snapshotPaths` order is the only authoritative sequence.
+4. Each reference is resolved by `RunIndexSnapshotPathResolver.ResolveReference`.
+5. Each resolved snapshot is loaded by `JsonCoordinationRunSnapshotSerializer.Load`.
+6. All snapshots are loaded before any output is written.
+7. The CLI composes the pipeline explicitly in this order:
    `ConservativeClashMatcher` -> `DeterministicClashRunComparer` ->
    `ConservativeClashLifecycleClassifier` -> `DeterministicAdjacentClashRunSequenceComparer` ->
    `DeterministicSelectedMatchContinuityProjector` ->
    `DeterministicSelectedMatchContinuityPathAssembler` ->
    `DeterministicClashRunSequenceAnalyzer` ->
    `DeterministicClashRunSequencePresentationProjector`.
-8. Todos os snapshots são carregados, todas as comparações adjacentes são calculadas, a
-   continuidade é projetada, os paths são montados, a análise é concluída e a apresentação é
-   projetada antes da primeira linha de stdout.
-9. Os pares são exatamente `[i] -> [i + 1]`, preservando duplicados e a ordem declarada.
-10. Matching e lifecycle são recalculados independentemente para cada transição adjacente.
-11. O comando escreve primeiro o summary longitudinal determinístico de 12 linhas e depois
-    reutiliza o mesmo summary pairwise determinístico de 11 linhas já usado por `compare` e
-    `compare-snapshots`, uma vez por transição adjacente.
-12. `compare-index` aceita `-o`/`--output` opcional para gravar o HTML longitudinal
-    autocontido. Sem output, o stdout permanece byte a byte igual ao contrato anterior; com
-    output, a unica linha adicional e `Longitudinal report written to {OutputPath}`, emitida
-    por ultimo e somente depois da escrita bem-sucedida.
-13. O render e a escrita do HTML, quando solicitados, terminam antes da primeira linha de
-    stdout.
-14. Nao ha discovery automatico, inferencia cronologica, latest/previous lookup,
-    comparacao non-adjacent, all-vs-all, Clash Ledger, `Reopened`, persistent clash ID,
-    path ID, fingerprint, status/confidence agregados por path nem derived state persistido.
+8. All snapshots are loaded, all adjacent comparisons are computed, continuity is
+   projected, paths are assembled, analysis is completed, and presentation is projected
+   before the first stdout line.
+9. Pairs are exactly `[i] -> [i + 1]`, preserving duplicates and declared order.
+10. Matching and lifecycle are recalculated independently for each adjacent transition.
+11. The command writes the deterministic 12-line longitudinal summary first and then reuses
+    the existing deterministic 11-line pairwise summary from `compare` and
+    `compare-snapshots`, once per adjacent transition.
+12. `compare-index` accepts optional `-o`/`--output` for self-contained longitudinal HTML.
+    Without output, stdout remains byte-identical to the previous contract. With output,
+    the only extra line is `Longitudinal report written to {OutputPath}`, emitted last and
+    only after the file has been written successfully.
+13. HTML rendering and writing, when requested, finish before the first stdout line.
+14. There is no automatic discovery, chronological inference, latest/previous lookup,
+    non-adjacent comparison, all-vs-all comparison, Clash Ledger, `Reopened`, persistent
+    clash ID, path ID, fingerprint, aggregate path status/confidence, or persisted derived
+    state.
 
-O prefixo longitudinal do `compare-index` tem exatamente estas 12 linhas, nesta ordem:
+The `compare-index` longitudinal prefix has exactly these 12 lines, in this order:
 
 1. `Indexed runs: {RunCount}`
 2. `Adjacent comparisons: {AdjacentComparisonCount}`
@@ -166,366 +170,343 @@ O prefixo longitudinal do `compare-index` tem exatamente estas 12 linhas, nesta 
 11. `Resolved: {ResolvedCount}`
 12. `Unverifiable: {UnverifiableCount}`
 
-Depois desse prefixo, os blocos pairwise existentes permanecem inalterados e são emitidos na
-ordem das transições como `Comparison {i + 1}/{AdjacentComparisonCount}` mais o summary
-pairwise de 11 linhas daquela transição adjacente.
+After that prefix, existing pairwise blocks remain unchanged and are emitted in transition
+order as `Comparison {i + 1}/{AdjacentComparisonCount}` plus the 11-line pairwise summary
+for that adjacent transition.
 
-### Comparador de sequência de runs adjacentes (Core)
+### Adjacent Run Sequence Comparer
 
 `IClashRunSequenceComparer` (`src/OrzioClashReport.Core/Abstractions/IClashRunSequenceComparer.cs`)
-formaliza no Core a travessia adjacente que antes vivia diretamente no loop do `compare-index`
-em `Program.cs`. Ele recebe uma `IReadOnlyList<CoordinationRun>` já explicitamente ordenada
-pelo chamador — o Core não conhece run-index JSON nem qualquer outro formato de persistência
-— e compara somente pares `[i] -> [i + 1]`, nunca pares non-adjacent ou invertidos.
+formalizes the adjacent traversal in Core. It takes an already explicitly ordered
+`IReadOnlyList<CoordinationRun>` from the caller. Core does not know about run-index JSON or
+any other persistence format. It compares only `[i] -> [i + 1]` pairs, never non-adjacent or
+reversed pairs.
 
-`DeterministicAdjacentClashRunSequenceComparer` é a única implementação atual. O construtor
-recebe um `IClashRunComparer` e um `IClashLifecycleClassifier`; para cada par adjacente ele
-chama o run comparer injetado e depois o lifecycle classifier injetado, sem propagar match
-selecionado, confiança ou evidência de uma transição para a próxima. Exige pelo menos duas
-runs, rejeita qualquer entrada nula e rejeita uma sequência nula. Referências duplicadas de
-run (por exemplo `A, A, B`) são preservadas, nunca deduplicadas. A travessia é síncrona,
-sequencial e fail-fast: uma exceção de qualquer dependência injetada em qualquer par se
-propaga imediatamente, e nenhum `ClashRunSequenceComparisonResult` parcial é retornado.
+`DeterministicAdjacentClashRunSequenceComparer` is the only current implementation. Its
+constructor receives an `IClashRunComparer` and an `IClashLifecycleClassifier`; for each
+adjacent pair, it calls the injected run comparer and then the injected lifecycle
+classifier, with no propagation of selected matches, confidence, or evidence across
+transitions. It requires at least two runs, rejects a null sequence, and rejects any null
+entry. Duplicate run references, for example `A, A, B`, are preserved and never
+deduplicated. Traversal is synchronous, sequential, and fail-fast: an exception from either
+injected dependency on any pair propagates immediately, and no partial
+`ClashRunSequenceComparisonResult` is returned.
 
-`ClashRunSequenceComparisonResult` é o resultado imutável: as `Runs` ordenadas mais um
-`ClashLifecycleResult` por transição adjacente em `Comparisons`, na mesma ordem. Ele valida
-somente continuidade estrutural — cada `Comparisons[i]` precisa referenciar `Runs[i]` e
-`Runs[i + 1]` por **exact object reference** (não `RunId`, não `CreatedAt`, não value
-equality) como seus lados previous/current — e nunca recalcula matching ou lifecycle.
-Representa apenas uma coleção ordenada de resultados lifecycle pairwise adjacentes
-recalculados independentemente: não cria history, lifecycle multi-run, persistent clash
-identity, Clash Ledger nem `Reopened`. `compare-index` é o único consumidor atual; `compare`
-e `compare-snapshots` continuam pairwise, usando o helper `CreateDerivedComparison` já
-existente em `Program.cs`, não este sequence comparer.
+`ClashRunSequenceComparisonResult` is the immutable output: ordered `Runs` plus one
+`ClashLifecycleResult` per adjacent transition in `Comparisons`, in the same order. It
+validates only structural continuity: every `Comparisons[i]` must reference `Runs[i]` and
+`Runs[i + 1]` by exact object reference, not by `RunId`, `CreatedAt`, or value equality, as
+its previous/current sides. It never recomputes matching or lifecycle. It represents only
+an ordered collection of independently recalculated adjacent pairwise lifecycle results:
+there is no history, multi-run lifecycle, persistent clash identity, Clash Ledger, or
+`Reopened`. `compare-index` is the only current consumer; `compare` and `compare-snapshots`
+remain pairwise and keep using the existing `CreateDerivedComparison` helper in
+`Program.cs`.
 
-### Projeção de continuidade de selected matches (Core, consumida pela análise do compare-index)
+### Selected-Match Continuity Projection
 
-`IClashRunSequenceContinuityProjector` (`src/OrzioClashReport.Core/Abstractions/IClashRunSequenceContinuityProjector.cs`)
-projeta um `ClashRunSequenceComparisonResult` já derivado sobre o conjunto de
-`SelectedMatchContinuityLink`s existentes em suas fronteiras de comparações consecutivas:
-na fronteira `i` (entre `Comparisons[i]` e `Comparisons[i + 1]`, compartilhando a run em
-`Runs[i + 1]`), existe um link sempre que o `CurrentIndex` de um selected match entra num
-slot de ocorrência e o `PreviousIndex` de um selected match sai exatamente do mesmo slot. O
-projector não conhece run-index JSON, não carrega snapshots, e não chama `IClashMatcher`,
-`IClashRunComparer`, `IClashLifecycleClassifier` nem `IClashRunSequenceComparer` — matching,
-comparação de runs, classificação de lifecycle e sequence comparison já aconteceram antes
-dele rodar.
+`IClashRunSequenceContinuityProjector`
+(`src/OrzioClashReport.Core/Abstractions/IClashRunSequenceContinuityProjector.cs`) projects
+an already-derived `ClashRunSequenceComparisonResult` onto the set of
+`SelectedMatchContinuityLink`s that exist at consecutive comparison boundaries. At boundary
+`i`, between `Comparisons[i]` and `Comparisons[i + 1]`, sharing the run at `Runs[i + 1]`, a
+link exists whenever a selected match's `CurrentIndex` enters an occurrence slot and a
+selected match's `PreviousIndex` leaves that exact same slot. The projector knows nothing
+about run-index JSON, does not load snapshots, and calls no matcher, comparer, classifier,
+sequence comparer, or path assembler.
 
-`DeterministicSelectedMatchContinuityProjector` é a única implementação atual, com
-construtor público sem dependências. Considera somente
-`ClashRunMatchResult.SelectedMatches` — `Candidates`, `AlternativeCandidates`,
-`UnmatchedPrevious` e `UnmatchedCurrent` nunca criam link, e o `ClashLifecycleStatus` de um
-selected match também nunca filtra a projeção (um selected match classificado
-`Unverifiable` ainda pode gerar link). Somente fronteiras consecutivas são consideradas —
-não há comparação non-adjacent nem `[0]` direto para `[2]`, e duplicados (mesma referência
-de run ou mesmo `RunId`) nunca são deduplicados.
+`DeterministicSelectedMatchContinuityProjector` is the only current implementation and has
+a public parameterless constructor. It considers only `ClashRunMatchResult.SelectedMatches`.
+`Candidates`, `AlternativeCandidates`, `UnmatchedPrevious`, and `UnmatchedCurrent` never
+create a link, and `ClashLifecycleStatus` never filters projection. A selected match
+classified `Unverifiable` may still produce a link. Only consecutive boundaries are
+considered. Duplicate run references and duplicate `RunId` values are never deduplicated.
 
-`SelectedMatchContinuityLink` observa somente que um selected match entra num slot exato de
-uma run compartilhada e outro selected match sai do mesmo slot exato através da comparação
-imediatamente seguinte. Guarda `IncomingComparisonIndex` e `SharedOccurrenceIndex`;
-`OutgoingComparisonIndex` e `SharedRunIndex` são derivados (`IncomingComparisonIndex + 1`).
-Valida continuidade exata de slot e de referência de objeto — equivalência value-shaped num
-slot diferente nunca satisfaz o link. Não carrega identificador, fingerprint, status nem
-confidence agregada.
+`SelectedMatchContinuityLink` observes only that one selected match enters an exact
+occurrence slot of a shared run and another selected match leaves that exact same slot
+through the immediately following comparison. It stores `IncomingComparisonIndex` and
+`SharedOccurrenceIndex`; `OutgoingComparisonIndex` and `SharedRunIndex` are derived as
+`IncomingComparisonIndex + 1`. It validates exact slot and exact object-reference
+continuity. Value-shaped equivalence at a different slot never satisfies it. It carries no
+identifier, fingerprint, status, or aggregate confidence.
 
-`ClashRunSequenceContinuityResult` é o resultado imutável: a referência exata de
-`SequenceComparison` mais o conjunto completo e canonicamente ordenado (`IncomingComparisonIndex`
-ascendente, depois `SharedOccurrenceIndex` ascendente) de `Links`. Ele revalida
-independentemente cada link — membership exata nos selected matches (nunca um
-alternative nem um objeto equivalente-mas-distinto), referência da run compartilhada,
-continuidade do slot compartilhado, e completude: recalcula, a partir apenas de
-`SequenceComparison`, o conjunto esperado de pares (boundary, slot) e exige que `Links`
-corresponda exatamente, posição a posição — o que rejeita link faltante, link extra, link
-duplicado e qualquer ordem não canônica, tudo numa única verificação estrutural. Isso não é
-rematching.
+`ClashRunSequenceContinuityResult` is the immutable output: the exact
+`SequenceComparison` reference plus the complete canonically ordered set of `Links`, sorted
+by `IncomingComparisonIndex` and then `SharedOccurrenceIndex`. It independently revalidates
+every link's exact membership, shared-run reference, shared-slot continuity, and
+completeness by recomputing the full expected set from `SequenceComparison` alone. That
+structural validation rejects missing links, extra links, duplicate links, and non-canonical
+order at once. It never rematches.
 
-Esta é a menor observação longitudinal possível e para bem antes de identidade de clash: um
-link nunca afirma que o clash subjacente é o mesmo clash. Já existe montagem determinística
-de paths máximos de continuidade (ver abaixo); persistent tracking, ledger, identidade,
-agregação de lifecycle e `Reopened` continuam não existindo. Links são derivados e
-recalculáveis; nunca são persistidos. `compare-index` consome essa projeção indiretamente
-por `DeterministicClashRunSequenceAnalyzer`; nenhum renderer HTML a consome, e nenhuma CLI a
-chama diretamente fora dessa composição do analyzer. Validação sequencial contra exports
-reais do Navisworks continua não verificada.
+This is the smallest useful longitudinal observation and stops well before clash identity:
+a link never asserts that the underlying clash is the same clash. Links are derived,
+fully recalculable, and never persisted. `compare-index` consumes this projection
+indirectly through `DeterministicClashRunSequenceAnalyzer`; no HTML renderer consumes it
+directly, and no CLI calls it directly outside that analyzer composition. Sequential real
+Navisworks export validation remains unverified.
 
-### Montagem determinística de paths máximos de continuidade (Core, consumida pela análise do compare-index)
+### Maximal Continuity Path Assembly
 
 `IClashRunSequenceContinuityPathAssembler`
 (`src/OrzioClashReport.Core/Abstractions/IClashRunSequenceContinuityPathAssembler.cs`)
-monta um `ClashRunSequenceContinuityResult` já derivado no conjunto completo de paths de
-continuidade máximos e disjuntos implicados pelos seus links: dois links pertencem ao mesmo
-path somente quando o `OutgoingSelectedMatch` do primeiro é exatamente a mesma referência de
-objeto que o `IncomingSelectedMatch` do segundo, na fronteira de comparação imediatamente
-seguinte (`next.IncomingComparisonIndex == current.OutgoingComparisonIndex`). O assembler não
-conhece JSON, snapshot nem filesystem, e não chama `IClashMatcher`, `IClashRunComparer`,
-`IClashLifecycleClassifier`, `IClashRunSequenceComparer` nem
-`IClashRunSequenceContinuityProjector` — matching, comparação de runs, classificação de
-lifecycle, sequence comparison e continuity projection já aconteceram antes dele rodar.
+assembles an already-derived `ClashRunSequenceContinuityResult` into the complete set of
+disjoint maximal continuity paths implied by its links. Two links belong to the same path
+only when the first link's `OutgoingSelectedMatch` is the exact same object reference as
+the second link's `IncomingSelectedMatch` at the immediately following comparison boundary
+(`next.IncomingComparisonIndex == current.OutgoingComparisonIndex`). The assembler knows no
+JSON, snapshot, or filesystem and calls no matcher, run comparer, classifier, sequence
+comparer, continuity projector, or presentation projector.
 
-`DeterministicSelectedMatchContinuityPathAssembler`
-(`src/OrzioClashReport.Core/Continuity/DeterministicSelectedMatchContinuityPathAssembler.cs`)
-é a única implementação atual, com construtor público sem dependências. Para cada link de
-`ContinuityResult.Links` em ordem canônica, verifica se existe um predecessor exato (um link
-cujo `OutgoingComparisonIndex` e `OutgoingSelectedMatch` correspondem exatamente ao
-`IncomingComparisonIndex` e `IncomingSelectedMatch` do link atual); um link sem predecessor
-inicia um novo path, que então segue sua cadeia de sucessores exatos até não haver mais
-nenhum. A conectividade nunca usa `RunId`, `CreatedAt`, índices de candidate isolados,
-referência de occurrence isolada, value equality de candidate ou assessment, GUID da fonte,
-confidence, evidence, `ToString`, hash ou fingerprint — somente identidade exata de
-referência de objeto do selected match. Zero links produzem zero paths, e nenhum path
-vazio é criado. Como as invariantes atuais garantem no máximo um predecessor exato e um
-sucessor exato por link, o assembler detecta defensivamente mais de um de qualquer um deles
-(impossível pela construção normal, mas uma defesa contra corrupção ou regressão futura) e
-lança `InvalidOperationException` em vez de escolher o primeiro silenciosamente.
+`DeterministicSelectedMatchContinuityPathAssembler` is the only current implementation and
+has a public parameterless constructor. For each link in canonical
+`ContinuityResult.Links` order, it checks for an exact predecessor. A link with no
+predecessor starts a new path, which then follows exact successors until none remains.
+Connectivity never uses `RunId`, `CreatedAt`, candidate indices alone, occurrence
+reference alone, candidate or assessment value equality, source clash GUID, confidence,
+evidence, `ToString`, hash, or fingerprint. It uses only exact selected-match object
+reference identity. Zero links produce zero paths. If more than one exact predecessor or
+successor is found, the assembler throws `InvalidOperationException` instead of silently
+choosing one.
 
 `SelectedMatchContinuityPath`
-(`src/OrzioClashReport.Core/Model/SelectedMatchContinuityPath.cs`) é uma sequência máxima
-imutável de `SelectedMatchContinuityLink`s conectados somente por essa regra de referência
-exata. Seu construtor interno rejeita links nulos/vazios, um slot de link nulo, boundary
-repetida ou invertida, gap de boundary, e uma referência de candidate distinta mas
-value-equivalente em qualquer junção. `SelectedMatches` é derivado, nunca fornecido:
-`Links[0].IncomingSelectedMatch` seguido do `OutgoingSelectedMatch` de cada link, então
-`SelectedMatches.Count == Links.Count + 1`. `StartComparisonIndex`/`EndComparisonIndex`/
-`StartRunIndex`/`EndRunIndex` são derivados do primeiro e último link, nunca armazenados
-redundantemente. O path não carrega id, status, fingerprint nem confidence agregada — afirma
-somente que esses links de continuidade exatos formam uma sequência máxima conectada por
-referência exata, nunca que o clash subjacente é uma entidade persistente única, nem que o
-path tem identidade estável ou sobrevive à recomputação por id.
+(`src/OrzioClashReport.Core/Model/SelectedMatchContinuityPath.cs`) is an immutable maximal
+sequence of `SelectedMatchContinuityLink`s connected only by that exact-reference rule. Its
+internal constructor rejects null or empty links, null link slots, repeated or reversed
+boundaries, boundary gaps, and distinct but value-equivalent candidate references at any
+join. `SelectedMatches` is derived, never supplied: `Links[0].IncomingSelectedMatch`
+followed by each link's `OutgoingSelectedMatch`, so `SelectedMatches.Count == Links.Count +
+1`. `StartComparisonIndex`, `EndComparisonIndex`, `StartRunIndex`, and `EndRunIndex` are
+derived from the first and last links. The path carries no ID, status, fingerprint, or
+aggregate confidence.
 
 `ClashRunSequenceContinuityPathsResult`
-(`src/OrzioClashReport.Core/Model/ClashRunSequenceContinuityPathsResult.cs`) é o resultado
-imutável: a referência exata de `ContinuityResult` mais o conjunto completo e canonicamente
-ordenado de `Paths`. A ordem canônica é a posição do primeiro link de cada path em
-`ContinuityResult.Links` — nunca comprimento do path, `RunId`, `CreatedAt`, confidence, GUID
-da fonte ou detalhes de occurrence. Ele revalida independentemente a partição máxima completa
-recalculando, somente a partir de `ContinuityResult.Links`, a mesma conectividade de
-predecessor/sucessor que o assembler usa, e exige que `Paths` corresponda exatamente: mesma
-contagem de paths, mesma ordem canônica, mesma contagem de links por path, e as mesmas
-referências exatas de link em cada posição. Essa única comparação estrutural é o que rejeita
-path faltante, path extra, path duplicado, ordem de path errada, link estrangeiro ou
-equivalente-mas-distinto, link faltante ou extra dentro de um path, cobertura duplicada de
-link, split de um path máximo, merge de paths desconectados, e path não máximo, tudo de uma
-vez — nunca rematching nem reinvocação do assembler.
+(`src/OrzioClashReport.Core/Model/ClashRunSequenceContinuityPathsResult.cs`) is the
+immutable output: the exact `ContinuityResult` reference plus the complete canonically
+ordered set of `Paths`. Canonical order is the position of each path's first link in
+`ContinuityResult.Links`, never path length, `RunId`, `CreatedAt`, confidence, source GUID,
+or occurrence detail. It revalidates the complete maximal partition from
+`ContinuityResult.Links` alone and requires `Paths` to match exactly. That structural check
+rejects missing paths, extra paths, duplicate paths, wrong path order, foreign or
+equivalent-but-distinct links, missing or extra links inside a path, duplicate link
+coverage, split maximal paths, merged disconnected paths, and non-maximal paths. It never
+rematches or reinvokes the assembler.
 
-Um continuity path é uma sequência derivada, máxima e totalmente recalculável de continuity
-links exatos de selected match; não é persistent clash identity, stable clash identity,
-Clash Ledger nem persistent track, não tem history nem lifecycle multi-run, e não implica
-`Reopened`. Um selected match sem nenhum continuity link nunca aparece em path algum, e
-nenhum path vazio é criado. `compare-index` consome essa montagem indiretamente por
-`DeterministicClashRunSequenceAnalyzer`; nenhum renderer HTML a consome, e nenhuma CLI a
-chama diretamente fora dessa composição do analyzer. Validação sequencial contra exports
-reais do Navisworks continua não verificada.
+A continuity path is a derived, maximal, fully recalculable sequence of exact selected-match
+continuity links. It is not persistent clash identity, stable clash identity, a Clash
+Ledger, or a persistent track; it has no history, no multi-run lifecycle, and no implication
+of `Reopened`. A selected match with no continuity link never appears in any path, and no
+empty path is created. `compare-index` consumes this assembly indirectly through
+`DeterministicClashRunSequenceAnalyzer`. Sequential real Navisworks export validation
+remains unverified.
 
-### Orquestrador de analise longitudinal de sequencia (Core, consumido pelo compare-index)
+### Longitudinal Sequence Analyzer
 
 `IClashRunSequenceAnalyzer`
-(`src/OrzioClashReport.Core/Abstractions/IClashRunSequenceAnalyzer.cs`) e a fronteira unica
-do Core que compoe, na ordem declarada pelo chamador:
+(`src/OrzioClashReport.Core/Abstractions/IClashRunSequenceAnalyzer.cs`) is the single Core
+boundary that composes, in caller-declared order:
 `IClashRunSequenceComparer` -> `IClashRunSequenceContinuityProjector` ->
-`IClashRunSequenceContinuityPathAssembler`. A ordem recebida continua sendo a unica
-autoridade; o analyzer nao ordena, nao deduplica, nao infere cronologia, nao compara runs
-non-adjacent, nao persiste estado derivado e nao cria history, Clash Ledger, lifecycle
-multi-run, `Reopened` ou identidade estavel/persistente de clash.
+`IClashRunSequenceContinuityPathAssembler`. The received order remains the only authority.
+The analyzer does not sort, deduplicate, infer chronology, compare non-adjacent runs,
+persist derived state, or create history, Clash Ledger, multi-run lifecycle, `Reopened`, or
+stable/persistent clash identity.
 
 `DeterministicClashRunSequenceAnalyzer`
-(`src/OrzioClashReport.Core/Analysis/DeterministicClashRunSequenceAnalyzer.cs`) recebe as
-tres portas no construtor, rejeita dependencias nulas, rejeita `runs` nulo antes de chamar
-qualquer dependencia, chama cada estagio exatamente uma vez na ordem definida, passa a
-referencia exata do resultado de um estagio para o proximo, e propaga excecoes sem embrulhar
-nem devolver resultado parcial. Ele e sincrono, deterministico e nao faz I/O, clock, rede,
-aleatoriedade, DI container, matching, lifecycle classification, continuity projection ou
-path assembly por conta propria.
+(`src/OrzioClashReport.Core/Analysis/DeterministicClashRunSequenceAnalyzer.cs`) receives the
+three ports in its constructor, rejects null dependencies, rejects null `runs` before
+calling any dependency, calls each stage exactly once in the defined order, passes the exact
+result reference from one stage to the next, and propagates exceptions without wrapping or
+returning partial results. It is synchronous and deterministic and performs no I/O, clock,
+network, randomness, DI container work, matching, lifecycle classification, continuity
+projection, or path assembly by itself.
 
 `ClashRunSequenceAnalysisResult`
-(`src/OrzioClashReport.Core/Model/ClashRunSequenceAnalysisResult.cs`) e o aggregate imutavel:
-preserva as referencias exatas de `SequenceComparison`, `ContinuityResult` e
-`ContinuityPathsResult` de uma cadeia derivada coerente. O construtor interno rejeita nulos
-e rejeita cadeias equivalentes por valor mas compostas por referencias diferentes, exigindo
-`ReferenceEquals(ContinuityResult.SequenceComparison, SequenceComparison)` e
-`ReferenceEquals(ContinuityPathsResult.ContinuityResult, ContinuityResult)`. Ele nao adiciona
-ids, status, fingerprint, confidence agregada, history, ledger, metadata de persistencia,
-lifecycle agregado nem aliases. `compare-index` consome esse analyzer depois de carregar
-todos os snapshots e antes de escrever stdout; nenhum renderer HTML o consome.
+(`src/OrzioClashReport.Core/Model/ClashRunSequenceAnalysisResult.cs`) is the immutable
+aggregate. It preserves the exact references to `SequenceComparison`, `ContinuityResult`,
+and `ContinuityPathsResult` from one coherent derived chain. Its internal constructor
+rejects nulls and rejects value-equivalent chains made of different references by requiring
+`ReferenceEquals(ContinuityResult.SequenceComparison, SequenceComparison)` and
+`ReferenceEquals(ContinuityPathsResult.ContinuityResult, ContinuityResult)`. It adds no IDs,
+status, fingerprint, aggregate confidence, history, ledger, persistence metadata, aggregate
+lifecycle, or aliases. `compare-index` consumes this analyzer after loading all snapshots
+and before writing stdout.
 
-### Modelo de apresentação longitudinal (Core, consumido pelo compare-index)
+### Longitudinal Presentation Model
 
 `IClashRunSequencePresentationProjector`
-(`src/OrzioClashReport.Core/Abstractions/IClashRunSequencePresentationProjector.cs`) projeta
-um `ClashRunSequenceAnalysisResult` já completo numa visão de apresentação sem perdas —
-runs ordenadas, comparações adjacentes, continuity links, continuity paths, todas as
-lifecycle entries, e as entries/selected matches que ficam fora de qualquer path — sem
-recalcular matching, lifecycle, continuity projection ou path assembly. A projeção apenas
-indexa e relaciona as referências exatas que recebe, preservando a ordem já existente.
+(`src/OrzioClashReport.Core/Abstractions/IClashRunSequencePresentationProjector.cs`)
+projects a complete `ClashRunSequenceAnalysisResult` into a lossless presentation view:
+ordered runs, adjacent comparisons, continuity links, continuity paths, all lifecycle
+entries, and the entries or selected matches that are outside any path. It does this
+without recalculating matching, lifecycle, continuity projection, or path assembly. The
+projection only indexes and relates the exact references it receives, preserving existing
+order.
 
 `DeterministicClashRunSequencePresentationProjector`
 (`src/OrzioClashReport.Core/Presentation/DeterministicClashRunSequencePresentationProjector.cs`)
-é a única implementação atual, com construtor público sem dependências. A associação entre
-um selected match e o seu continuity path usa somente `ReferenceEquals` sobre
-`ContinuityPathsResult.Paths[*].SelectedMatches` — nunca `RunId`, `CreatedAt`, GUID, value
-equality, `ToString`, hash ou fingerprint. O mesmo selected match exato aparecer em dois
-paths diferentes é uma impossibilidade estrutural dada a partição disjunta já garantida por
-`ClashRunSequenceContinuityPathsResult`; a projeção falha rápido com
-`InvalidOperationException` em vez de escolher um silenciosamente.
+is the only current implementation and has a public parameterless constructor. Association
+between a selected match and its continuity path uses only `ReferenceEquals` over
+`ContinuityPathsResult.Paths[*].SelectedMatches`, never `RunId`, `CreatedAt`, GUID, value
+equality, `ToString`, hash, or fingerprint. If the same exact selected match appears in two
+different paths, projection fails fast with `InvalidOperationException` instead of silently
+choosing one.
 
-Quatro novos tipos imutáveis carregam a apresentação, todos com construtor `internal`:
+Four immutable types carry the presentation, all with `internal` constructors:
 
-- `ClashRunSequenceLifecycleEntryPresentation`: uma lifecycle entry na sua posição exata
-  (`ComparisonIndex`/`EntryIndex`), com referência opcional exata ao continuity path
-  (`IsInContinuityPath`). Não adiciona status, confidence nem identidade próprios — a
-  entry original continua sendo a única autoridade.
-- `ClashRunSequenceTransitionPresentation`: uma comparação mais a apresentação completa e
-  ordenada de todas as suas entries.
-- `ClashRunSequenceContinuityPathPresentation`: um continuity path mais a apresentação da
-  lifecycle entry por trás de cada um dos seus selected matches, na ordem do path.
-- `ClashRunSequencePresentationResult`: o agregado. `Runs`/`Comparisons`/`ContinuityLinks`/
-  `ContinuityPaths` são as referências canônicas exatas vindas de `AnalysisResult`.
-  `Transitions`, `LifecycleEntries` (completa, sem perda, duplicação ou reordenação),
-  `PathPresentations`, `StandaloneSelectedMatches` e `NonPathLifecycleEntries` são as visões
-  indexadas. Todo selected match pertence a exatamente um dos grupos — path ou standalone —
-  e toda entry fora de um path, incluindo toda entry `New`, `Resolved` e `Unverifiable` sem
-  match, está em `NonPathLifecycleEntries`, do qual `StandaloneSelectedMatches` é um
-  subconjunto exato. As visões standalone e non-path reutilizam as mesmas referências de
-  presentation item de `LifecycleEntries`, nunca cópias. Doze contagens derivadas
-  (`RunCount`, `AdjacentComparisonCount`, `SelectedMatchCount`, `ContinuityLinkCount`,
-  `ContinuityPathCount`, `StandaloneSelectedMatchCount`, `LifecycleEntryCount`,
-  `NonPathLifecycleEntryCount`, `StillOpenCount`, `NewCount`, `ResolvedCount`,
-  `UnverifiableCount`) são calculadas exclusivamente a partir das coleções já projetadas,
-  nunca fornecidas pelo chamador.
+- `ClashRunSequenceLifecycleEntryPresentation`: a lifecycle entry at its exact
+  `ComparisonIndex`/`EntryIndex`, with an optional exact reference to its continuity path
+  (`IsInContinuityPath`). It adds no status, confidence, or identity of its own; the
+  original entry remains the authority.
+- `ClashRunSequenceTransitionPresentation`: one comparison plus the complete ordered
+  presentation of all its entries.
+- `ClashRunSequenceContinuityPathPresentation`: one continuity path plus the presentation
+  of the lifecycle entry behind each selected match in path order.
+- `ClashRunSequencePresentationResult`: the aggregate. `Runs`, `Comparisons`,
+  `ContinuityLinks`, and `ContinuityPaths` are the exact canonical references from
+  `AnalysisResult`. `Transitions`, `LifecycleEntries`, `PathPresentations`,
+  `StandaloneSelectedMatches`, and `NonPathLifecycleEntries` are indexed views. Every
+  selected match belongs to exactly one group: path or standalone. Every entry outside a
+  path, including `New`, `Resolved`, and unmatched `Unverifiable` entries, is included in
+  `NonPathLifecycleEntries`, of which `StandaloneSelectedMatches` is an exact subset.
+  Standalone and non-path views reuse the same presentation item references from
+  `LifecycleEntries`; they are not copies. Twelve derived counts are calculated only from
+  projected collections and are never supplied by the caller.
 
-Ordem canônica: `Transitions` por `ComparisonIndex` crescente; `LifecycleEntries` por
-`ComparisonIndex` crescente e depois `EntryIndex` crescente; `PathPresentations` pela ordem
-de `ContinuityPathsResult.Paths`; `SelectedMatchEntries` de cada path pela ordem de
-`SelectedMatchContinuityPath.SelectedMatches`; `StandaloneSelectedMatches` e
-`NonPathLifecycleEntries` pela ordem em que aparecem na lista global `LifecycleEntries`.
-Nunca por status, confidence, `RunId`, `CreatedAt`, GUID ou comprimento do path.
+Canonical order: `Transitions` by increasing `ComparisonIndex`; `LifecycleEntries` by
+increasing `ComparisonIndex` and then `EntryIndex`; `PathPresentations` by
+`ContinuityPathsResult.Paths` order; each path's `SelectedMatchEntries` by
+`SelectedMatchContinuityPath.SelectedMatches` order; `StandaloneSelectedMatches` and
+`NonPathLifecycleEntries` by their order in the global `LifecycleEntries` list. Ordering is
+never by status, confidence, `RunId`, `CreatedAt`, GUID, or path length.
 
-Isto é apresentação de Core derivada de uma cadeia de análise já completa, não é history,
-ledger nem identidade persistente/estável de clash. Um continuity path apresentado aqui
-continua sendo apenas uma sequência máxima derivada de links por referência exata, nunca um
-clash persistente. `compare-index` consome essa projecao para o prefixo longitudinal
-deterministico de 12 linhas em stdout e, quando `-o`/`--output` e fornecido, para o renderer
-HTML longitudinal. Ainda nao existe persistencia de estado derivado, agregacao de lifecycle
-multi-run, Clash Ledger, persistent clash ID nem `Reopened`. Validacao sequencial contra
-exports reais do Navisworks continua nao verificada.
+This is Core presentation derived from a complete analysis chain, not history, ledger, or
+persistent/stable clash identity. A displayed continuity path is still only a maximal
+sequence derived from exact-reference links, never a persistent clash. `compare-index` uses
+this projection for the deterministic 12-line longitudinal stdout prefix and, when
+`-o`/`--output` is provided, for the longitudinal HTML renderer. There is still no persisted
+derived state, aggregate multi-run lifecycle, Clash Ledger, persistent clash ID, or
+`Reopened`. Sequential validation against real Navisworks exports remains unverified.
 
-### HTML longitudinal autocontido
+### Self-Contained Longitudinal HTML
 
-`HtmlLongitudinalClashReportRenderer` vive em `OrzioClashReport.Output.Html` e tem um unico
-contrato publico: `Render(ClashRunSequencePresentationResult result)`. Ele consome o
-`ClashRunSequencePresentationResult` completo recebido, nunca recalcula matching, lifecycle,
-links, paths, particoes ou contagens, e nao chama analyzer, comparer, classifier, continuity
-projector, path assembler nem presentation projector. O metodo e sincrono, nao faz I/O,
-clock, rede, aleatoriedade ou leitura de filesystem; o `compare-index` continua responsavel
-por `File.WriteAllText`.
+`HtmlLongitudinalClashReportRenderer` lives in `OrzioClashReport.Output.Html` and has one
+public contract: `Render(ClashRunSequencePresentationResult result)`. It consumes the
+complete `ClashRunSequencePresentationResult` it receives. It never recalculates matching,
+lifecycle, links, paths, partitions, or counts, and it does not call the analyzer,
+comparer, classifier, continuity projector, path assembler, or presentation projector. The
+method is synchronous and performs no I/O, clock, network, randomness, or filesystem reads;
+`compare-index` remains responsible for `File.WriteAllText`.
 
-O documento gerado e HTML5, `lang="en"`, UTF-8, titulo `Orzio Clash Longitudinal Report`,
-deterministico byte a byte, autocontido, responsivo, imprimivel, com todo CSS inline em um
-unico `<style>`, sem JavaScript e sem links, fontes, imagens, stylesheets ou assets externos.
-Todo conteudo dinamico e HTML-encoded. O renderer pode mostrar `RunId`, `CreatedAt` em
-formato `"O"` com invariant culture, contagens, modelos declarados em ordem,
-Company/Discipline/ModelName/Revision/SourceFileName, clash tests e clashes, elementos,
-niveis, distancia, ponto, source clash GUID rotulado como evidence only, confidence,
-lifecycle evidence e match evidence com valores previous/current. Ele nao mostra
+The generated document is HTML5, `lang="en"`, UTF-8, titled `Orzio Clash Longitudinal
+Report`, byte-for-byte deterministic, self-contained, responsive, printable, with all CSS
+inline in one `<style>`, no JavaScript, and no external links, fonts, images, stylesheets,
+or assets. All dynamic content is HTML-encoded. The renderer may show `RunId`, `CreatedAt`
+in `"O"` format with invariant culture, counts, declared models in order,
+Company/Discipline/ModelName/Revision/SourceFileName, clash tests and clashes, elements,
+levels, distance, point, source clash GUID labeled as evidence only, confidence, lifecycle
+evidence, and match evidence with previous/current values. It does not show
 `ModelRevision.SourceFilePath`, `ModelRevision.ContentHash`, `ClashObject.Properties`,
-caminhos locais ou de rede, campos inventados, timestamp de geracao nem caminho do index.
+local or network paths, invented fields, generation timestamps, or the index path.
 
-As nove secoes principais aparecem sempre nesta ordem e com classes estaveis:
+The nine main sections always appear in this order and with stable classes:
 `longitudinal-header`, `longitudinal-summary-section`, `interpretation-warning`,
 `run-sequence-section`, `continuity-paths-section`, `standalone-selected-matches-section`,
-`non-path-lifecycle-section`, `transition-sections` e `longitudinal-classification-note`.
-O renderer preserva a ordem recebida de runs, paths, selected matches em paths, standalone
-selected matches, non-path lifecycle entries, transitions, lifecycle entries e evidence.
-Ordinais visuais sao apenas posicao de apresentacao, nunca IDs.
+`non-path-lifecycle-section`, `transition-sections`, and
+`longitudinal-classification-note`. The renderer preserves the received order of runs,
+paths, selected matches in paths, standalone selected matches, non-path lifecycle entries,
+transitions, lifecycle entries, and evidence. Visual ordinals are presentation positions,
+never IDs.
 
-O HTML apresenta a sequencia explicita de runs, revisoes declaradas, summary longitudinal,
-avisos de interpretacao, continuity paths maximos, selected matches isolados, lifecycle
-entries fora de paths e todas as transicoes adjacentes com `New`, `StillOpen`, `Resolved`,
-`Unverifiable`, confidence, lifecycle evidence e match evidence. O texto deixa claro que
-continuity paths sao derivados de selected matches recalculados em comparacoes adjacentes,
-nao provam identidade e sao recalculaveis e nao persistidos; `High` nao e confirmacao
-humana; `Unverifiable` significa evidencia insuficiente ou competicao entre candidates;
-source GUID e evidence only; ainda nao ha Clash Ledger, `Reopened`, lifecycle multi-run
-agregado, persistent clash identity, fingerprint, path ID, status agregado de path ou
-confidence agregada de path.
+The HTML presents the explicit run sequence, declared revisions, longitudinal summary,
+interpretation warnings, maximal continuity paths, standalone selected matches, lifecycle
+entries outside paths, and all adjacent transitions with `New`, `StillOpen`, `Resolved`,
+`Unverifiable`, confidence, lifecycle evidence, and match evidence. The copy makes clear
+that continuity paths are derived from selected matches recalculated in adjacent
+comparisons, do not prove identity, are recalculable, and are not persisted; `High` is not
+human confirmation; `Unverifiable` means insufficient evidence or candidate competition;
+source GUID is evidence only; and there is still no Clash Ledger, `Reopened`, aggregate
+multi-run lifecycle, persistent clash identity, fingerprint, path ID, aggregate path
+status, or aggregate path confidence.
 
-O HTML revision-aware apresenta:
+The revision-aware HTML presents:
 
-1. metadados das runs previous/current;
-2. revisões de modelo declaradas no manifesto;
+1. previous/current run metadata;
+2. model revisions declared in the manifest;
 3. lifecycle summary;
 4. matching summary;
-5. um card por `ClashLifecycleEntry`;
-6. evidências de ocorrência previous/current;
-7. confidence do selected match;
+5. one card per `ClashLifecycleEntry`;
+6. previous/current occurrence evidence;
+7. selected-match confidence;
 8. lifecycle evidence;
 9. match evidence.
 
-Limites importantes do fluxo revision-aware:
+Important limits of the revision-aware flow:
 
-1. `High` confidence não é confirmação humana.
-2. Source clash GUID aparece somente como evidência, não como stable identity.
-3. Ainda não existe `Reopened`.
-4. Ainda não existe persistent clash id.
-5. Já existe persistência de snapshot de uma única run (evidência imutável), comparação
-   explícita de snapshots, criação de run index ordenado e consumo desse índice para
-   travessia adjacente; ainda não existe ledger, history, lifecycle multi-run, `Reopened`
-   nem persistent clash ID.
+1. `High` confidence is not human confirmation.
+2. Source clash GUID is displayed only as evidence, not as stable identity.
+3. `Reopened` does not exist yet.
+4. Persistent clash ID does not exist yet.
+5. Single-run snapshot persistence already exists as immutable evidence, along with
+   explicit snapshot comparison, explicit ordered run-index creation, and adjacent
+   traversal over that index; there is still no ledger, history, multi-run lifecycle,
+   `Reopened`, or persistent clash ID.
 
-### Identidade de um grupo
+### Group Identity
 
-Um grupo (`ClashGroup`) é identificado pela combinação de três dados, nesta ordem:
+A group (`ClashGroup`) is identified by the combination of three facts, in this order:
 
-1. **Clash test** (`<clashtest name="...">` no export) — clashes de clash tests diferentes
-   nunca são misturados no mesmo grupo, mesmo que tenham o mesmo par de disciplinas e nível.
-2. **Par de disciplinas**, normalizado de forma independente da ordem A/B.
-3. **Nível (`LevelKey`)**: quando os dois elementos do clash estão no mesmo nível, esse nível
-   é usado; quando só um lado tem nível, esse é usado; quando os dois lados têm níveis
-   diferentes, o resultado é a combinação estável `NívelA × NívelB` (independente da ordem);
-   quando nenhum dos dois tem nível, o grupo fica sem nível.
+1. **Clash test** (`<clashtest name="...">` in the export): clashes from different clash
+   tests are never mixed into the same group, even if they have the same discipline pair
+   and level.
+2. **Discipline pair**, normalized independently from A/B order.
+3. **Level (`LevelKey`)**: when both clash elements are on the same level, that level is
+   used; when only one side has a level, that level is used; when both sides have different
+   levels, the result is the stable `LevelA x LevelB` combination, independent from order;
+   when neither side has a level, the group has no level.
 
-O nome do clash test aparece em `ClashGroup.ClashTestName`, na chave estável do grupo e no
-relatório HTML gerado.
+The clash test name appears in `ClashGroup.ClashTestName`, in the stable group key, and in
+the generated HTML report.
 
-### Resolução de disciplina
+### Discipline Resolution
 
-O agrupamento por par de disciplinas usa `PathHierarchyDisciplineResolver` (em
-`OrzioClashReport.Core`) como heurística padrão: tenta o nome do modelo NWD aninhado
-(via `pathlink` do export) e cai para a propriedade `Item Source File Name` quando
-ausente. Como a nomenclatura de disciplina varia por projeto, essa é uma implementação
-plugável de `IDisciplineResolver` — troque por outra se a heurística não bater com as
-convenções do seu projeto.
+Grouping by discipline pair uses `PathHierarchyDisciplineResolver` in
+`OrzioClashReport.Core` as the default heuristic: it tries the nested NWD model name from
+the export `pathlink` and falls back to the `Item Source File Name` property when absent.
+Because discipline naming varies by project, this is a pluggable `IDisciplineResolver`
+implementation. Replace it if the heuristic does not match a project's conventions.
 
 ## Samples
 
-Os fixtures em `samples/` (`sample-clash.xml`, `sample-clash2.xml`) contêm dados sintéticos
-e anonimizados: nomes de projeto, empresa, caminhos de rede e nomes de ficheiro reais foram
-substituídos por valores fictícios, preservando a estrutura do XML e as relações necessárias
-para os testes de parsing e agrupamento. Veja [samples/README.md](samples/README.md).
+The fixtures in `samples/` (`sample-clash.xml`, `sample-clash2.xml`) contain synthetic,
+anonymized data. Real project names, company names, network paths, and file names were
+replaced with fictitious values while preserving the XML structure and relationships needed
+by parsing and grouping tests. See [samples/README.md](samples/README.md).
 
-## Estado de validação
+## Validation Status
 
-- **Compila**: `dotnet build -c Release` passa sem avisos.
-- **Roda**: `dotnet test -c Release` está verde e a CLI gera HTML a partir dos fixtures em
-  `samples/`, incluindo o smoke sintético do compare com HTML lifecycle.
-- **Validado em modelo real**: ainda não. Esta validação só pode ser feita por um humano,
-  rodando a ferramenta contra um export real (anonimizado) do Clash Detective e conferindo
-  se o relatório agrupado corresponde à realidade do projeto. O fluxo revision-aware ainda
-  não foi validado contra exports sequenciais reais.
+- **Compiles**: `dotnet build -c Release` passes without warnings.
+- **Runs**: `dotnet test -c Release` is green and the CLI generates HTML from the fixtures
+  in `samples/`, including the synthetic compare smoke test with lifecycle HTML.
+- **Validated on a real model, single-run execution**: yes. One private real export from
+  the final revision was human-validated for parsing, raw count, group coverage, grouping,
+  model labels, levels, legibility, self-contained HTML, and determinism. See
+  [docs/validation/real-r01-single-run.md](docs/validation/real-r01-single-run.md).
+- **Validated longitudinally on sequential real exports**: not yet. Matching between runs,
+  lifecycle classification, continuity links, continuity paths, and longitudinal HTML have
+  not been validated against three real historical exports.
 
 ## CI
 
-`.github/workflows/ci.yml` roda `dotnet build` e `dotnet test` em Release a cada push e pull
-request, usando o SDK fixado em `global.json`.
+`.github/workflows/ci.yml` runs `dotnet build` and `dotnet test` in Release on every push
+and pull request, using the SDK pinned in `global.json`.
 
-## Run manifest
+## Run Manifest
 
-O manifesto de rodada (`RunManifest`) é uma declaração explícita e auditável de quais
-modelos e revisões participaram de uma rodada de coordenação, e de quais clash tests foram
-executados nela. Ele não é inferido a partir de nome de arquivo, caminho, XML do
-Navisworks, Autodesk Forma ou ACC — nesta etapa do projeto, essa informação é sempre
-declarada manualmente.
+The run manifest (`RunManifest`) is an explicit and auditable declaration of which models
+and revisions participated in a coordination run, and which clash tests were executed in
+that run. It is not inferred from file name, path, Navisworks XML, Autodesk Forma, or ACC.
+At this stage of the project, that information is always declared manually.
 
-Exemplo (`samples/run-manifest.sample.json`, schema v2):
+Example (`samples/run-manifest.sample.json`, schema v2):
 
 ```json
 {
@@ -558,109 +539,108 @@ Exemplo (`samples/run-manifest.sample.json`, schema v2):
 }
 ```
 
-Campos obrigatórios de cada item em `models`: `company`, `discipline`, `modelName`,
-`revision`, `sourceFileName`. Campos opcionais: `sourceFilePath`, `contentHash`,
+Required fields for every item in `models`: `company`, `discipline`, `modelName`,
+`revision`, and `sourceFileName`. Optional fields: `sourceFilePath`, `contentHash`, and
 `publishedAt`.
 
-A revisão (`revision`) é sempre declarada manualmente — nunca extraída automaticamente do
-nome do arquivo ou de qualquer convenção. Dentro da mesma rodada, cada `ModelIdentity`
-(company + discipline + modelName, ignorando case) pode ter no máximo uma revisão; um
-manifesto que declare duas revisões para a mesma identidade é rejeitado.
+The revision (`revision`) is always declared manually. It is never extracted automatically
+from file name or any convention. Within the same run, each `ModelIdentity` (company +
+discipline + modelName, case-insensitive) may have at most one revision. A manifest that
+declares two revisions for the same identity is rejected.
 
-### Cobertura explícita de clash tests executados
+### Explicit Executed Clash Test Coverage
 
-`executedClashTests` é uma declaração **manual** de quais clash tests rodaram nesta rodada,
-distinta e independente das ocorrências de clash observadas:
+`executedClashTests` is a manual declaration of which clash tests ran in this run. It is
+separate from, and independent of, observed clash occurrences:
 
-1. Cada item tem `name` (nome do clash test) e um par ordenado `modelA`/`modelB`, cada um
-   com `company`/`discipline`/`modelName` — sem revisão, sem arquivo de origem, sem hash.
-   O par é sempre **revision-free**: a mesma declaração cobre qualquer revisão futura desses
-   modelos.
-2. O par declarado é comparado como **não ordenado** por quem consome a cobertura (A/B
-   invertido representa a mesma cobertura), mas o objeto bruto preserva a ordem A/B
-   exatamente como declarada.
-3. Toda `ClashOccurrence` de um `CoordinationRun` precisa corresponder a um
-   `executedClashTests` declarado (mesmo nome, ignorando case, e mesmo par de modelos,
-   direto ou invertido); uma ocorrência sem cobertura declarada é rejeitada.
-4. Uma declaração pode existir **sem nenhuma occurrence correspondente** — isso é válido e
-   é o que permite provar que um clash test rodou e retornou zero clashes, em vez de nunca
-   ter rodado. Essa é a funcionalidade principal desta etapa.
-5. O lifecycle classifier (abaixo) usa **somente** essa declaração explícita para decidir se
-   um clash test foi observado na outra rodada — nunca varre as ocorrências.
+1. Each item has `name` and an ordered `modelA`/`modelB` pair. Each model identity contains
+   `company`, `discipline`, and `modelName`, with no revision, source file, or hash. The
+   pair is always revision-free, so the same declaration covers future revisions of those
+   models.
+2. Consumers compare the declared pair as unordered, so swapped A/B represents the same
+   coverage, but the raw object preserves A/B order exactly as declared.
+3. Every `ClashOccurrence` in a `CoordinationRun` must correspond to a declared
+   `executedClashTests` entry with the same name, ignoring case, and the same model pair,
+   direct or swapped. An occurrence without declared coverage is rejected.
+4. A declaration may exist without any corresponding occurrence. This is valid, and it is
+   how a run proves a clash test executed and returned zero clashes rather than never
+   executing at all.
+5. The lifecycle classifier uses only this explicit declaration to decide whether a clash
+   test was observed in the other run. It never scans occurrences for coverage.
 
-O parser (`OrzioClashReport.Input.RunManifestJson`) valida a estrutura e o schema do JSON e
-constrói `RunManifest`/`ModelRevision`/`ModelIdentity`/`ExecutedClashTest` do Core. O
-comando `compare` da CLI carrega explicitamente um manifesto previous e um current; o
-comando legado de HTML continua operando apenas sobre o XML.
+The parser (`OrzioClashReport.Input.RunManifestJson`) validates JSON structure and schema,
+then builds Core `RunManifest`, `ModelRevision`, `ModelIdentity`, and `ExecutedClashTest`
+objects. The CLI `compare` command explicitly loads one previous and one current manifest;
+the legacy HTML command still operates on XML only.
 
-### Schema v2 substitui v1
+### Schema v2 Replaces v1
 
-O schema v2 (`schemaVersion: 2`) é a única versão aceita. O schema v1 (`schemaVersion: 1`)
-não declarava `executedClashTests` e é **intencionalmente rejeitado**, com uma mensagem
-clara indicando que a versão suportada é 2 — não há migração automática nem modo legado.
-Migrar silenciosamente um manifesto v1 para uma lista `executedClashTests` vazia
-confundiria "nenhum test foi executado" com "não sabemos quais tests foram executados", que
-são fatos completamente diferentes.
+Schema v2 (`schemaVersion: 2`) is the only accepted version. Schema v1
+(`schemaVersion: 1`) did not declare `executedClashTests` and is intentionally rejected
+with a clear message saying the supported version is 2. There is no automatic migration or
+legacy mode. Silently migrating a v1 manifest to an empty `executedClashTests` list would
+confuse "no test was executed" with "we do not know which tests were executed", which are
+different facts.
 
-## Coordination run snapshot
+## Coordination Run Snapshot
 
-1. `RunManifest` declara quais revisões de modelo participam de uma rodada e quais clash
-   tests foram executados nela (ver seções acima).
-2. `ClashOccurrence` vincula um `ClashResult` bruto (do XML) às revisões exatas dos modelos
-   dos lados A e B dentro de um clash test específico.
-3. `CoordinationRun` forma o snapshot imutável: o `RunManifest` mais a lista ordenada de
-   `ClashOccurrence`s observadas. Toda revisão usada por uma ocorrência precisa estar
-   declarada exatamente no manifesto (mesma `ModelIdentity` com revisão diferente é
-   rejeitada), e toda ocorrência precisa corresponder a um `executedClashTests` declarado.
+1. `RunManifest` declares which model revisions participate in a run and which clash tests
+   were executed in it.
+2. `ClashOccurrence` binds one raw `ClashResult` from XML to the exact model revisions on
+   sides A and B within a specific clash test.
+3. `CoordinationRun` is the immutable snapshot: the `RunManifest` plus the ordered list of
+   observed `ClashOccurrence`s. Every revision used by an occurrence must be declared
+   exactly in the manifest, and every occurrence must correspond to a declared
+   `executedClashTests` entry.
 
-`CoordinationRun` continua sendo o snapshot isolado de uma rodada; matching, comparação e
-lifecycle vivem fora dele. A associação entre elementos do XML e as revisões do manifesto
-(`ClashObject.SourceModel` → `ModelRevision`) é feita por
-`ExactSourceModelCoordinationRunAssembler`, e o comando `compare` da CLI monta
-explicitamente uma run previous e uma run current sem inferir ordem temporal.
+`CoordinationRun` remains the isolated snapshot of one run. Matching, comparison, and
+lifecycle live outside it. Association between XML elements and manifest revisions
+(`ClashObject.SourceModel` -> `ModelRevision`) is performed by
+`ExactSourceModelCoordinationRunAssembler`, and the CLI `compare` command explicitly
+assembles one previous run and one current run without inferring temporal order.
 
-## Snapshot imutável de uma coordination run
+## Immutable Coordination Run Snapshot
 
-Há dois contratos JSON distintos, com adapters distintos, que não devem ser confundidos:
+There are two distinct JSON contracts, with distinct adapters, that must not be confused:
 
-- **RunManifest JSON** (`OrzioClashReport.Input.RunManifestJson`, `schemaVersion: 2`) é um
-  contrato de **entrada explícito, pré-montagem**: declara manualmente modelos, revisões e
-  clash tests executados antes de montar a run.
+- **RunManifest JSON** (`OrzioClashReport.Input.RunManifestJson`, `schemaVersion: 2`) is an
+  explicit pre-assembly input contract: it manually declares models, revisions, and
+  executed clash tests before the run is assembled.
 - **CoordinationRun snapshot JSON** (`OrzioClashReport.Persistence.RunSnapshotJson`,
-  `schemaVersion: 1`) é um snapshot de **evidência, pós-montagem**: persiste uma
-  `CoordinationRun` já montada para que comparação e lifecycle possam ser recalculados no
-  futuro.
+  `schemaVersion: 1`) is a post-assembly evidence snapshot: it persists an assembled
+  `CoordinationRun` so comparison and lifecycle can be recalculated later.
 
-São schemas diferentes e adapters independentes; o número de `schemaVersion` de um não tem
-relação com o do outro.
+These are different schemas and independent adapters. One contract's `schemaVersion` number
+has no relationship to the other's.
 
-O adapter público é `JsonCoordinationRunSnapshotSerializer`, com quatro métodos:
+The public adapter is `JsonCoordinationRunSnapshotSerializer`, with four methods:
 
-- `Serialize(CoordinationRun) -> string` — JSON canônico determinístico.
-- `Parse(string) -> CoordinationRun` — reidrata com validação estrita.
-- `Save(CoordinationRun, filePath)` — grava um novo arquivo imutável.
-- `Load(filePath) -> CoordinationRun` — lê e reidrata.
+- `Serialize(CoordinationRun) -> string`: deterministic canonical JSON.
+- `Parse(string) -> CoordinationRun`: rehydrates with strict validation.
+- `Save(CoordinationRun, filePath)`: writes a new immutable file.
+- `Load(filePath) -> CoordinationRun`: reads and rehydrates.
 
-Características do snapshot (`schemaVersion` 1):
+Snapshot characteristics (`schemaVersion` 1):
 
-1. A ordem do array `models` é preservada.
-2. `executedClashTests` referencia modelos por `modelAIndex`/`modelBIndex`.
-3. `occurrences` referencia modelos por `modelAIndex`/`modelBIndex`.
-4. A ordem das ocorrências e os slots duplicados são preservados.
-5. A reidratação reusa as instâncias exatas de `ModelRevision`/`ModelIdentity` apontadas
-   pelos índices.
-6. O `ClashStatus` bruto (recebido da fonte) é persistido como string exata do enum.
-7. Matching, seleção, confiança, evidências e lifecycle **não** são persistidos — são
-   recalculáveis e nunca são congelados na camada de evidência. `ClashStatus.Resolved` bruto
-   é evidência da fonte, não um lifecycle status.
-8. `ClashObject.Properties` é a única coleção canonicalizada: as entradas são ordenadas por
-   chave com `StringComparer.Ordinal` antes de serializar.
-9. Nomes de propriedade são camelCase exato e case-sensitive; propriedades JSON desconhecidas
-   ou duplicadas são rejeitadas. Timestamps exigem offset explícito ou `Z`.
-10. `Save` usa semântica create-new: nunca sobrescreve um arquivo existente (mesmo com bytes
-    idênticos), grava UTF-8 sem BOM, e uma falha de serialização não cria arquivo.
+1. The `models` array order is preserved.
+2. `executedClashTests` references models by `modelAIndex`/`modelBIndex`.
+3. `occurrences` references models by `modelAIndex`/`modelBIndex`.
+4. Occurrence order and duplicate slots are preserved.
+5. Rehydration reuses the exact `ModelRevision`/`ModelIdentity` instances addressed by
+   those indexes.
+6. Raw `ClashStatus` from the source is persisted as the exact enum string.
+7. Matching, selection, confidence, evidence, and lifecycle are not persisted. They are
+   recalculable and are never frozen into the evidence layer. Raw `ClashStatus.Resolved` is
+   source evidence, not lifecycle status.
+8. `ClashObject.Properties` is the only canonicalized collection: entries are sorted by key
+   with `StringComparer.Ordinal` before serialization.
+9. JSON property names are exact, case-sensitive camelCase. Unknown or duplicate JSON
+   properties are rejected. Timestamps require an explicit offset or `Z`.
+10. `Save` uses create-new semantics: it never overwrites an existing file, even with
+    byte-identical content. It writes UTF-8 without BOM, and a serialization failure
+    creates no file.
 
-Exemplo reduzido:
+Reduced example:
 
 ```json
 {
@@ -690,7 +670,7 @@ Exemplo reduzido:
 }
 ```
 
-Criação de snapshot pela CLI:
+Create a snapshot from the CLI:
 
 ```bash
 dotnet run --project src/OrzioClashReport.Cli -- \
@@ -700,22 +680,22 @@ dotnet run --project src/OrzioClashReport.Cli -- \
   -o run-snapshot.json
 ```
 
-O comando `snapshot` compõe explicitamente o pipeline real:
+The `snapshot` command explicitly composes the real pipeline:
 
-1. `NavisworksXmlClashSource` lê o XML.
-2. `JsonRunManifestSource` carrega o manifesto.
-3. `ExactSourceModelCoordinationRunAssembler` monta a `CoordinationRun`.
-4. `JsonCoordinationRunSnapshotSerializer.Save` persiste o snapshot canônico imutável.
+1. `NavisworksXmlClashSource` reads the XML.
+2. `JsonRunManifestSource` loads the manifest.
+3. `ExactSourceModelCoordinationRunAssembler` assembles the `CoordinationRun`.
+4. `JsonCoordinationRunSnapshotSerializer.Save` persists the canonical immutable snapshot.
 
-Regras do contrato da CLI:
+CLI contract rules:
 
-1. `-o`/`--output` é obrigatório.
-2. A CLI não infere nome de ficheiro nem convenção de armazenamento.
-3. A CLI não cria o diretório-pai do output.
-4. Um caminho de output já existente é recusado.
-5. O success summary só é impresso depois que `Save` conclui com sucesso.
+1. `-o`/`--output` is required.
+2. The CLI does not infer file names or storage conventions.
+3. The CLI does not create the output parent directory.
+4. An existing output path is rejected.
+5. The success summary is printed only after `Save` succeeds.
 
-Success summary esperado com o fixture real:
+Expected success summary with the real fixture:
 
 ```text
 Run snapshot: coordination-sample-clash-xml
@@ -725,11 +705,11 @@ Occurrences: 5
 Snapshot written to run-snapshot.json
 ```
 
-Este comando cria um único snapshot imutável de run. Ele não compara snapshots, não adiciona
-a run a uma coleção ou histórico, não cria ledger, e não persiste matching ou lifecycle:
-essas informações continuam recalculáveis.
+This command creates one immutable run snapshot only. It does not compare snapshots, add a
+run to a collection or history, create a ledger, or persist matching or lifecycle. Those
+facts remain recalculable.
 
-Comparar snapshots persistidos pela CLI:
+Compare persisted snapshots from the CLI:
 
 ```bash
 dotnet run --project src/OrzioClashReport.Cli -- \
@@ -739,23 +719,24 @@ dotnet run --project src/OrzioClashReport.Cli -- \
   --output comparison.html
 ```
 
-Regras do contrato:
+Contract rules:
 
-1. `--previous-snapshot` e `--current-snapshot` são obrigatórios.
-2. Previous/current continuam sendo papéis explícitos e nunca são reordenados por
-   `CreatedAt`, `RunId`, revisão, nome de ficheiro ou metadata do snapshot.
-3. `JsonCoordinationRunSnapshotSerializer.Load` continua sendo a autoridade de parsing e
-   validação do snapshot.
-4. Matching e lifecycle são sempre recalculados a partir da evidência persistida; não há
-   HTML persistido, lifecycle persistido nem derived state persistido no snapshot.
-5. Sem `-o`/`--output`, o comando imprime apenas o summary determinístico de 11 linhas.
-6. Com `-o`/`--output`, o mesmo summary é seguido por `Comparison report written to ...` e
-   pelo HTML revision-aware recém-renderizado.
-7. O comando aceita o mesmo snapshot nos dois papéis apenas para smoke sintético.
-8. Ainda não há discovery automático de snapshots, nem inferência cronológica, latest /
-   previous lookup, lifecycle multi-run, Clash Ledger, `Reopened` ou persistent clash ID.
+1. `--previous-snapshot` and `--current-snapshot` are required.
+2. Previous/current remain explicit roles and are never reordered by `CreatedAt`, `RunId`,
+   revision, file name, or snapshot metadata.
+3. `JsonCoordinationRunSnapshotSerializer.Load` remains the authority for snapshot parsing
+   and validation.
+4. Matching and lifecycle are always recalculated from persisted evidence. There is no
+   persisted HTML, persisted lifecycle, or persisted derived state in the snapshot.
+5. Without `-o`/`--output`, the command prints only the deterministic 11-line summary.
+6. With `-o`/`--output`, that same summary is followed by `Comparison report written to ...`
+   and the freshly rendered revision-aware HTML.
+7. The command accepts the same snapshot in both roles only as a synthetic smoke test.
+8. There is still no automatic snapshot discovery, chronological inference,
+   latest/previous lookup, multi-run lifecycle, Clash Ledger, `Reopened`, or persistent
+   clash ID.
 
-Criar run index ordenado pela CLI:
+Create an ordered run index from the CLI:
 
 ```bash
 dotnet run --project src/OrzioClashReport.Cli -- \
@@ -765,7 +746,7 @@ dotnet run --project src/OrzioClashReport.Cli -- \
   --output run-index.json
 ```
 
-Formato do run index:
+Run-index format:
 
 ```json
 {
@@ -777,216 +758,217 @@ Formato do run index:
 }
 ```
 
-Regras do contrato:
+Contract rules:
 
-1. `--snapshot` é obrigatório, repetível, preserva ordem e preserva duplicados.
-2. `-o`/`--output` é obrigatório.
-3. A ordem do índice vem somente da ordem explícita dos argumentos `--snapshot`.
-4. O índice persiste apenas referências canónicas relativas ao diretório do próprio
-   ficheiro de índice, sempre com separador `/`.
-5. `JsonCoordinationRunSnapshotSerializer.Load` continua sendo a autoridade para validar os
-   snapshots de entrada; o adapter de run index não desserializa snapshots nem inspeciona
-   DTOs deles.
-6. Os snapshots continuam sendo a autoridade para a evidência imutável de run.
-7. Matching e lifecycle não são persistidos no índice.
-8. Ainda não existe discovery automático, inferência cronológica, latest/previous lookup,
-   comparação non-adjacent ou all-vs-all, lifecycle multi-run, Clash Ledger, `Reopened`
-   ou persistent clash ID.
+1. `--snapshot` is required, repeatable, order-preserving, and duplicate-preserving.
+2. `-o`/`--output` is required.
+3. Index order comes only from the explicit order of `--snapshot` arguments.
+4. The index persists only canonical references relative to the index file's own
+   directory, always with `/` separators.
+5. `JsonCoordinationRunSnapshotSerializer.Load` remains the authority for validating input
+   snapshots. The run-index adapter does not deserialize snapshots or inspect their DTOs.
+6. Snapshots remain the authority for immutable run evidence.
+7. Matching and lifecycle are not persisted in the index.
+8. There is still no automatic discovery, chronological inference, latest/previous lookup,
+   non-adjacent or all-vs-all comparison, multi-run lifecycle, Clash Ledger, `Reopened`, or
+   persistent clash ID.
 
-Limites honestos desta etapa:
+Honest limits of this stage:
 
-- Já existem criação de snapshot, comparação explícita de dois snapshots, criação explícita
-  de run index ordenado e consumo explícito desse índice para traversal adjacente; a ordem
-  do índice continua sendo a única autoridade de sequência, e todos os snapshots /
-  comparações são carregados e calculados antes do primeiro output.
-- A travessia adjacente do `compare-index` agora é formalizada e apresentada por uma cadeia
-  explícita: sequence comparer, continuity projector, continuity path assembler, sequence
-  analyzer e presentation projector. O stdout sem output continua com o prefixo
-  longitudinal determinístico de 12 linhas; os blocos pairwise existentes permanecem
-  preservados depois desse prefixo, na ordem das transições.
-- `compare-index` aceita `-o`/`--output` opcional para gravar um HTML longitudinal
-  autocontido; render e escrita terminam antes do primeiro stdout, e a unica linha extra e
-  `Longitudinal report written to ...` no final.
-- Ainda não há discovery automático, inferência cronológica, latest/previous lookup,
-  comparação non-adjacent, all-vs-all, lifecycle multi-run ou derived state persistido.
-- Ainda não há Clash Ledger.
-- Ainda não há `Reopened`.
-- Ainda não há persistent clash ID.
-- Ainda não há validação sequencial contra exports reais.
+- Snapshot creation, explicit two-snapshot comparison, explicit ordered run-index creation,
+  and explicit adjacent traversal over that index already exist. Index order remains the
+  only sequence authority, and all snapshots and comparisons are loaded/calculated before
+  the first output.
+- `compare-index` adjacent traversal is now formalized and presented by an explicit chain:
+  sequence comparer, continuity projector, continuity path assembler, sequence analyzer,
+  and presentation projector. Stdout without output keeps the deterministic 12-line
+  longitudinal prefix; existing pairwise blocks remain preserved after that prefix in
+  transition order.
+- `compare-index` accepts optional `-o`/`--output` to write self-contained longitudinal
+  HTML. Rendering and writing finish before the first stdout line, and the only extra line
+  is `Longitudinal report written to ...` at the end.
+- There is still no automatic discovery, chronological inference, latest/previous lookup,
+  non-adjacent comparison, all-vs-all comparison, multi-run lifecycle, or persisted derived
+  state.
+- There is still no Clash Ledger.
+- There is still no `Reopened`.
+- There is still no persistent clash ID.
+- There is still no sequential validation against real exports.
 
-## Matching vocabulary
+## Matching Vocabulary
 
-1. Os contratos `ClashMatchConfidence`, `MatchEvidence` e `ClashMatchAssessment` ainda não
-   executam nenhum matching — são apenas o vocabulário que uma futura implementação usará
-   para registrar e justificar uma avaliação.
-2. `ClashMatchConfidence.High` **não** significa "exato" nem "confirmado por um humano"; é
-   apenas o nível mais alto de corroboração por evidências.
-3. O GUID do clash reportado pela fonte (`MatchEvidenceKind.SourceClashGuid`) é apenas mais
-   uma evidência — ainda não foi provado estável entre exports sequenciais reais.
-4. Cada `MatchEvidence` tem um veredito (`Supports`, `Contradicts` ou `Unavailable`);
-   `ClashMatchAssessment` permite vereditos mistos e não recalcula a confiança a partir
-   deles.
-5. Não há score numérico, threshold, lifecycle status ou decisão automática nestes
-   contratos.
-6. O comando `compare` usa esses contratos via matcher/comparer/classifier existentes; a
-   CLI apenas apresenta o resultado.
+1. `ClashMatchConfidence`, `MatchEvidence`, and `ClashMatchAssessment` do not execute
+   matching by themselves. They are only the vocabulary a future implementation uses to
+   record and justify an assessment.
+2. `ClashMatchConfidence.High` does not mean "exact" or "human-confirmed"; it is only the
+   highest level of evidence corroboration.
+3. The source clash GUID (`MatchEvidenceKind.SourceClashGuid`) is only one more piece of
+   evidence. It has not yet been proven stable across sequential real exports.
+4. Each `MatchEvidence` has a verdict: `Supports`, `Contradicts`, or `Unavailable`.
+   `ClashMatchAssessment` allows mixed verdicts and does not recalculate confidence from
+   them.
+5. There is no numeric score, threshold, lifecycle status, or automatic decision in these
+   contracts.
+6. The `compare` command uses these contracts through the existing matcher, comparer, and
+   classifier; the CLI only presents the result.
 
-## Pairwise matcher port
+## Pairwise Matcher Port
 
-1. `IClashMatcher` (`src/OrzioClashReport.Core/Abstractions/IClashMatcher.cs`) avalia um par
-   ordenado anterior/atual de `ClashOccurrence` — nada mais.
-2. Um retorno não nulo (`ClashMatchAssessment`) é uma avaliação candidata, com confiança e
-   evidências auditáveis.
-3. `null` significa que o matcher não produziu nenhum candidato para aquele par (evidência
-   insuficiente, sinais incompatíveis, ou pré-condição da estratégia não satisfeita).
-4. `Low` **não** equivale a `null` — `Low` é uma avaliação candidata real, com pelo menos uma
-   evidência; `null` é a ausência de avaliação.
-5. O port não define o algoritmo concreto; a implementação de produção atual é
-   `ConservativeClashMatcher`.
-6. O port não compara rodadas (`CoordinationRun`) completas nem recebe listas de ocorrências.
-7. Seleção um-para-um entre candidatos concorrentes, resolução de conflitos e qualquer
-   lifecycle status ainda não existem — ficam para um futuro run comparer.
-8. O comando `compare` usa o matcher apenas através de `DeterministicClashRunComparer`.
+1. `IClashMatcher` (`src/OrzioClashReport.Core/Abstractions/IClashMatcher.cs`) evaluates
+   one ordered previous/current pair of `ClashOccurrence`s and nothing else.
+2. A non-null return (`ClashMatchAssessment`) is a candidate assessment with auditable
+   confidence and evidence.
+3. `null` means the matcher produced no candidate for that pair, whether due to
+   insufficient evidence, incompatible signals, or an unmet strategy precondition.
+4. `Low` is not equivalent to `null`. `Low` is a real candidate assessment with at least
+   one piece of evidence; `null` is the absence of an assessment.
+5. The port does not define the concrete algorithm. The current production implementation
+   is `ConservativeClashMatcher`.
+6. The port does not compare complete runs (`CoordinationRun`) or receive occurrence lists.
+7. One-to-one selection among competing candidates, conflict resolution, and lifecycle
+   status remain the responsibility of a run comparer.
+8. The `compare` command uses the matcher only through `DeterministicClashRunComparer`.
 
-## Conservative pairwise matcher
+## Conservative Pairwise Matcher
 
 `ConservativeClashMatcher` (`src/OrzioClashReport.Core/Matching/ConservativeClashMatcher.cs`)
-é a primeira implementação concreta de `IClashMatcher`.
+is the first concrete `IClashMatcher` implementation.
 
-1. Ele exige três sinais obrigatórios ao mesmo tempo: mesmo `ClashTestName` (ordinal,
-   ignorando case), mesmo par revision-free de `ModelIdentity`, e o par de `ElementId`
-   alinhado a esses modelos.
-2. Revisões (`ModelRevision.Revision`, `SourceFileName`, `SourceFilePath`, `ContentHash`,
-   `PublishedAt`) são completamente ignoradas no matching — o candidato sobrevive a `R03 → R04`.
-3. Inversão A/B entre exports é aceita: os dois modelos podem trocar de lado entre a rodada
-   anterior e a atual, desde que os elementos acompanhem a mesma troca.
-4. `ElementId` e o GUID da fonte são tratados como identificadores opacos e comparados com
-   `StringComparison.Ordinal` (case-sensitive) — nunca `OrdinalIgnoreCase`.
-5. O GUID da fonte é evidência suplementar: um GUID igual eleva a confiança de `Medium` para
-   `High`; um GUID diferente ou ausente **não** cria nem destrói um candidato.
-6. Resultado `High` exige os três sinais obrigatórios **e** GUID igual; `Medium` ocorre
-   quando os três sinais passam mas o GUID está ausente ou contradiz.
-7. Este matcher nunca produz `Low` — ele só aceita quando os três sinais obrigatórios são
-   favoráveis; candidatos fracos ficam para uma estratégia futura.
-8. A comparação entre rodadas completas e a classificação de lifecycle acontecem em
-   componentes separados; este matcher permanece estritamente pairwise.
-9. O comando `compare` usa este matcher na composição revision-aware atual.
+1. It requires three mandatory signals at the same time: same `ClashTestName` using ordinal
+   case-insensitive comparison, same revision-free `ModelIdentity` pair, and the
+   `ElementId` pair aligned to those models.
+2. Revisions (`ModelRevision.Revision`, `SourceFileName`, `SourceFilePath`, `ContentHash`,
+   `PublishedAt`) are completely ignored during matching, so a candidate survives
+   `R03 -> R04`.
+3. A/B inversion between exports is accepted: the two models may swap sides between
+   previous and current runs as long as the elements follow the same swap.
+4. `ElementId` and source GUID are treated as opaque identifiers and compared with
+   `StringComparison.Ordinal`, case-sensitively, never `OrdinalIgnoreCase`.
+5. Source GUID is supplemental evidence. An equal GUID raises confidence from `Medium` to
+   `High`; a different or missing GUID does not create or destroy a candidate.
+6. A `High` result requires the three mandatory signals plus an equal GUID. `Medium` occurs
+   when the three mandatory signals pass but GUID is missing or contradicts.
+7. This matcher never produces `Low`; it only accepts candidates when all three mandatory
+   signals are favorable. Weaker candidates are left for a future strategy.
+8. Complete-run comparison and lifecycle classification happen in separate components; this
+   matcher remains strictly pairwise.
+9. The `compare` command uses this matcher in the current revision-aware composition.
 
-## Deterministic run comparer
+## Deterministic Run Comparer
 
 `DeterministicClashRunComparer` (`src/OrzioClashReport.Core/Matching/DeterministicClashRunComparer.cs`)
-implementa `IClashRunComparer`, o primeiro orquestrador entre duas `CoordinationRun`.
+implements `IClashRunComparer`, the first orchestrator between two `CoordinationRun`s.
 
-1. Recebe explicitamente `previousRun` e `currentRun` — nunca infere qual é qual por
-   `CreatedAt` ou `RunId`.
-2. Avalia todos os pares (previous × current) através de um `IClashMatcher` injetado.
-3. Preserva todos os candidatos gerados (`Candidates`), mesmo os não selecionados.
-4. Seleciona um subconjunto um-para-um (`SelectedMatches`): nenhum índice anterior ou atual
-   repete entre os selecionados.
-5. Precedência de seleção: `High > Medium > Low`.
-6. Desempate por `PreviousIndex` crescente, depois `CurrentIndex` crescente.
-7. Candidatos não selecionados continuam visíveis e auditáveis em `AlternativeCandidates` —
-   nunca são tratados como falsos.
-8. `UnmatchedPrevious`/`UnmatchedCurrent` **não é lifecycle status** — uma ocorrência sem
-   match selecionado ainda pode ter candidatos alternativos.
-9. A política é **greedy e não é globalmente ótima**: uma seleção feita cedo pode bloquear
-   dois candidatos que uma atribuição ótima teria conseguido parear. Isso é aceitável nesta
-   etapa porque a política é determinística, a precedência é explícita, e nenhuma
-   classificação de lifecycle é produzida a partir do resultado.
-10. O comando `compare` usa este comparer com papéis previous/current explícitos, sem
-    inferência temporal.
+1. It receives explicit `previousRun` and `currentRun`; it never infers which is which from
+   `CreatedAt` or `RunId`.
+2. It evaluates all pairs (`previous x current`) through an injected `IClashMatcher`.
+3. It preserves all generated candidates (`Candidates`), including non-selected ones.
+4. It selects a deterministic one-to-one subset (`SelectedMatches`): no previous or current
+   index repeats among selected matches.
+5. Selection precedence is `High > Medium > Low`.
+6. Ties are broken by increasing `PreviousIndex`, then increasing `CurrentIndex`.
+7. Non-selected candidates remain visible and auditable in `AlternativeCandidates`; they are
+   never treated as false.
+8. `UnmatchedPrevious`/`UnmatchedCurrent` is not lifecycle status. An occurrence without a
+   selected match may still have alternative candidates.
+9. The policy is greedy and not globally optimal: an early selection can block two
+   candidates that an optimal assignment could have paired. That is acceptable at this
+   stage because the policy is deterministic, precedence is explicit, and lifecycle
+   classification is not produced from the comparer result alone.
+10. The `compare` command uses this comparer with explicit previous/current roles and no
+    temporal inference.
 
-## Conservative lifecycle classification
+## Conservative Lifecycle Classification
 
 `ConservativeClashLifecycleClassifier` (`src/OrzioClashReport.Core/Lifecycle/ConservativeClashLifecycleClassifier.cs`)
-implementa `IClashLifecycleClassifier`: classifica cada slot de um `ClashRunMatchResult` já
-produzido, sem nunca reexecutar `IClashMatcher` ou `IClashRunComparer`.
+implements `IClashLifecycleClassifier`. It classifies every slot of an already-produced
+`ClashRunMatchResult` without rerunning `IClashMatcher` or `IClashRunComparer`.
 
-1. **`StillOpen`**: um match selecionado com confiança `Medium` ou `High` **e** nenhum
-   candidato alternativo compartilhando seu `PreviousIndex` ou `CurrentIndex`.
-2. **`Resolved`**: uma ocorrência anterior sem match selecionado, **sem** candidato
-   alternativo referenciando seu índice, com ambos os `ModelIdentity` (revision-free) e o
-   clash test observados na rodada atual.
-3. **`New`**: regra simétrica — uma ocorrência atual sem match selecionado, sem
-   alternativa, com modelos e clash test observados na rodada anterior.
-4. **`Unverifiable`**: qualquer coisa que não satisfaça as condições acima — confiança
-   `Low`, candidato alternativo concorrente, modelo ausente, ou clash test não observado.
-5. Cobertura é sempre revision-free: `ModelRevision.Revision`, `SourceFileName`,
-   `SourceFilePath`, `ContentHash` e `PublishedAt` nunca participam da verificação.
-6. Um clash test só é considerado **observado** numa rodada quando o
-   `RunManifest.ExecutedClashTests` **dessa rodada** declara explicitamente esse nome
-   (comparação ordinal, ignorando case) para o mesmo par de `ModelIdentity`, direto ou
-   invertido — nunca varrendo `CoordinationRun.Occurrences`. Isso é o que permite provar que
-   um test rodou e retornou zero clashes: uma rodada pode declarar um `ExecutedClashTest`
-   sem nenhuma `ClashOccurrence` correspondente, e essa declaração sozinha já é evidência
-   suficiente para `Resolved`/`New` no lado oposto.
-7. O `ClashStatus` bruto (vindo do Clash Detective) nunca participa da decisão de
-   lifecycle.
-8. Não existe `Reopened` — distinguir um clash genuinamente novo de um que reabriu exige
-   histórico de mais de duas rodadas, fora do escopo desta etapa.
-9. O comando `compare` usa esse classificador e imprime apenas um resumo determinístico no
-   console.
+1. **`StillOpen`**: a selected match with `Medium` or `High` confidence and no alternative
+   candidate sharing its `PreviousIndex` or `CurrentIndex`.
+2. **`Resolved`**: a previous occurrence with no selected match, no alternative candidate
+   referencing its index, and both revision-free `ModelIdentity` values plus the clash test
+   observed in the current run.
+3. **`New`**: the symmetric rule for a current occurrence with no selected match, no
+   alternative, and models plus clash test observed in the previous run.
+4. **`Unverifiable`**: anything that does not satisfy the rules above: `Low` confidence,
+   competing alternative candidate, missing model, or clash test not observed.
+5. Coverage is always revision-free: `ModelRevision.Revision`, `SourceFileName`,
+   `SourceFilePath`, `ContentHash`, and `PublishedAt` never participate.
+6. A clash test is considered observed in a run only when that run's
+   `RunManifest.ExecutedClashTests` explicitly declares that name, using ordinal
+   case-insensitive comparison, for the same `ModelIdentity` pair, direct or swapped. The
+   classifier never scans `CoordinationRun.Occurrences`. This is what allows a run to prove
+   that a test executed and returned zero clashes.
+7. Raw `ClashStatus` from Clash Detective never participates in lifecycle decisions.
+8. `Reopened` does not exist. Distinguishing a genuinely new clash from a reopened clash
+   requires more than two runs of history and remains out of scope.
+9. The `compare` command uses this classifier and prints only a deterministic console
+   summary.
 
-## Coordination run assembly
+## Coordination Run Assembly
 
-`ExactSourceModelCoordinationRunAssembler` (`src/OrzioClashReport.Core/Assembly/ExactSourceModelCoordinationRunAssembler.cs`)
-implementa `ICoordinationRunAssembler`: o primeiro assembler que conecta os dois adapters
-já existentes, produzindo um `CoordinationRun` a partir de um `ClashReportDocument` (parser
-XML) e um `RunManifest` (adapter JSON).
+`ExactSourceModelCoordinationRunAssembler`
+(`src/OrzioClashReport.Core/Assembly/ExactSourceModelCoordinationRunAssembler.cs`)
+implements `ICoordinationRunAssembler`. It is the first assembler connecting the existing
+XML and JSON adapters, producing a `CoordinationRun` from a `ClashReportDocument` and a
+`RunManifest`.
 
-1. O parser XML produz `ClashReportDocument`; o adapter JSON do manifesto produz
-   `RunManifest`. `ExactSourceModelCoordinationRunAssembler` combina os dois — nenhum dos
-   dois adapters depende do outro, e o assembler vive inteiramente no Core, sem I/O.
-2. Cada lado do clash (`ClashResult.ElementA`/`ElementB`) é resolvido exclusivamente via
-   `ClashObject.SourceModel`, comparado contra `ModelRevision.SourceFileName` ou
-   `SourceFilePath` de cada modelo declarado no manifesto.
-3. A única normalização permitida é `Trim()`; a comparação é
-   `StringComparison.OrdinalIgnoreCase`. Nenhuma heurística de nome de arquivo é aplicada:
-   sem `Path.GetFileName`, sem remoção de extensão, sem normalização de separador de
-   diretório, sem substring/prefix/suffix, sem regex, sem fuzzy matching, sem inferência de
-   revisão/disciplina/empresa a partir do token.
-4. Zero modelo correspondente no manifesto é falha (`CoordinationRunAssemblyException`).
-5. Mais de um `ModelRevision` distinto correspondendo ao mesmo `SourceModel` também é falha
-   — ambiguidade nunca é resolvida por "primeiro candidato" ou qualquer outro critério
-   automático.
-6. A ordem documental (batch-major, clash-minor) e a orientação A/B são sempre preservadas;
-   duplicidades no documento viram `ClashOccurrence`s duplicadas, nunca deduplicadas.
-7. `CoordinationRun` continua sendo a autoridade final para validar cobertura de
-   `ExecutedClashTest` — o assembler não duplica essa regra, apenas deixa que a construção
-   final de `CoordinationRun` a aplique.
-8. Existe um manifesto companion sintético vinculado ao fixture XML real
-   (`samples/sample-clash.run-manifest.json`, para `samples/sample-clash.xml`) — ver a seção
-   abaixo.
-9. O comando `compare` executa esse pipeline revision-aware para cada lado explicitamente.
-10. Ainda não foi validado em modelo real sequencial.
+1. The XML parser produces `ClashReportDocument`; the manifest JSON adapter produces
+   `RunManifest`. `ExactSourceModelCoordinationRunAssembler` combines them. Neither adapter
+   depends on the other, and the assembler lives entirely in Core with no I/O.
+2. Each clash side (`ClashResult.ElementA`/`ElementB`) is resolved exclusively through
+   `ClashObject.SourceModel`, compared against `ModelRevision.SourceFileName` or
+   `SourceFilePath` for each model declared in the manifest.
+3. The only allowed normalization is `Trim()`, and comparison uses
+   `StringComparison.OrdinalIgnoreCase`. No file-name heuristic is applied: no
+   `Path.GetFileName`, extension removal, directory separator normalization,
+   substring/prefix/suffix, regex, fuzzy matching, or revision/discipline/company inference
+   from the token.
+4. Zero matching models in the manifest is a failure (`CoordinationRunAssemblyException`).
+5. More than one distinct `ModelRevision` matching the same `SourceModel` is also a
+   failure. Ambiguity is never resolved by "first candidate" or any other automatic rule.
+6. Document order (batch-major, clash-minor) and A/B orientation are always preserved.
+   Duplicates in the document become duplicate `ClashOccurrence`s and are never deduplicated.
+7. `CoordinationRun` remains the final authority for validating `ExecutedClashTest`
+   coverage. The assembler does not duplicate that rule; it lets final `CoordinationRun`
+   construction apply it.
+8. A synthetic companion manifest exists for the real XML fixture
+   (`samples/sample-clash.run-manifest.json`, for `samples/sample-clash.xml`).
+9. The `compare` command runs this revision-aware pipeline for each side explicitly.
+10. It has not yet been validated on real sequential model exports.
 
-### Companion manifest para `sample-clash.xml`
+### Companion Manifest for `sample-clash.xml`
 
-`samples/sample-clash.run-manifest.json` declara manualmente os modelos e clash tests
-necessários para o `NavisworksXmlClashSource` real conseguir montar um `CoordinationRun` a
-partir de `samples/sample-clash.xml`, usando `ExactSourceModelCoordinationRunAssembler`. A
-inspeção do fixture (via o parser já corrigido) mostrou:
+`samples/sample-clash.run-manifest.json` manually declares the models and clash tests needed
+for `NavisworksXmlClashSource` to assemble a `CoordinationRun` from
+`samples/sample-clash.xml` through `ExactSourceModelCoordinationRunAssembler`. Inspection of
+the fixture with the corrected parser showed:
 
-- 1 batch: `"Teste 01"`, com 5 clashes.
-- **1 único token distinto de `SourceModel`** em todos os 5 clashes, nos dois lados:
-  `"Project_A_HVAC_PD_R00.rvt"` — ou seja, o fixture é um cenário de **self-clash** (o
-  mesmo modelo contra si mesmo).
+- 1 batch: `"Teste 01"`, with 5 clashes.
+- One distinct `SourceModel` token across all 5 clashes on both sides:
+  `"Project_A_HVAC_PD_R00.rvt"`, so the fixture is a self-clash scenario.
 
-O manifesto declara `ModelRevision.SourceFileName = "Project_A_HVAC_PD_R00.rvt"` (igual ao
-token exato produzido pelo parser) e um `ExecutedClashTest` self-clash para `"Teste 01"`. Um
-segundo modelo sintético (`Beta_Architecture_R10.nwc`) e um `ExecutedClashTest` de zero
-occurrences entre ele e o modelo do HVAC também estão declarados, apenas para ilustrar a
-funcionalidade de zero-result introduzida na Etapa 10 — nenhum dos dois é necessário para o
-binding do fixture real (ver `samples/README.md`).
+The manifest declares `ModelRevision.SourceFileName = "Project_A_HVAC_PD_R00.rvt"`, exactly
+matching the parser token, and a self-clash `ExecutedClashTest` for `"Teste 01"`. A second
+synthetic model (`Beta_Architecture_R10.nwc`) and a zero-occurrence `ExecutedClashTest`
+between it and the HVAC model are also declared only to illustrate the zero-result
+functionality introduced in Step 10. Neither is needed for binding the real fixture. See
+`samples/README.md`.
 
-## Backlog (fora do MVP)
+## Backlog
 
-Esta seção existe para registrar pedidos que não entram no MVP.
+This section records requests that are outside the MVP.
 
-- Imagens de clash embutidas no relatório
-- Exportação em PDF
-- Licenciamento
-- UI WPF
-- Adaptador da API do Navisworks (.NET API, leitura ao vivo)
-- Edição de status do clash dentro da ferramenta
-- Integração com CDE (Common Data Environment)
+- Embedded clash images in the report
+- PDF export
+- Licensing
+- WPF UI
+- Navisworks API adapter (.NET API, live reading)
+- Clash status editing inside the tool
+- CDE (Common Data Environment) integration
+- Future report ordering with same-discipline internal clashes before cross-discipline
+  clashes
+- Explicit mapping between source model, canonical discipline, and model/system display
+  name to replace labels derived directly from the source model name
+- Discipline resolver hardening without fuzzy inference

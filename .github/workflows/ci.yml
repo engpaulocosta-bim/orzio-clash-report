@@ -26,6 +26,27 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
 
+      - name: Inspect golden files
+        shell: pwsh
+        run: |
+          function Show-GoldenInfo($label, $path) {
+            Write-Host $label
+            Get-ChildItem $path -File | Sort-Object Name | ForEach-Object {
+              $bytes = [System.IO.File]::ReadAllBytes($_.FullName)
+              $crlf = 0
+              for ($i = 0; $i -lt $bytes.Length - 1; $i++) {
+                if ($bytes[$i] -eq 13 -and $bytes[$i + 1] -eq 10) {
+                  $crlf++
+                }
+              }
+              $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+              Write-Host ("{0} crlf={1} sha256={2}" -f $_.Name, $crlf, $hash)
+            }
+          }
+
+          Show-GoldenInfo "Source goldens" "tests/OrzioClashReport.Tests/Golden"
+          Show-GoldenInfo "Output goldens" "tests/OrzioClashReport.Tests/bin/Release/net8.0/Golden"
+
       - name: Test
         run: dotnet test --configuration Release --no-build
 

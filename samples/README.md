@@ -1,45 +1,43 @@
-Os fixtures `sample-clash.xml` e `sample-clash2.xml` são exports do Navisworks Clash
-Detective com dados sintéticos/anonimizados (nomes de projeto, empresa, caminhos de rede e
-nomes de ficheiro foram substituídos por valores fictícios). A estrutura do XML, contagem de
-elementos e relações necessárias para parsing/grouping foram preservadas.
+# Samples
 
-Se for adicionar um novo fixture a partir de um export real, anonimize nomes de cliente,
-empresa, projeto, caminhos absolutos, letras de rede e nomes de ficheiro reais antes de
-versionar o ficheiro.
+The `sample-clash.xml` and `sample-clash2.xml` fixtures are Navisworks Clash Detective XML
+exports with synthetic, anonymized data. Real project names, company names, network paths,
+and file names were replaced with fictitious values. The XML structure, element counts, and
+relationships needed by parsing and grouping tests were preserved.
 
-`run-manifest.sample.json` é um fixture separado e totalmente sintético: declara manualmente
-três modelos/revisões de uma rodada de coordenação hipotética, no schema v2
-(`schemaVersion: 2`). O manifesto é uma declaração explícita — a revisão de cada modelo
-nunca é inferida a partir do nome do arquivo, do caminho ou de qualquer XML. Ele também
-declara explicitamente três `executedClashTests` (par de disciplinas + par de modelos
-revision-free), incluindo um terceiro test ("Architecture vs Piping") que ilustra a
-funcionalidade principal da Etapa 10: uma declaração de cobertura é válida mesmo sem nenhuma
-occurrence correspondente no fixture — é assim que se prova que um clash test rodou e
-retornou zero clashes, em vez de nunca ter rodado. Ele não está vinculado a nenhum
-`sample-clash*.xml` nem à CLI.
+Before adding any new fixture from a real export, anonymize client names, company names,
+project names, absolute paths, drive letters, network paths, and real file names.
+
+`run-manifest.sample.json` is a separate fully synthetic fixture. It manually declares
+three models and revisions for a hypothetical coordination run using schema version 2
+(`schemaVersion: 2`). The manifest is an explicit declaration: model revisions are never
+inferred from file names, paths, or XML. It also declares three `executedClashTests`
+entries, including a third test ("Architecture vs Piping") that illustrates zero-result
+coverage: a declared executed test may have no corresponding occurrence, proving that the
+test ran and returned zero clashes rather than never running. This sample manifest is not
+bound to any `sample-clash*.xml` file or CLI command.
 
 ## `sample-clash.run-manifest.json`
 
-Este é o companion manifest do fixture XML real `sample-clash.xml`, usado pelos testes de
-integração de `ExactSourceModelCoordinationRunAssembler`
-(`tests/OrzioClashReport.Tests/ExactSourceModelCoordinationRunAssemblerTests.cs`).
+This is the companion manifest for the `sample-clash.xml` fixture, used by integration
+tests for `ExactSourceModelCoordinationRunAssembler`.
 
-- Acompanha exclusivamente `sample-clash.xml` (não `sample-clash2.xml`, que é um fixture
-  não relacionado, usado só por `ParsingLargeSampleTests.cs`).
-- Os modelos declarados são **sintéticos/manuais**: `company`, `discipline`, `modelName` e
-  `revision` são valores de conveniência escolhidos por quem editou o arquivo à mão — nada
-  no código deriva esses campos do nome do arquivo.
-- `sourceFileName` do primeiro modelo (`"Project_A_HVAC_PD_R00.rvt"`) foi declarado para
-  corresponder **exatamente** ao valor que `NavisworksXmlClashSource` já produz em
-  `ClashObject.SourceModel` para todo clash do fixture (via a precedência
-  `Item Source File` → `Item Source File Name`, corrigida pelo hotfix
-  `498d97a0d56250616f3b9891a9a3a3a805418825`). Nenhuma informação é inferida em runtime: a igualdade é exata, aplicada
-  por `ExactSourceModelCoordinationRunAssembler`.
-- Os cinco clashes de `"Teste 01"` no fixture resolvem, nos dois lados, para o **mesmo**
-  `ModelRevision` — um cenário de self-clash real. Por isso o manifesto declara um
-  `ExecutedClashTest` self-clash (`modelA == modelB`) para `"Teste 01"`.
-- O segundo modelo (`Beta_Architecture_R10.nwc`) e o `ExecutedClashTest` "Synthetic
-  Zero-Result Test" que o referencia **não correspondem a nada no fixture real** — são
-  puramente ilustrativos da semântica de zero-result da Etapa 10 (um clash test declarado
-  como executado sem nenhuma `ClashOccurrence` correspondente é válido). Nenhum teste de
-  integração depende deles.
+- It applies only to `sample-clash.xml`, not `sample-clash2.xml`.
+- Declared models are synthetic and manual. `company`, `discipline`, `modelName`, and
+  `revision` are convenience values chosen by hand; no code derives those fields from file
+  names.
+- The first model's `sourceFileName` (`"Project_A_HVAC_PD_R00.rvt"`) exactly matches the
+  `ClashObject.SourceModel` token produced by `NavisworksXmlClashSource` for every clash in
+  the fixture. Runtime binding is exact through `ExactSourceModelCoordinationRunAssembler`.
+- The five clashes in `"Teste 01"` resolve to the same `ModelRevision` on both sides,
+  representing a self-clash scenario. The manifest therefore declares a self-clash
+  `ExecutedClashTest` for `"Teste 01"`.
+- The second synthetic model (`Beta_Architecture_R10.nwc`) and the "Synthetic Zero-Result
+  Test" declaration are illustrative only. They demonstrate a valid executed test with no
+  matching occurrence.
+
+## `run-index.template.json`
+
+`run-index.template.json` is a minimal schema-version 1 run-index template with exactly
+three illustrative relative snapshot references. It contains no matching, lifecycle,
+history, or derived state.

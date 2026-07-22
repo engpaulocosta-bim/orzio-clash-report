@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 2,
+  "runId": "coordination-2026-07-10-0900",
+  "createdAt": "2026-07-10T09:00:00+01:00",
+  "models": [
+    {
+      "company": "Sigma",
+      "discipline": "Structure",
+      "modelName": "Sigma_Structure",
+      "revision": "R04",
+      "sourceFileName": "Sigma_Structure_R04.nwc",
+      "sourceFilePath": "C:\\BIM\\SyntheticProject\\Models\\Sigma_Structure_R04.nwc"
+    },
+    {
+      "company": "Beta",
+      "discipline": "Architecture",
+      "modelName": "Beta_Architecture",
+      "revision": "R10",
+      "sourceFileName": "Beta_Architecture_R10.nwc",
+      "sourceFilePath": "C:\\BIM\\SyntheticProject\\Models\\Beta_Architecture_R10.nwc"
+    },
+    {
+      "company": "Alfa",
+      "discipline": "Piping",
+      "modelName": "Alfa_Piping",
+      "revision": "R04",
+      "sourceFileName": "Alfa_Piping_R04.nwc",
+      "sourceFilePath": "C:\\BIM\\SyntheticProject\\Models\\Alfa_Piping_R04.nwc"
+    }
+  ],
+  "executedClashTests": [
+    {
+      "name": "Structure vs Architecture",
+      "modelA": {
+        "company": "Sigma",
+        "discipline": "Structure",
+        "modelName": "Sigma_Structure"
+      },
+      "modelB": {
+        "company": "Beta",
+        "discipline": "Architecture",
+        "modelName": "Beta_Architecture"
+      }
+    },
+    {
+      "name": "Structure vs Piping",
+      "modelA": {
+        "company": "Sigma",
+        "discipline": "Structure",
+        "modelName": "Sigma_Structure"
+      },
+      "modelB": {
+        "company": "Alfa",
+        "discipline": "Piping",
+        "modelName": "Alfa_Piping"
+      }
+    },
+    {
+      "name": "Architecture vs Piping",
+      "modelA": {
+        "company": "Beta",
+        "discipline": "Architecture",
+        "modelName": "Beta_Architecture"
+      },
+      "modelB": {
+        "company": "Alfa",
+        "discipline": "Piping",
+        "modelName": "Alfa_Piping"
+      }
+    }
+  ]
+}

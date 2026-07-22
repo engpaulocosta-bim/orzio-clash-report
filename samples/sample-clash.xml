@@ -1,0 +1,1325 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<exchange xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" units="m" filename="Project_A_HVAC_PD_R01_Federated_Model.nwd" filepath="C:\BIM\SyntheticProject\00-FederatedModel">
+  <batchtest name="Report" internal_name="Report" units="m">
+    <clashtests>
+      <clashtest name="Teste 01" test_type="hard" status="ok" tolerance="0.001" merge_composites="1">
+        <default_assignee display_name=""/>
+        <linkage mode="none"/>
+        <rules/>
+        <summary total="5" new="5" active="0" reviewed="0" approved="0" resolved="0">
+          <testtype>Hard</testtype>
+          <teststatus>OK</teststatus>
+        </summary>
+        <clashresults>
+          <clashresult name="Clash1" guid="e37d5d4a-2bd1-2ea4-0694-6f2b9d7479ed" href="Teste 01_files\cd000001.jpg" status="new" distance="-0.007">
+            <resultstatus>New</resultstatus>
+            <clashpoint>
+              <pos3f x="2810.456" y="1869.841" z="-3.426"/>
+            </clashpoint>
+            <createddate>
+              <date year="2026" month="7" day="9" hour="12" minute="37" second="2"/>
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>48b67dfa-ecf5-541d-fa9d-88e56fc0aa4e</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>RIG_Cobre(1)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>PrismMetal</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>48b67dfa-ecf5-541d-fa9d-88e56fc0aa4e</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>a06455ac-491b-9ab2-40d9-e2930ea5eb33</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>Generic(12)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>Generic</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>a06455ac-491b-9ab2-40d9-e2930ea5eb33</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash2" guid="fa2cd0de-3499-593b-7a73-75a205496314" href="Teste 01_files\cd000002.jpg" status="new" distance="-0.005">
+            <resultstatus>New</resultstatus>
+            <clashpoint>
+              <pos3f x="2816.145" y="1870.232" z="-3.578"/>
+            </clashpoint>
+            <createddate>
+              <date year="2026" month="7" day="9" hour="12" minute="37" second="2"/>
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>022e9d8e-4cea-94bb-40fb-b019da77f6b9</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>RIG_Cobre(1)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>PrismMetal</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>022e9d8e-4cea-94bb-40fb-b019da77f6b9</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>20b64ae2-2b58-fdba-2a62-c4c2a99d2013</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>Generic(13)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>Generic</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>20b64ae2-2b58-fdba-2a62-c4c2a99d2013</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>RAL (255,0,0)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>RAL (255,0,0)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>C:\BIM\SyntheticProject\HVAC\Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>RAL (255,0,0)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash3" guid="62a630ec-a994-3ff9-ed8a-8fefdea66f37" href="Teste 01_files\cd000003.jpg" status="new" distance="-0.005">
+            <resultstatus>New</resultstatus>
+            <clashpoint>
+              <pos3f x="2810.842" y="1871.477" z="-3.574"/>
+            </clashpoint>
+            <createddate>
+              <date year="2026" month="7" day="9" hour="12" minute="37" second="2"/>
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>9ac3e0b4-ec43-cb88-d8c3-f24f909fb937</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>RIG_Cobre(1)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>PrismMetal</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>9ac3e0b4-ec43-cb88-d8c3-f24f909fb937</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>19e7f5f3-3096-94a3-8dd7-a1392d5107a6</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>Generic(12)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>Generic</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>19e7f5f3-3096-94a3-8dd7-a1392d5107a6</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash4" guid="e594c0f7-94db-7ee8-3637-fac1577635a5" href="Teste 01_files\cd000004.jpg" status="new" distance="-0.004">
+            <resultstatus>New</resultstatus>
+            <clashpoint>
+              <pos3f x="2810.998" y="1871.443" z="-3.597"/>
+            </clashpoint>
+            <createddate>
+              <date year="2026" month="7" day="9" hour="12" minute="37" second="2"/>
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>6809df44-1847-7fc6-136a-37f6f2d5ea87</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>RIG_Cobre(1)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>PrismMetal</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>6809df44-1847-7fc6-136a-37f6f2d5ea87</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>19e7f5f3-3096-94a3-8dd7-a1392d5107a6</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>Generic(12)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>Generic</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>19e7f5f3-3096-94a3-8dd7-a1392d5107a6</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+          <clashresult name="Clash5" guid="e84fcc00-330e-b6d9-b7ec-4c00e8862de4" href="Teste 01_files\cd000005.jpg" status="new" distance="-0.002">
+            <resultstatus>New</resultstatus>
+            <clashpoint>
+              <pos3f x="2810.482" y="1869.846" z="-3.417"/>
+            </clashpoint>
+            <createddate>
+              <date year="2026" month="7" day="9" hour="12" minute="37" second="2"/>
+            </createddate>
+            <clashobjects>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>4262653a-76a0-a341-4ae9-1df9b5d3cd9d</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>RIG_Cobre(1)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>PrismMetal</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>4262653a-76a0-a341-4ae9-1df9b5d3cd9d</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>0.443</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.541</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.835</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>CU</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+              <clashobject>
+                <objectattribute>
+                  <name>GUID</name>
+                  <value>a06455ac-491b-9ab2-40d9-e2930ea5eb33</value>
+                </objectattribute>
+                <layer>Nivel +0</layer>
+                <smarttags>
+                  <smarttag>
+                    <name>Autodesk Material Name</name>
+                    <value>Generic(12)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Autodesk Material Type</name>
+                    <value>Generic</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item File Name</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item GUID</name>
+                    <value>a06455ac-491b-9ab2-40d9-e2930ea5eb33</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Hidden</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Icon</name>
+                    <value>Geometry</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Layer</name>
+                    <value>Nivel +0</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Material</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Name</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Required</name>
+                    <value>No</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File</name>
+                    <value>Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Source File Name</name>
+                    <value>C:\BIM\SyntheticProject\Disciplines\HVAC\Project_A_HVAC_PD_R00.rvt</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Type</name>
+                    <value>Solid</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Item Unit</name>
+                    <value></value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Blue</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Ambient.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Blue</name>
+                    <value>1.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Diffuse.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Emissive.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Name</name>
+                    <value>RAL (0,0,255)</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Shininess</name>
+                    <value>0.500</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Blue</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Green</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Specular.Red</name>
+                    <value>0.000</value>
+                  </smarttag>
+                  <smarttag>
+                    <name>Material Transparency</name>
+                    <value>0.000</value>
+                  </smarttag>
+                </smarttags>
+              </clashobject>
+            </clashobjects>
+          </clashresult>
+        </clashresults>
+      </clashtest>
+    </clashtests>
+    <selectionsets/>
+  </batchtest>
+</exchange>

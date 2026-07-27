@@ -154,6 +154,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           $tag = "${{ github.ref_name }}"
+          $repository = "${{ github.repository }}"
           $expectedPrefix = "orzio-clash-report-$tag-win-x64"
           $zipPath = Join-Path $PWD "artifacts/release/$expectedPrefix.zip"
           $checksumPath = Join-Path $PWD "artifacts/release/$expectedPrefix.sha256"
@@ -165,7 +166,7 @@ jobs:
             throw "Expected checksum artifact was not downloaded: $checksumPath"
           }
 
-          gh release view $tag *> $null
+          gh release view $tag --repo $repository *> $null
           if ($LASTEXITCODE -eq 0) {
             throw "Release '$tag' already exists."
           }
@@ -181,6 +182,7 @@ jobs:
           gh release create $tag `
             $zipPath `
             $checksumPath `
+            --repo $repository `
             --title "OrzioClashReport $tag" `
             --notes $notes `
             --prerelease

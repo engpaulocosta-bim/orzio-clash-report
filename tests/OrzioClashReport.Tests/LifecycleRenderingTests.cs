@@ -32,6 +32,7 @@ namespace OrzioClashReport.Tests
             string second = renderer.Render(scenario.Result);
 
             Assert.Equal(first, second, StringComparer.Ordinal);
+            Assert.DoesNotContain("\r", first, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -161,10 +162,13 @@ namespace OrzioClashReport.Tests
 
             string actual = renderer.Render(scenario.Result);
             string goldenPath = Path.Combine(AppContext.BaseDirectory, "Golden", "lifecycle-report.golden.html");
-            string expected = File.ReadAllText(goldenPath);
+            string expected = NormalizeGoldenLineEndings(File.ReadAllText(goldenPath));
 
             Assert.Equal(expected, actual, StringComparer.Ordinal);
         }
+
+        private static string NormalizeGoldenLineEndings(string value) =>
+            value.Replace("\r\n", "\n").Replace("\r", "\n");
 
         private static ClashLifecycleStatus[] GetStatuses(ClashLifecycleResult result)
         {

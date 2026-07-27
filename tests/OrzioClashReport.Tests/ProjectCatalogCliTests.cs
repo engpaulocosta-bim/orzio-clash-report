@@ -245,7 +245,7 @@ namespace OrzioClashReport.Tests
 
                 Assert.Equal(1, result.ExitCode);
                 Assert.Equal(string.Empty, result.StdOut);
-                Assert.Contains("must be inside project catalog directory", result.StdErr, StringComparison.Ordinal);
+                Assert.Contains("run index to stay inside the project catalog directory tree", result.StdErr, StringComparison.Ordinal);
                 Assert.False(File.Exists(outputPath));
             }
             finally
@@ -373,6 +373,247 @@ namespace OrzioClashReport.Tests
                 """.Replace("\r\n", "\n") + "\n";
 
                 Assert.Equal(expectedJson, File.ReadAllText(outputPath), StringComparer.Ordinal);
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CreateProjectMode_ReportDestinationEqualToProjectCatalog_IsRejectedWithoutCreatingOutput()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string projectDirectory = Path.Combine(tempDirectory, "project");
+            string firstSnapshotPath = Path.Combine(projectDirectory, "snapshots", "first.json");
+            string secondSnapshotPath = Path.Combine(projectDirectory, "snapshots", "second.json");
+            string indexPath = Path.Combine(projectDirectory, "run-index.json");
+            string outputPath = Path.Combine(projectDirectory, "project.json");
+
+            try
+            {
+                CreateFixtureSnapshot(firstSnapshotPath);
+                CreateFixtureSnapshot(secondSnapshotPath);
+                SaveRunIndexWithSerializer(indexPath, firstSnapshotPath, secondSnapshotPath);
+
+                var result = InvokeMain(
+                    "create-project",
+                    "--project-id", "example-project",
+                    "--name", "Example Coordination Project",
+                    "--index", indexPath,
+                    "--report", outputPath,
+                    "-o", outputPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("same file as the project catalog", result.StdErr, StringComparison.Ordinal);
+                Assert.False(File.Exists(outputPath));
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CreateProjectMode_ReportDestinationEqualToSnapshot_IsRejectedWithoutMutatingEvidence()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string projectDirectory = Path.Combine(tempDirectory, "project");
+            string firstSnapshotPath = Path.Combine(projectDirectory, "snapshots", "first.json");
+            string secondSnapshotPath = Path.Combine(projectDirectory, "snapshots", "second.json");
+            string indexPath = Path.Combine(projectDirectory, "run-index.json");
+            string outputPath = Path.Combine(projectDirectory, "project.json");
+
+            try
+            {
+                CreateFixtureSnapshot(firstSnapshotPath);
+                CreateFixtureSnapshot(secondSnapshotPath);
+                SaveRunIndexWithSerializer(indexPath, firstSnapshotPath, secondSnapshotPath);
+
+                byte[] snapshotBefore = File.ReadAllBytes(firstSnapshotPath);
+                byte[] indexBefore = File.ReadAllBytes(indexPath);
+
+                var result = InvokeMain(
+                    "create-project",
+                    "--project-id", "example-project",
+                    "--name", "Example Coordination Project",
+                    "--index", indexPath,
+                    "--report", firstSnapshotPath,
+                    "-o", outputPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("same file as snapshot 1", result.StdErr, StringComparison.Ordinal);
+                Assert.False(File.Exists(outputPath));
+                Assert.Equal(snapshotBefore, File.ReadAllBytes(firstSnapshotPath));
+                Assert.Equal(indexBefore, File.ReadAllBytes(indexPath));
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CreateProjectMode_ReportDestinationEqualToRunIndex_IsRejectedWithoutMutatingEvidence()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string projectDirectory = Path.Combine(tempDirectory, "project");
+            string firstSnapshotPath = Path.Combine(projectDirectory, "snapshots", "first.json");
+            string secondSnapshotPath = Path.Combine(projectDirectory, "snapshots", "second.json");
+            string indexPath = Path.Combine(projectDirectory, "run-index.json");
+            string outputPath = Path.Combine(projectDirectory, "project.json");
+
+            try
+            {
+                CreateFixtureSnapshot(firstSnapshotPath);
+                CreateFixtureSnapshot(secondSnapshotPath);
+                SaveRunIndexWithSerializer(indexPath, firstSnapshotPath, secondSnapshotPath);
+
+                byte[] indexBefore = File.ReadAllBytes(indexPath);
+
+                var result = InvokeMain(
+                    "create-project",
+                    "--project-id", "example-project",
+                    "--name", "Example Coordination Project",
+                    "--index", indexPath,
+                    "--report", indexPath,
+                    "-o", outputPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("same file as the run index", result.StdErr, StringComparison.Ordinal);
+                Assert.False(File.Exists(outputPath));
+                Assert.Equal(indexBefore, File.ReadAllBytes(indexPath));
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CreateProjectMode_ReportDestinationCaseAliasOfRunIndex_IsRejectedOnWindows()
+        {
+            if (!OperatingSystem.IsWindows())
+            {
+                return;
+            }
+
+            string tempDirectory = CreateTempDirectory();
+            string projectDirectory = Path.Combine(tempDirectory, "project");
+            string firstSnapshotPath = Path.Combine(projectDirectory, "snapshots", "first.json");
+            string secondSnapshotPath = Path.Combine(projectDirectory, "snapshots", "second.json");
+            string indexPath = Path.Combine(projectDirectory, "run-index.json");
+            string aliasedReportPath = Path.Combine(projectDirectory, "RUN-INDEX.JSON");
+            string outputPath = Path.Combine(projectDirectory, "project.json");
+
+            try
+            {
+                CreateFixtureSnapshot(firstSnapshotPath);
+                CreateFixtureSnapshot(secondSnapshotPath);
+                SaveRunIndexWithSerializer(indexPath, firstSnapshotPath, secondSnapshotPath);
+
+                byte[] indexBefore = File.ReadAllBytes(indexPath);
+
+                var result = InvokeMain(
+                    "create-project",
+                    "--project-id", "example-project",
+                    "--name", "Example Coordination Project",
+                    "--index", indexPath,
+                    "--report", aliasedReportPath,
+                    "-o", outputPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("same file as the run index", result.StdErr, StringComparison.Ordinal);
+                Assert.False(File.Exists(outputPath));
+                Assert.Equal(indexBefore, File.ReadAllBytes(indexPath));
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CreateProjectMode_RunIndexWithExternalSnapshot_IsRejectedWithoutCreatingOutput()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string projectDirectory = Path.Combine(tempDirectory, "project");
+            string externalDirectory = Path.Combine(tempDirectory, "external");
+            string internalSnapshotPath = Path.Combine(projectDirectory, "snapshots", "first.json");
+            string externalSnapshotPath = Path.Combine(externalDirectory, "snapshots", "second.json");
+            string indexPath = Path.Combine(projectDirectory, "run-index.json");
+            string reportDirectory = Path.Combine(projectDirectory, "reports");
+            string reportPath = Path.Combine(reportDirectory, "longitudinal.html");
+            string outputPath = Path.Combine(projectDirectory, "project.json");
+
+            try
+            {
+                Directory.CreateDirectory(reportDirectory);
+                CreateFixtureSnapshot(internalSnapshotPath);
+                CreateFixtureSnapshot(externalSnapshotPath);
+                SaveRunIndexWithSerializer(indexPath, internalSnapshotPath, externalSnapshotPath);
+
+                byte[] indexBefore = File.ReadAllBytes(indexPath);
+                byte[] internalSnapshotBefore = File.ReadAllBytes(internalSnapshotPath);
+                byte[] externalSnapshotBefore = File.ReadAllBytes(externalSnapshotPath);
+
+                var result = InvokeMain(
+                    "create-project",
+                    "--project-id", "example-project",
+                    "--name", "Example Coordination Project",
+                    "--index", indexPath,
+                    "--report", reportPath,
+                    "-o", outputPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("all resolved snapshots to stay inside the project catalog directory tree", result.StdErr, StringComparison.Ordinal);
+                Assert.False(File.Exists(outputPath));
+                Assert.Equal(indexBefore, File.ReadAllBytes(indexPath));
+                Assert.Equal(internalSnapshotBefore, File.ReadAllBytes(internalSnapshotPath));
+                Assert.Equal(externalSnapshotBefore, File.ReadAllBytes(externalSnapshotPath));
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CreateProjectMode_ReportDestinationExistingDirectory_IsRejectedWithoutCreatingOutput()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string projectDirectory = Path.Combine(tempDirectory, "project");
+            string firstSnapshotPath = Path.Combine(projectDirectory, "snapshots", "first.json");
+            string secondSnapshotPath = Path.Combine(projectDirectory, "snapshots", "second.json");
+            string indexPath = Path.Combine(projectDirectory, "run-index.json");
+            string reportDirectory = Path.Combine(projectDirectory, "reports");
+            string outputPath = Path.Combine(projectDirectory, "project.json");
+
+            try
+            {
+                Directory.CreateDirectory(reportDirectory);
+                CreateFixtureSnapshot(firstSnapshotPath);
+                CreateFixtureSnapshot(secondSnapshotPath);
+                SaveRunIndexWithSerializer(indexPath, firstSnapshotPath, secondSnapshotPath);
+
+                var result = InvokeMain(
+                    "create-project",
+                    "--project-id", "example-project",
+                    "--name", "Example Coordination Project",
+                    "--index", indexPath,
+                    "--report", reportDirectory,
+                    "-o", outputPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("cannot be an existing directory", result.StdErr, StringComparison.Ordinal);
+                Assert.False(File.Exists(outputPath));
+                Assert.True(Directory.Exists(reportDirectory));
             }
             finally
             {
@@ -525,6 +766,210 @@ namespace OrzioClashReport.Tests
             }
         }
 
+        [Fact]
+        public void Main_RenderProjectMode_ReportDestinationEqualToProjectCatalog_IsRejectedWithoutMutatingWorkspace()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string projectDirectory = Path.Combine(tempDirectory, "project");
+            string firstSnapshotPath = Path.Combine(projectDirectory, "snapshots", "first.json");
+            string secondSnapshotPath = Path.Combine(projectDirectory, "snapshots", "second.json");
+            string indexPath = Path.Combine(projectDirectory, "run-index.json");
+            string projectPath = Path.Combine(projectDirectory, "project.json");
+
+            try
+            {
+                CreateFixtureSnapshot(firstSnapshotPath);
+                CreateFixtureSnapshot(secondSnapshotPath);
+                SaveRunIndexWithSerializer(indexPath, firstSnapshotPath, secondSnapshotPath);
+                SaveProjectCatalog(projectPath, "run-index.json", "project.json");
+
+                byte[] projectBefore = File.ReadAllBytes(projectPath);
+                byte[] indexBefore = File.ReadAllBytes(indexPath);
+                byte[] firstSnapshotBefore = File.ReadAllBytes(firstSnapshotPath);
+                byte[] secondSnapshotBefore = File.ReadAllBytes(secondSnapshotPath);
+
+                var result = InvokeMain("render-project", "--project", projectPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("same file as the project catalog", result.StdErr, StringComparison.Ordinal);
+                Assert.Equal(projectBefore, File.ReadAllBytes(projectPath));
+                Assert.Equal(indexBefore, File.ReadAllBytes(indexPath));
+                Assert.Equal(firstSnapshotBefore, File.ReadAllBytes(firstSnapshotPath));
+                Assert.Equal(secondSnapshotBefore, File.ReadAllBytes(secondSnapshotPath));
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_RenderProjectMode_ReportDestinationEqualToSnapshot_IsRejectedWithoutMutatingWorkspace()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string projectDirectory = Path.Combine(tempDirectory, "project");
+            string firstSnapshotPath = Path.Combine(projectDirectory, "snapshots", "first.json");
+            string secondSnapshotPath = Path.Combine(projectDirectory, "snapshots", "second.json");
+            string indexPath = Path.Combine(projectDirectory, "run-index.json");
+            string projectPath = Path.Combine(projectDirectory, "project.json");
+
+            try
+            {
+                CreateFixtureSnapshot(firstSnapshotPath);
+                CreateFixtureSnapshot(secondSnapshotPath);
+                SaveRunIndexWithSerializer(indexPath, firstSnapshotPath, secondSnapshotPath);
+                SaveProjectCatalog(projectPath, "run-index.json", "snapshots/first.json");
+
+                byte[] projectBefore = File.ReadAllBytes(projectPath);
+                byte[] indexBefore = File.ReadAllBytes(indexPath);
+                byte[] firstSnapshotBefore = File.ReadAllBytes(firstSnapshotPath);
+                byte[] secondSnapshotBefore = File.ReadAllBytes(secondSnapshotPath);
+
+                var result = InvokeMain("render-project", "--project", projectPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("same file as snapshot 1", result.StdErr, StringComparison.Ordinal);
+                Assert.Equal(projectBefore, File.ReadAllBytes(projectPath));
+                Assert.Equal(indexBefore, File.ReadAllBytes(indexPath));
+                Assert.Equal(firstSnapshotBefore, File.ReadAllBytes(firstSnapshotPath));
+                Assert.Equal(secondSnapshotBefore, File.ReadAllBytes(secondSnapshotPath));
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_RenderProjectMode_ReportDestinationCaseAliasOfRunIndex_IsRejectedOnWindows()
+        {
+            if (!OperatingSystem.IsWindows())
+            {
+                return;
+            }
+
+            string tempDirectory = CreateTempDirectory();
+            string projectDirectory = Path.Combine(tempDirectory, "project");
+            string firstSnapshotPath = Path.Combine(projectDirectory, "snapshots", "first.json");
+            string secondSnapshotPath = Path.Combine(projectDirectory, "snapshots", "second.json");
+            string indexPath = Path.Combine(projectDirectory, "run-index.json");
+            string projectPath = Path.Combine(projectDirectory, "project.json");
+
+            try
+            {
+                CreateFixtureSnapshot(firstSnapshotPath);
+                CreateFixtureSnapshot(secondSnapshotPath);
+                SaveRunIndexWithSerializer(indexPath, firstSnapshotPath, secondSnapshotPath);
+                SaveProjectCatalog(projectPath, "run-index.json", "RUN-INDEX.JSON");
+
+                byte[] projectBefore = File.ReadAllBytes(projectPath);
+                byte[] indexBefore = File.ReadAllBytes(indexPath);
+                byte[] firstSnapshotBefore = File.ReadAllBytes(firstSnapshotPath);
+                byte[] secondSnapshotBefore = File.ReadAllBytes(secondSnapshotPath);
+
+                var result = InvokeMain("render-project", "--project", projectPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("same file as the run index", result.StdErr, StringComparison.Ordinal);
+                Assert.Equal(projectBefore, File.ReadAllBytes(projectPath));
+                Assert.Equal(indexBefore, File.ReadAllBytes(indexPath));
+                Assert.Equal(firstSnapshotBefore, File.ReadAllBytes(firstSnapshotPath));
+                Assert.Equal(secondSnapshotBefore, File.ReadAllBytes(secondSnapshotPath));
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_RenderProjectMode_RunIndexWithExternalSnapshot_IsRejectedWithoutWritingHtml()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string projectDirectory = Path.Combine(tempDirectory, "project");
+            string externalDirectory = Path.Combine(tempDirectory, "external");
+            string internalSnapshotPath = Path.Combine(projectDirectory, "snapshots", "first.json");
+            string externalSnapshotPath = Path.Combine(externalDirectory, "snapshots", "second.json");
+            string indexPath = Path.Combine(projectDirectory, "run-index.json");
+            string reportDirectory = Path.Combine(projectDirectory, "reports");
+            string reportPath = Path.Combine(reportDirectory, "longitudinal.html");
+            string projectPath = Path.Combine(projectDirectory, "project.json");
+
+            try
+            {
+                Directory.CreateDirectory(reportDirectory);
+                CreateFixtureSnapshot(internalSnapshotPath);
+                CreateFixtureSnapshot(externalSnapshotPath);
+                SaveRunIndexWithSerializer(indexPath, internalSnapshotPath, externalSnapshotPath);
+                SaveProjectCatalog(projectPath, "run-index.json", "reports/longitudinal.html");
+                File.WriteAllText(reportPath, "SENTINEL-REPORT", new UTF8Encoding(false));
+
+                byte[] projectBefore = File.ReadAllBytes(projectPath);
+                byte[] indexBefore = File.ReadAllBytes(indexPath);
+                byte[] internalSnapshotBefore = File.ReadAllBytes(internalSnapshotPath);
+                byte[] externalSnapshotBefore = File.ReadAllBytes(externalSnapshotPath);
+
+                var result = InvokeMain("render-project", "--project", projectPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("all resolved snapshots to stay inside the project catalog directory tree", result.StdErr, StringComparison.Ordinal);
+                Assert.Equal(projectBefore, File.ReadAllBytes(projectPath));
+                Assert.Equal(indexBefore, File.ReadAllBytes(indexPath));
+                Assert.Equal(internalSnapshotBefore, File.ReadAllBytes(internalSnapshotPath));
+                Assert.Equal(externalSnapshotBefore, File.ReadAllBytes(externalSnapshotPath));
+                Assert.Equal("SENTINEL-REPORT", File.ReadAllText(reportPath), StringComparer.Ordinal);
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_RenderProjectMode_ReportDestinationExistingDirectory_IsRejectedWithoutWritingHtml()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string projectDirectory = Path.Combine(tempDirectory, "project");
+            string firstSnapshotPath = Path.Combine(projectDirectory, "snapshots", "first.json");
+            string secondSnapshotPath = Path.Combine(projectDirectory, "snapshots", "second.json");
+            string indexPath = Path.Combine(projectDirectory, "run-index.json");
+            string reportDirectory = Path.Combine(projectDirectory, "reports");
+            string projectPath = Path.Combine(projectDirectory, "project.json");
+
+            try
+            {
+                Directory.CreateDirectory(reportDirectory);
+                CreateFixtureSnapshot(firstSnapshotPath);
+                CreateFixtureSnapshot(secondSnapshotPath);
+                SaveRunIndexWithSerializer(indexPath, firstSnapshotPath, secondSnapshotPath);
+                SaveProjectCatalog(projectPath, "run-index.json", "reports");
+
+                byte[] projectBefore = File.ReadAllBytes(projectPath);
+                byte[] indexBefore = File.ReadAllBytes(indexPath);
+                byte[] firstSnapshotBefore = File.ReadAllBytes(firstSnapshotPath);
+                byte[] secondSnapshotBefore = File.ReadAllBytes(secondSnapshotPath);
+
+                var result = InvokeMain("render-project", "--project", projectPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("cannot be an existing directory", result.StdErr, StringComparison.Ordinal);
+                Assert.Equal(projectBefore, File.ReadAllBytes(projectPath));
+                Assert.Equal(indexBefore, File.ReadAllBytes(indexPath));
+                Assert.Equal(firstSnapshotBefore, File.ReadAllBytes(firstSnapshotPath));
+                Assert.Equal(secondSnapshotBefore, File.ReadAllBytes(secondSnapshotPath));
+                Assert.True(Directory.Exists(reportDirectory));
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
         private static MethodInfo ResolveMainMethod()
         {
             var programType = typeof(ConsoleAppLog).Assembly.GetType("OrzioClashReport.Cli.Program", throwOnError: true)!;
@@ -604,6 +1049,23 @@ namespace OrzioClashReport.Tests
             }
 
             new JsonRunIndexSerializer().Save(new RunIndexDocument(references), outputPath);
+        }
+
+        private static void SaveProjectCatalog(string outputPath, string runIndexReference, string reportReference)
+        {
+            string? parentDirectory = Path.GetDirectoryName(outputPath);
+            if (!string.IsNullOrEmpty(parentDirectory))
+            {
+                Directory.CreateDirectory(parentDirectory);
+            }
+
+            new JsonProjectCatalogSerializer().Save(
+                new ProjectCatalogDocument(
+                    "example-project",
+                    "Example Coordination Project",
+                    runIndexReference,
+                    reportReference),
+                outputPath);
         }
 
         private static string CreateTempDirectory()

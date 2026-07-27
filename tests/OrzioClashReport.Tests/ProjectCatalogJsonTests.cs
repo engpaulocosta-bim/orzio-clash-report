@@ -174,6 +174,28 @@ namespace OrzioClashReport.Tests
                 () => new ProjectCatalogDocument("example-project", "Display ", "run-index.json", "reports/longitudinal.html"));
         }
 
+        [Theory]
+        [InlineData("\" run-index.json\"")]
+        [InlineData("\"run-index.json \"")]
+        public void Parse_RunIndexPathWithLeadingOrTrailingWhitespace_IsRejected(string runIndexPathJson)
+        {
+            var ex = Assert.Throws<ProjectCatalogFormatException>(
+                () => Sut().Parse(BuildJson("1", "\"example-project\"", "\"Example Coordination Project\"", runIndexPathJson, "\"reports/longitudinal.html\"")));
+
+            Assert.Contains("leading or trailing whitespace", ex.Message, StringComparison.Ordinal);
+        }
+
+        [Theory]
+        [InlineData("\" reports/longitudinal.html\"")]
+        [InlineData("\"reports/longitudinal.html \"")]
+        public void Parse_ReportPathWithLeadingOrTrailingWhitespace_IsRejected(string reportPathJson)
+        {
+            var ex = Assert.Throws<ProjectCatalogFormatException>(
+                () => Sut().Parse(BuildJson("1", "\"example-project\"", "\"Example Coordination Project\"", "\"run-index.json\"", reportPathJson)));
+
+            Assert.Contains("leading or trailing whitespace", ex.Message, StringComparison.Ordinal);
+        }
+
         [Fact]
         public void Parse_MissingSchemaVersion_IsRejected()
         {

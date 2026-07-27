@@ -67,6 +67,10 @@ Operational notes:
 
 - `create-project` validates the run index and loads every referenced snapshot before it
   writes `project.json`.
+- A project catalog workflow requires its run index, all resolved snapshots, and report
+  destination to stay inside the project catalog directory tree.
+- The report destination must never resolve to the project catalog, the run index, or any
+  snapshot.
 - The report file does not need to exist yet.
 - The report parent directory must already exist.
 - The catalog file is create-new only and is never overwritten in place.
@@ -84,6 +88,11 @@ dotnet run --project src/OrzioClashReport.Cli -- \
 `render-project` resolves the run index and report path relative to `project.json`, reloads
 all snapshots, reruns the same derived longitudinal pipeline used by `compare-index`, and
 rewrites the report destination.
+
+The same workspace rule applies during rendering: the run index, every resolved snapshot,
+and the report destination must stay inside the project catalog directory tree, and the
+report destination must never resolve to the project catalog, the run index, or any
+snapshot.
 
 ## Relative-Path Portability
 

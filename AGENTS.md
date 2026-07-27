@@ -447,8 +447,11 @@ The command is
 
 The command validates the referenced run index and loads every referenced snapshot before
 creating the project catalog. It does not generate HTML, does not mutate snapshots or the
-run index, and does not infer chronology or defaults. The report file does not need to
-exist yet, but its parent directory must already exist.
+run index, and does not infer chronology or defaults. A project catalog workflow requires
+its run index, all resolved snapshots, and report destination to stay inside the project
+catalog directory tree. The report destination must never resolve to the project catalog,
+the run index, or any snapshot. The report file does not need to exist yet, but its parent
+directory must already exist.
 
 ## Render project catalog CLI
 
@@ -462,7 +465,10 @@ The command is `orzioclash render-project --project <project.json>`.
 project catalog, reloads immutable snapshot evidence, recalculates all derived longitudinal
 state, and rewrites the HTML report destination. It does not overwrite the project catalog,
 does not overwrite the run index, does not mutate snapshots, and does not persist derived
-matching, lifecycle, continuity, or presentation state.
+matching, lifecycle, continuity, or presentation state. The same workspace rule applies
+during rendering: the run index, all resolved snapshots, and the report destination must
+stay inside the project catalog directory tree, and the report destination must never
+resolve to the project catalog, the run index, or any snapshot.
 
 ## Adjacent run sequence comparer (Core)
 

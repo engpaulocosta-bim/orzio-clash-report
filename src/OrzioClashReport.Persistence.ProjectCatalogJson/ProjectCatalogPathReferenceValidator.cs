@@ -43,6 +43,12 @@ namespace OrzioClashReport.Persistence.ProjectCatalogJson
                 return false;
             }
 
+            if (reference.Length != reference.Trim().Length)
+            {
+                message = "Project catalog path references must not have leading or trailing whitespace.";
+                return false;
+            }
+
             if (reference.StartsWith("//", StringComparison.Ordinal) || reference.StartsWith("\\\\", StringComparison.Ordinal))
             {
                 message = "Project catalog path references must not be UNC paths.";

@@ -9,6 +9,8 @@ namespace OrzioClashReport.Output.Html
     /// <summary>Renders a deterministic, self-contained longitudinal HTML report from an existing presentation result.</summary>
     public sealed class HtmlLongitudinalClashReportRenderer
     {
+        private static readonly string NormalizedCss = DeterministicHtmlLineEndings.NormalizeTemplateLiteral(Css);
+
         public string Render(ClashRunSequencePresentationResult result)
         {
             if (result == null)
@@ -20,7 +22,7 @@ namespace OrzioClashReport.Output.Html
             html.Append("<!doctype html>\n<html lang=\"en\">\n<head>\n");
             html.Append("<meta charset=\"utf-8\">\n");
             html.Append("<title>Orzio Clash Longitudinal Report</title>\n");
-            html.Append("<style>").Append(Css).Append("</style>\n");
+            html.Append("<style>").Append(NormalizedCss).Append("</style>\n");
             html.Append("</head>\n<body>\n");
 
             AppendHeader(html, result);

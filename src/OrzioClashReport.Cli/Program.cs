@@ -306,29 +306,24 @@ namespace OrzioClashReport.Cli
                     throw new InvalidOperationException($"Run index file not found: {options.IndexPath}");
                 }
 
-                EnsureParentDirectoryExists(options.ReportPath, "Project report parent directory not found");
-
-                var indexSerializer = new JsonRunIndexSerializer();
-                RunIndexDocument index = indexSerializer.Load(options.IndexPath);
-
-                if (index.SnapshotPaths.Count < 2)
-                {
-                    throw new InvalidOperationException(
-                        "Run index must contain at least two snapshot references to create a longitudinal project catalog.");
-                }
-
                 var runIndexPathResolver = new RunIndexSnapshotPathResolver();
-                var snapshotSerializer = new JsonCoordinationRunSnapshotSerializer();
-
-                for (int i = 0; i < index.SnapshotPaths.Count; i++)
-                {
-                    string resolvedSnapshotPath = runIndexPathResolver.ResolveReference(options.IndexPath, index.SnapshotPaths[i]);
-                    snapshotSerializer.Load(resolvedSnapshotPath);
-                }
-
                 var projectCatalogPathResolver = new ProjectCatalogPathResolver();
-                string runIndexReference = projectCatalogPathResolver.CreateReference(options.OutputPath, options.IndexPath);
-                string reportReference = projectCatalogPathResolver.CreateReference(options.OutputPath, options.ReportPath);
+                string resolvedProjectCatalogPath = Path.GetFullPath(options.OutputPath);
+                string resolvedRunIndexPath = Path.GetFullPath(options.IndexPath);
+                string resolvedReportPath = Path.GetFullPath(options.ReportPath);
+
+                EnsureParentDirectoryExists(resolvedReportPath, "Project report parent directory not found");
+
+                LoadedRunIndexContext loadedRunIndex = LoadRunIndexContext(resolvedRunIndexPath);
+                ValidateProjectCatalogWorkspace(
+                    resolvedProjectCatalogPath,
+                    loadedRunIndex.ResolvedRunIndexPath,
+                    loadedRunIndex.ResolvedSnapshotPaths,
+                    resolvedReportPath,
+                    projectCatalogPathResolver);
+
+                string runIndexReference = projectCatalogPathResolver.CreateReference(resolvedProjectCatalogPath, loadedRunIndex.ResolvedRunIndexPath);
+                string reportReference = projectCatalogPathResolver.CreateReference(resolvedProjectCatalogPath, resolvedReportPath);
 
                 var document = new ProjectCatalogDocument(
                     options.ProjectId,
@@ -337,11 +332,11 @@ namespace OrzioClashReport.Cli
                     reportReference);
 
                 var serializer = new JsonProjectCatalogSerializer();
-                serializer.Save(document, options.OutputPath);
+                serializer.Save(document, resolvedProjectCatalogPath);
 
                 Console.WriteLine($"Project: {document.ProjectId}");
-                Console.WriteLine($"Indexed snapshots: {index.SnapshotPaths.Count}");
-                Console.WriteLine($"Project catalog written to {options.OutputPath}");
+                Console.WriteLine($"Indexed snapshots: {loadedRunIndex.Runs.Count}");
+                Console.WriteLine($"Project catalog written to {resolvedProjectCatalogPath}");
                 return 0;
             }
             catch (Exception ex)
@@ -366,12 +361,21 @@ namespace OrzioClashReport.Cli
                 ProjectCatalogDocument project = serializer.Load(options.ProjectPath);
 
                 var projectCatalogPathResolver = new ProjectCatalogPathResolver();
-                string resolvedRunIndexPath = projectCatalogPathResolver.ResolveReference(options.ProjectPath, project.RunIndexPath);
-                string resolvedReportPath = projectCatalogPathResolver.ResolveReference(options.ProjectPath, project.LongitudinalReportPath);
+                string resolvedProjectCatalogPath = Path.GetFullPath(options.ProjectPath);
+                string resolvedRunIndexPath = projectCatalogPathResolver.ResolveReference(resolvedProjectCatalogPath, project.RunIndexPath);
+                string resolvedReportPath = projectCatalogPathResolver.ResolveReference(resolvedProjectCatalogPath, project.LongitudinalReportPath);
 
                 EnsureParentDirectoryExists(resolvedReportPath, "Project report parent directory not found");
 
-                ClashRunSequencePresentationResult presentationResult = LoadPresentationResultFromRunIndex(resolvedRunIndexPath);
+                LoadedRunIndexContext loadedRunIndex = LoadRunIndexContext(resolvedRunIndexPath);
+                ValidateProjectCatalogWorkspace(
+                    resolvedProjectCatalogPath,
+                    loadedRunIndex.ResolvedRunIndexPath,
+                    loadedRunIndex.ResolvedSnapshotPaths,
+                    resolvedReportPath,
+                    projectCatalogPathResolver);
+
+                ClashRunSequencePresentationResult presentationResult = CreateLongitudinalPresentationResult(loadedRunIndex.Runs);
                 WriteLongitudinalOutput(presentationResult, resolvedReportPath);
                 return 0;
             }
@@ -466,14 +470,15 @@ namespace OrzioClashReport.Cli
 
         private static ClashRunSequencePresentationResult LoadPresentationResultFromRunIndex(string indexPath)
         {
-            IReadOnlyList<CoordinationRun> runs = LoadRunsFromRunIndex(indexPath);
-            return CreateLongitudinalPresentationResult(runs);
+            LoadedRunIndexContext loadedRunIndex = LoadRunIndexContext(indexPath);
+            return CreateLongitudinalPresentationResult(loadedRunIndex.Runs);
         }
 
-        private static IReadOnlyList<CoordinationRun> LoadRunsFromRunIndex(string indexPath)
+        private static LoadedRunIndexContext LoadRunIndexContext(string indexPath)
         {
+            string resolvedRunIndexPath = Path.GetFullPath(indexPath);
             var indexSerializer = new JsonRunIndexSerializer();
-            RunIndexDocument index = indexSerializer.Load(indexPath);
+            RunIndexDocument index = indexSerializer.Load(resolvedRunIndexPath);
 
             if (index.SnapshotPaths.Count < 2)
             {
@@ -484,14 +489,16 @@ namespace OrzioClashReport.Cli
             var pathResolver = new RunIndexSnapshotPathResolver();
             var snapshotSerializer = new JsonCoordinationRunSnapshotSerializer();
             var runs = new List<CoordinationRun>(index.SnapshotPaths.Count);
+            var resolvedSnapshotPaths = new List<string>(index.SnapshotPaths.Count);
 
             for (int i = 0; i < index.SnapshotPaths.Count; i++)
             {
-                string resolvedPath = pathResolver.ResolveReference(indexPath, index.SnapshotPaths[i]);
+                string resolvedPath = pathResolver.ResolveReference(resolvedRunIndexPath, index.SnapshotPaths[i]);
+                resolvedSnapshotPaths.Add(resolvedPath);
                 runs.Add(snapshotSerializer.Load(resolvedPath));
             }
 
-            return runs;
+            return new LoadedRunIndexContext(resolvedRunIndexPath, runs, resolvedSnapshotPaths);
         }
 
         private static ClashRunSequencePresentationResult CreateLongitudinalPresentationResult(IReadOnlyList<CoordinationRun> runs)
@@ -545,6 +552,86 @@ namespace OrzioClashReport.Cli
             {
                 throw new InvalidOperationException($"{errorPrefix}: {parentDirectory ?? fullPath}");
             }
+        }
+
+        private static void ValidateProjectCatalogWorkspace(
+            string projectCatalogFilePath,
+            string resolvedRunIndexPath,
+            IReadOnlyList<string> resolvedSnapshotPaths,
+            string reportDestinationPath,
+            ProjectCatalogPathResolver projectCatalogPathResolver)
+        {
+            string resolvedProjectCatalogPath = Path.GetFullPath(projectCatalogFilePath);
+            string projectCatalogDirectory = Path.GetDirectoryName(resolvedProjectCatalogPath)
+                ?? throw new InvalidOperationException(
+                    $"Project catalog file path '{projectCatalogFilePath}' does not have a parent directory.");
+            string resolvedReportPath = Path.GetFullPath(reportDestinationPath);
+
+            if (Directory.Exists(resolvedReportPath))
+            {
+                throw new InvalidOperationException(
+                    $"Project report destination cannot be an existing directory: {resolvedReportPath}");
+            }
+
+            if (!IsPathWithinDirectory(projectCatalogDirectory, resolvedRunIndexPath))
+            {
+                throw new InvalidOperationException(
+                    $"Project catalog workflow requires the run index to stay inside the project catalog directory tree: {resolvedRunIndexPath}");
+            }
+
+            if (!IsPathWithinDirectory(projectCatalogDirectory, resolvedReportPath))
+            {
+                throw new InvalidOperationException(
+                    $"Project catalog workflow requires the report destination to stay inside the project catalog directory tree: {resolvedReportPath}");
+            }
+
+            for (int i = 0; i < resolvedSnapshotPaths.Count; i++)
+            {
+                string resolvedSnapshotPath = Path.GetFullPath(resolvedSnapshotPaths[i]);
+                if (!IsPathWithinDirectory(projectCatalogDirectory, resolvedSnapshotPath))
+                {
+                    throw new InvalidOperationException(
+                        $"Project catalog workflow requires all resolved snapshots to stay inside the project catalog directory tree: {resolvedSnapshotPath}");
+                }
+
+                projectCatalogPathResolver.CreateReference(resolvedProjectCatalogPath, resolvedSnapshotPath);
+
+                if (PathsEqual(resolvedReportPath, resolvedSnapshotPath))
+                {
+                    throw new InvalidOperationException(
+                        $"Project report destination must not be the same file as snapshot {i + 1}: {resolvedReportPath}");
+                }
+            }
+
+            if (PathsEqual(resolvedReportPath, resolvedProjectCatalogPath))
+            {
+                throw new InvalidOperationException(
+                    $"Project report destination must not be the same file as the project catalog: {resolvedReportPath}");
+            }
+
+            if (PathsEqual(resolvedReportPath, resolvedRunIndexPath))
+            {
+                throw new InvalidOperationException(
+                    $"Project report destination must not be the same file as the run index: {resolvedReportPath}");
+            }
+        }
+
+        private static bool PathsEqual(string leftPath, string rightPath)
+        {
+            string resolvedLeft = Path.GetFullPath(leftPath);
+            string resolvedRight = Path.GetFullPath(rightPath);
+            StringComparison comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            return string.Equals(resolvedLeft, resolvedRight, comparison);
+        }
+
+        private static bool IsPathWithinDirectory(string directoryPath, string candidatePath)
+        {
+            string resolvedDirectoryPath = Path.GetFullPath(directoryPath)
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                + Path.DirectorySeparatorChar;
+            string resolvedCandidatePath = Path.GetFullPath(candidatePath);
+            StringComparison comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            return resolvedCandidatePath.StartsWith(resolvedDirectoryPath, comparison);
         }
 
         private static ClashLifecycleResult CreateDerivedComparison(CoordinationRun previousRun, CoordinationRun currentRun)
@@ -1407,6 +1494,23 @@ namespace OrzioClashReport.Cli
 
             public IReadOnlyList<string> SnapshotPaths { get; }
             public string OutputPath { get; }
+        }
+
+        private sealed class LoadedRunIndexContext
+        {
+            public LoadedRunIndexContext(
+                string resolvedRunIndexPath,
+                IReadOnlyList<CoordinationRun> runs,
+                IReadOnlyList<string> resolvedSnapshotPaths)
+            {
+                ResolvedRunIndexPath = resolvedRunIndexPath;
+                Runs = runs;
+                ResolvedSnapshotPaths = resolvedSnapshotPaths;
+            }
+
+            public string ResolvedRunIndexPath { get; }
+            public IReadOnlyList<CoordinationRun> Runs { get; }
+            public IReadOnlyList<string> ResolvedSnapshotPaths { get; }
         }
 
         private sealed class RenderProjectCommandOptions

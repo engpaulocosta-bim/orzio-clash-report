@@ -11,6 +11,10 @@ human-validated on one private real export. Longitudinal matching, lifecycle, co
 links, continuity paths, and longitudinal HTML have not been validated on three real
 historical exports and remain experimental.
 
+The source tree also contains an unreleased project-catalog workflow. It is available when
+you build the current source, but it is not part of the published `v0.1.0-preview.1`
+binary or its release documentation.
+
 ## Architecture
 
 The project follows Ports and Adapters, also known as hexagonal architecture. The core
@@ -201,6 +205,47 @@ The `compare-index` longitudinal prefix has exactly these 12 lines, in this orde
 After that prefix, existing pairwise blocks remain unchanged and are emitted in transition
 order as `Comparison {i + 1}/{AdjacentComparisonCount}` plus the 11-line pairwise summary
 for that adjacent transition.
+
+## Unreleased Source Workflow: Project Catalogs
+
+This workflow is available from the current source tree only. It is not part of the
+published `v0.1.0-preview.1` preview binary.
+
+Create an operational project catalog from an existing run index:
+
+```bash
+dotnet run --project src/OrzioClashReport.Cli -- \
+  create-project \
+  --project-id example-project \
+  --name "Example Coordination Project" \
+  --index run-index.json \
+  --report reports/longitudinal.html \
+  -o project.json
+```
+
+Render the longitudinal HTML again from the immutable snapshots referenced by that project
+catalog:
+
+```bash
+dotnet run --project src/OrzioClashReport.Cli -- \
+  render-project \
+  --project project.json
+```
+
+Contract rules:
+
+1. The project catalog is operational state only. It stores project metadata, one run-index
+   reference, and one longitudinal-report destination.
+2. Run snapshots remain immutable evidence.
+3. Run index remains the only order authority.
+4. The report path is only a regenerable derived-artifact destination.
+5. Matching, lifecycle, continuity links, continuity paths, and presentation are always
+   recalculated and are never persisted into the project catalog.
+6. There is still no persistent clash identity, Clash Ledger, `Reopened`, database, or
+   automatic chronology.
+
+For a recommended layout and operational notes, see
+[docs/operations/project-catalog.md](docs/operations/project-catalog.md).
 
 ### Adjacent Run Sequence Comparer
 

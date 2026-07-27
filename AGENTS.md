@@ -418,6 +418,58 @@ After that prefix, the existing pairwise blocks remain unchanged and are emitted
 transition order as `Comparison {i + 1}/{AdjacentComparisonCount}` plus the eleven-line
 pairwise summary for that adjacent transition.
 
+## Operational project catalog JSON
+
+`OrzioClashReport.Persistence.ProjectCatalogJson` owns a strict deterministic schema-v1 JSON
+format for operational project state. It contains only `schemaVersion`, `projectId`,
+`displayName`, `runIndexPath`, and `longitudinalReportPath`. It never duplicates snapshots,
+runs, models, clashes, matching, lifecycle, continuity links, continuity paths, summary
+counts, `Reopened`, or persistent clash identity.
+
+- Run snapshots remain immutable evidence only.
+- Run index remains the sole authority for explicit sequence order.
+- The project catalog stores only operational references relative to the catalog file
+  directory, using canonical `/` separators and staying within that directory tree.
+- The report path is only a derived-artifact destination; the HTML remains regenerable and
+  is not persisted evidence.
+- Matching, lifecycle, continuity links, continuity paths, and presentation remain fully
+  recalculable and are never persisted into the project catalog.
+- There is still no persistent clash identity, Clash Ledger, `Reopened`, database, or
+  automatic chronology.
+
+## Create project catalog CLI
+
+The `create-project` subcommand is an explicit operational composition workflow:
+project metadata + existing run-index JSON -> run-index validation -> snapshot validation ->
+canonical project-catalog references -> `JsonProjectCatalogSerializer.Save`.
+The command is
+`orzioclash create-project --project-id <project-id> --name <display-name> --index <run-index.json> --report <longitudinal.html> (-o <project.json> | --output <project.json>)`.
+
+The command validates the referenced run index and loads every referenced snapshot before
+creating the project catalog. It does not generate HTML, does not mutate snapshots or the
+run index, and does not infer chronology or defaults. A project catalog workflow requires
+its run index, all resolved snapshots, and report destination to stay inside the project
+catalog directory tree. The report destination must never resolve to the project catalog,
+the run index, or any snapshot. The report file does not need to exist yet, but its parent
+directory must already exist.
+
+## Render project catalog CLI
+
+The `render-project` subcommand is an explicit regeneration workflow:
+project-catalog JSON -> resolved run-index JSON -> resolved snapshots ->
+existing compare-index analysis/presentation pipeline ->
+`HtmlLongitudinalClashReportRenderer.Render` -> `File.WriteAllText`.
+The command is `orzioclash render-project --project <project.json>`.
+
+`render-project` resolves `runIndexPath` and `longitudinalReportPath` relative to the
+project catalog, reloads immutable snapshot evidence, recalculates all derived longitudinal
+state, and rewrites the HTML report destination. It does not overwrite the project catalog,
+does not overwrite the run index, does not mutate snapshots, and does not persist derived
+matching, lifecycle, continuity, or presentation state. The same workspace rule applies
+during rendering: the run index, all resolved snapshots, and the report destination must
+stay inside the project catalog directory tree, and the report destination must never
+resolve to the project catalog, the run index, or any snapshot.
+
 ## Adjacent run sequence comparer (Core)
 
 `IClashRunSequenceComparer` (`src/OrzioClashReport.Core/Abstractions/IClashRunSequenceComparer.cs`)

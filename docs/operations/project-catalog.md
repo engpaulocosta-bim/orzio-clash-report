@@ -1,0 +1,128 @@
+# Project Catalog Workflow
+
+This document describes the unreleased source-only project catalog workflow. It is not part
+of the published `v0.1.0-preview.1` preview binary.
+
+## Purpose
+
+The project catalog is operational state, not evidence. It stores:
+
+- a human `projectId`
+- a human `displayName`
+- one explicit run-index reference
+- one longitudinal HTML destination
+
+It does not store snapshots, matching, lifecycle, continuity, persistent clash identity,
+Clash Ledger data, `Reopened`, or chronology.
+
+## Recommended Layout
+
+Keep the project catalog, run index, snapshots, and reports inside one movable folder tree:
+
+```text
+coordination-project/
+  project.json
+  run-index.json
+  snapshots/
+    run-001.json
+    run-002.json
+    run-003.json
+  reports/
+    longitudinal.html
+```
+
+The project catalog stores canonical relative references with `/` separators, so the whole
+folder can be moved to another root without rewriting the JSON.
+
+## Create The Run Index
+
+Create immutable run snapshots first, then build the explicit ordered run index:
+
+```bash
+dotnet run --project src/OrzioClashReport.Cli -- \
+  index-snapshots \
+  --snapshot snapshots/run-001.json \
+  --snapshot snapshots/run-002.json \
+  --snapshot snapshots/run-003.json \
+  -o run-index.json
+```
+
+The order of `--snapshot` arguments is the only sequence authority.
+
+## Create The Project Catalog
+
+Create the project catalog from the validated run index:
+
+```bash
+dotnet run --project src/OrzioClashReport.Cli -- \
+  create-project \
+  --project-id example-project \
+  --name "Example Coordination Project" \
+  --index run-index.json \
+  --report reports/longitudinal.html \
+  -o project.json
+```
+
+Operational notes:
+
+- `create-project` validates the run index and loads every referenced snapshot before it
+  writes `project.json`.
+- A project catalog workflow requires its run index, all resolved snapshots, and report
+  destination to stay inside the project catalog directory tree.
+- The report destination must never resolve to the project catalog, the run index, or any
+  snapshot.
+- The report file does not need to exist yet.
+- The report parent directory must already exist.
+- The catalog file is create-new only and is never overwritten in place.
+
+## Render The Project
+
+Recalculate the full longitudinal result from immutable evidence and rewrite the HTML:
+
+```bash
+dotnet run --project src/OrzioClashReport.Cli -- \
+  render-project \
+  --project project.json
+```
+
+`render-project` resolves the run index and report path relative to `project.json`, reloads
+all snapshots, reruns the same derived longitudinal pipeline used by `compare-index`, and
+rewrites the report destination.
+
+The same workspace rule applies during rendering: the run index, every resolved snapshot,
+and the report destination must stay inside the project catalog directory tree, and the
+report destination must never resolve to the project catalog, the run index, or any
+snapshot.
+
+## Relative-Path Portability
+
+The project catalog path rules are intentionally strict:
+
+- references are relative
+- references use `/` only
+- references do not contain `.` or `..`
+- references stay inside the project catalog directory tree
+
+That keeps the project workspace portable as one directory unit.
+
+## Report Regeneration
+
+The longitudinal HTML is a derived artifact, not persisted truth. Deleting or overwriting
+the report does not lose evidence because the report can be regenerated from the immutable
+snapshots and explicit run index.
+
+## Privacy
+
+Do not commit private validation exports, private project names, local filesystem details,
+or personal information. The project catalog should use safe public aliases only.
+
+## Limitations
+
+- Source-only workflow for now; not part of published `v0.1.0-preview.1`
+- No persistent clash identity
+- No Clash Ledger
+- No `Reopened`
+- No database
+- No automatic chronology
+- No non-adjacent or all-vs-all comparison
+- No persisted matching, lifecycle, continuity links, continuity paths, or presentation

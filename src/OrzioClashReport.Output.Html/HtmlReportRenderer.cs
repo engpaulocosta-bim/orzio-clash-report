@@ -21,6 +21,8 @@ namespace OrzioClashReport.Output.Html
             "#f9a825"  // yellow
         };
 
+        private static readonly string NormalizedCss = DeterministicHtmlLineEndings.NormalizeTemplateLiteral(Css);
+
         public string Render(GroupedClashReport report)
         {
             var disciplineColors = BuildDisciplineColorMap(report.Groups);
@@ -29,7 +31,7 @@ namespace OrzioClashReport.Output.Html
             html.Append("<!doctype html>\n<html lang=\"en\">\n<head>\n");
             html.Append("<meta charset=\"utf-8\">\n");
             html.Append("<title>OrzioClashReport</title>\n");
-            html.Append("<style>").Append(Css).Append("</style>\n");
+            html.Append("<style>").Append(NormalizedCss).Append("</style>\n");
             html.Append("</head>\n<body>\n");
 
             AppendHeader(html, report);

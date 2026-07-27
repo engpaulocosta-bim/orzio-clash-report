@@ -53,6 +53,7 @@ namespace OrzioClashReport.Tests
             string second = renderer.Render(report);
 
             Assert.Equal(first, second, StringComparer.Ordinal);
+            Assert.DoesNotContain("\r", first, StringComparison.Ordinal);
         }
 
         [Fact]

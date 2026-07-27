@@ -10,6 +10,7 @@ using OrzioClashReport.Core.Presentation;
 using OrzioClashReport.Input.NavisworksXml;
 using OrzioClashReport.Input.RunManifestJson;
 using OrzioClashReport.Output.Html;
+using OrzioClashReport.Persistence.ProjectCatalogJson;
 using OrzioClashReport.Persistence.RunIndexJson;
 using OrzioClashReport.Persistence.RunSnapshotJson;
 using System.Reflection;
@@ -23,7 +24,9 @@ namespace OrzioClashReport.Cli
         private const string CompareUsage = "Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json> [-o <output.html> | --output <output.html>]";
         private const string CompareIndexUsage = "Usage: orzioclash compare-index --index <run-index.json> [-o <output.html> | --output <output.html>]";
         private const string CompareSnapshotsUsage = "Usage: orzioclash compare-snapshots --previous-snapshot <previous.json> --current-snapshot <current.json> [-o <output.html> | --output <output.html>]";
+        private const string CreateProjectUsage = "Usage: orzioclash create-project --project-id <project-id> --name <display-name> --index <run-index.json> --report <longitudinal.html> (-o <project.json> | --output <project.json>)";
         private const string IndexSnapshotsUsage = "Usage: orzioclash index-snapshots --snapshot <run-snapshot.json> [--snapshot <run-snapshot.json> ...] (-o <run-index.json> | --output <run-index.json>)";
+        private const string RenderProjectUsage = "Usage: orzioclash render-project --project <project.json>";
         private const string SnapshotUsage = "Usage: orzioclash snapshot --xml <input.xml> --manifest <run-manifest.json> (-o <run-snapshot.json> | --output <run-snapshot.json>)";
 
         private static int Main(string[] args)
@@ -48,6 +51,16 @@ namespace OrzioClashReport.Cli
             if (args.Length > 0 && string.Equals(args[0], "compare-index", StringComparison.OrdinalIgnoreCase))
             {
                 return RunCompareIndex(args);
+            }
+
+            if (args.Length > 0 && string.Equals(args[0], "create-project", StringComparison.OrdinalIgnoreCase))
+            {
+                return RunCreateProject(args);
+            }
+
+            if (args.Length > 0 && string.Equals(args[0], "render-project", StringComparison.OrdinalIgnoreCase))
+            {
+                return RunRenderProject(args);
             }
 
             if (args.Length > 0 && string.Equals(args[0], "compare-snapshots", StringComparison.OrdinalIgnoreCase))
@@ -86,6 +99,8 @@ namespace OrzioClashReport.Cli
             Console.WriteLine("  compare-snapshots    Compare two persisted snapshots.");
             Console.WriteLine("  index-snapshots      Create an explicitly ordered run index from snapshots.");
             Console.WriteLine("  compare-index        Compare adjacent snapshot pairs from an explicit run index.");
+            Console.WriteLine("  create-project       Create one operational project catalog from an existing run index.");
+            Console.WriteLine("  render-project       Re-render a project catalog's longitudinal report from immutable snapshots.");
             Console.WriteLine();
             Console.WriteLine("Run-index order is authoritative; runs are never reordered by timestamp, revision, or file name.");
             Console.WriteLine("Longitudinal behavior is experimental until validated on sequential real exports.");
@@ -264,66 +279,109 @@ namespace OrzioClashReport.Cli
 
             try
             {
-                var indexSerializer = new JsonRunIndexSerializer();
-                RunIndexDocument index = indexSerializer.Load(options.IndexPath);
-
-                if (index.SnapshotPaths.Count < 2)
-                {
-                    throw new InvalidOperationException(
-                        "Run index must contain at least two snapshot references to compare adjacent runs.");
-                }
-
-                var pathResolver = new RunIndexSnapshotPathResolver();
-                var snapshotSerializer = new JsonCoordinationRunSnapshotSerializer();
-                var runs = new List<CoordinationRun>(index.SnapshotPaths.Count);
-
-                for (int i = 0; i < index.SnapshotPaths.Count; i++)
-                {
-                    string resolvedPath = pathResolver.ResolveReference(options.IndexPath, index.SnapshotPaths[i]);
-                    runs.Add(snapshotSerializer.Load(resolvedPath));
-                }
-
-                IClashMatcher matcher = new ConservativeClashMatcher();
-                IClashRunComparer runComparer = new DeterministicClashRunComparer(matcher);
-                IClashLifecycleClassifier lifecycleClassifier = new ConservativeClashLifecycleClassifier();
-                IClashRunSequenceComparer sequenceComparer =
-                    new DeterministicAdjacentClashRunSequenceComparer(runComparer, lifecycleClassifier);
-                IClashRunSequenceContinuityProjector continuityProjector =
-                    new DeterministicSelectedMatchContinuityProjector();
-                IClashRunSequenceContinuityPathAssembler continuityPathAssembler =
-                    new DeterministicSelectedMatchContinuityPathAssembler();
-                IClashRunSequenceAnalyzer sequenceAnalyzer =
-                    new DeterministicClashRunSequenceAnalyzer(sequenceComparer, continuityProjector, continuityPathAssembler);
-
-                ClashRunSequenceAnalysisResult analysisResult = sequenceAnalyzer.Analyze(runs);
-                IClashRunSequencePresentationProjector presentationProjector =
-                    new DeterministicClashRunSequencePresentationProjector();
-                ClashRunSequencePresentationResult presentationResult = presentationProjector.Project(analysisResult);
-
-                if (options.OutputPath != null)
-                {
-                    string html = new HtmlLongitudinalClashReportRenderer().Render(presentationResult);
-                    File.WriteAllText(options.OutputPath, html);
-                }
-
-                WriteLongitudinalSummary(presentationResult);
-
-                foreach (var transition in presentationResult.Transitions)
-                {
-                    Console.WriteLine($"Comparison {transition.ComparisonIndex + 1}/{presentationResult.AdjacentComparisonCount}");
-                    WriteComparisonSummary(transition.Comparison);
-                }
-
-                if (options.OutputPath != null)
-                {
-                    Console.WriteLine($"Longitudinal report written to {options.OutputPath}");
-                }
-
+                ClashRunSequencePresentationResult presentationResult = LoadPresentationResultFromRunIndex(options.IndexPath);
+                WriteLongitudinalOutput(presentationResult, options.OutputPath);
                 return 0;
             }
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Failed to compare run index: {ex.Message}");
+                return 1;
+            }
+        }
+
+        private static int RunCreateProject(string[] args)
+        {
+            if (!TryParseCreateProjectArguments(args, out CreateProjectCommandOptions options, out string parseError))
+            {
+                Console.Error.WriteLine(parseError);
+                Console.Error.WriteLine(CreateProjectUsage);
+                return 1;
+            }
+
+            try
+            {
+                if (!File.Exists(options.IndexPath))
+                {
+                    throw new InvalidOperationException($"Run index file not found: {options.IndexPath}");
+                }
+
+                var runIndexPathResolver = new RunIndexSnapshotPathResolver();
+                var projectCatalogPathResolver = new ProjectCatalogPathResolver();
+                string resolvedProjectCatalogPath = Path.GetFullPath(options.OutputPath);
+                string resolvedRunIndexPath = Path.GetFullPath(options.IndexPath);
+                string resolvedReportPath = Path.GetFullPath(options.ReportPath);
+
+                EnsureParentDirectoryExists(resolvedReportPath, "Project report parent directory not found");
+
+                LoadedRunIndexContext loadedRunIndex = LoadRunIndexContext(resolvedRunIndexPath);
+                ValidateProjectCatalogWorkspace(
+                    resolvedProjectCatalogPath,
+                    loadedRunIndex.ResolvedRunIndexPath,
+                    loadedRunIndex.ResolvedSnapshotPaths,
+                    resolvedReportPath,
+                    projectCatalogPathResolver);
+
+                string runIndexReference = projectCatalogPathResolver.CreateReference(resolvedProjectCatalogPath, loadedRunIndex.ResolvedRunIndexPath);
+                string reportReference = projectCatalogPathResolver.CreateReference(resolvedProjectCatalogPath, resolvedReportPath);
+
+                var document = new ProjectCatalogDocument(
+                    options.ProjectId,
+                    options.DisplayName,
+                    runIndexReference,
+                    reportReference);
+
+                var serializer = new JsonProjectCatalogSerializer();
+                serializer.Save(document, resolvedProjectCatalogPath);
+
+                Console.WriteLine($"Project: {document.ProjectId}");
+                Console.WriteLine($"Indexed snapshots: {loadedRunIndex.Runs.Count}");
+                Console.WriteLine($"Project catalog written to {resolvedProjectCatalogPath}");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create project catalog: {ex.Message}");
+                return 1;
+            }
+        }
+
+        private static int RunRenderProject(string[] args)
+        {
+            if (!TryParseRenderProjectArguments(args, out RenderProjectCommandOptions options, out string parseError))
+            {
+                Console.Error.WriteLine(parseError);
+                Console.Error.WriteLine(RenderProjectUsage);
+                return 1;
+            }
+
+            try
+            {
+                var serializer = new JsonProjectCatalogSerializer();
+                ProjectCatalogDocument project = serializer.Load(options.ProjectPath);
+
+                var projectCatalogPathResolver = new ProjectCatalogPathResolver();
+                string resolvedProjectCatalogPath = Path.GetFullPath(options.ProjectPath);
+                string resolvedRunIndexPath = projectCatalogPathResolver.ResolveReference(resolvedProjectCatalogPath, project.RunIndexPath);
+                string resolvedReportPath = projectCatalogPathResolver.ResolveReference(resolvedProjectCatalogPath, project.LongitudinalReportPath);
+
+                EnsureParentDirectoryExists(resolvedReportPath, "Project report parent directory not found");
+
+                LoadedRunIndexContext loadedRunIndex = LoadRunIndexContext(resolvedRunIndexPath);
+                ValidateProjectCatalogWorkspace(
+                    resolvedProjectCatalogPath,
+                    loadedRunIndex.ResolvedRunIndexPath,
+                    loadedRunIndex.ResolvedSnapshotPaths,
+                    resolvedReportPath,
+                    projectCatalogPathResolver);
+
+                ClashRunSequencePresentationResult presentationResult = CreateLongitudinalPresentationResult(loadedRunIndex.Runs);
+                WriteLongitudinalOutput(presentationResult, resolvedReportPath);
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to render project: {ex.Message}");
                 return 1;
             }
         }
@@ -408,6 +466,172 @@ namespace OrzioClashReport.Cli
             Console.WriteLine($"New: {presentationResult.NewCount}");
             Console.WriteLine($"Resolved: {presentationResult.ResolvedCount}");
             Console.WriteLine($"Unverifiable: {presentationResult.UnverifiableCount}");
+        }
+
+        private static ClashRunSequencePresentationResult LoadPresentationResultFromRunIndex(string indexPath)
+        {
+            LoadedRunIndexContext loadedRunIndex = LoadRunIndexContext(indexPath);
+            return CreateLongitudinalPresentationResult(loadedRunIndex.Runs);
+        }
+
+        private static LoadedRunIndexContext LoadRunIndexContext(string indexPath)
+        {
+            string resolvedRunIndexPath = Path.GetFullPath(indexPath);
+            var indexSerializer = new JsonRunIndexSerializer();
+            RunIndexDocument index = indexSerializer.Load(resolvedRunIndexPath);
+
+            if (index.SnapshotPaths.Count < 2)
+            {
+                throw new InvalidOperationException(
+                    "Run index must contain at least two snapshot references to compare adjacent runs.");
+            }
+
+            var pathResolver = new RunIndexSnapshotPathResolver();
+            var snapshotSerializer = new JsonCoordinationRunSnapshotSerializer();
+            var runs = new List<CoordinationRun>(index.SnapshotPaths.Count);
+            var resolvedSnapshotPaths = new List<string>(index.SnapshotPaths.Count);
+
+            for (int i = 0; i < index.SnapshotPaths.Count; i++)
+            {
+                string resolvedPath = pathResolver.ResolveReference(resolvedRunIndexPath, index.SnapshotPaths[i]);
+                resolvedSnapshotPaths.Add(resolvedPath);
+                runs.Add(snapshotSerializer.Load(resolvedPath));
+            }
+
+            return new LoadedRunIndexContext(resolvedRunIndexPath, runs, resolvedSnapshotPaths);
+        }
+
+        private static ClashRunSequencePresentationResult CreateLongitudinalPresentationResult(IReadOnlyList<CoordinationRun> runs)
+        {
+            IClashMatcher matcher = new ConservativeClashMatcher();
+            IClashRunComparer runComparer = new DeterministicClashRunComparer(matcher);
+            IClashLifecycleClassifier lifecycleClassifier = new ConservativeClashLifecycleClassifier();
+            IClashRunSequenceComparer sequenceComparer =
+                new DeterministicAdjacentClashRunSequenceComparer(runComparer, lifecycleClassifier);
+            IClashRunSequenceContinuityProjector continuityProjector =
+                new DeterministicSelectedMatchContinuityProjector();
+            IClashRunSequenceContinuityPathAssembler continuityPathAssembler =
+                new DeterministicSelectedMatchContinuityPathAssembler();
+            IClashRunSequenceAnalyzer sequenceAnalyzer =
+                new DeterministicClashRunSequenceAnalyzer(sequenceComparer, continuityProjector, continuityPathAssembler);
+
+            ClashRunSequenceAnalysisResult analysisResult = sequenceAnalyzer.Analyze(runs);
+            IClashRunSequencePresentationProjector presentationProjector =
+                new DeterministicClashRunSequencePresentationProjector();
+            return presentationProjector.Project(analysisResult);
+        }
+
+        private static void WriteLongitudinalOutput(ClashRunSequencePresentationResult presentationResult, string? outputPath)
+        {
+            if (outputPath != null)
+            {
+                string html = new HtmlLongitudinalClashReportRenderer().Render(presentationResult);
+                File.WriteAllText(outputPath, html);
+            }
+
+            WriteLongitudinalSummary(presentationResult);
+
+            foreach (var transition in presentationResult.Transitions)
+            {
+                Console.WriteLine($"Comparison {transition.ComparisonIndex + 1}/{presentationResult.AdjacentComparisonCount}");
+                WriteComparisonSummary(transition.Comparison);
+            }
+
+            if (outputPath != null)
+            {
+                Console.WriteLine($"Longitudinal report written to {outputPath}");
+            }
+        }
+
+        private static void EnsureParentDirectoryExists(string filePath, string errorPrefix)
+        {
+            string fullPath = Path.GetFullPath(filePath);
+            string? parentDirectory = Path.GetDirectoryName(fullPath);
+
+            if (string.IsNullOrEmpty(parentDirectory) || !Directory.Exists(parentDirectory))
+            {
+                throw new InvalidOperationException($"{errorPrefix}: {parentDirectory ?? fullPath}");
+            }
+        }
+
+        private static void ValidateProjectCatalogWorkspace(
+            string projectCatalogFilePath,
+            string resolvedRunIndexPath,
+            IReadOnlyList<string> resolvedSnapshotPaths,
+            string reportDestinationPath,
+            ProjectCatalogPathResolver projectCatalogPathResolver)
+        {
+            string resolvedProjectCatalogPath = Path.GetFullPath(projectCatalogFilePath);
+            string projectCatalogDirectory = Path.GetDirectoryName(resolvedProjectCatalogPath)
+                ?? throw new InvalidOperationException(
+                    $"Project catalog file path '{projectCatalogFilePath}' does not have a parent directory.");
+            string resolvedReportPath = Path.GetFullPath(reportDestinationPath);
+
+            if (Directory.Exists(resolvedReportPath))
+            {
+                throw new InvalidOperationException(
+                    $"Project report destination cannot be an existing directory: {resolvedReportPath}");
+            }
+
+            if (!IsPathWithinDirectory(projectCatalogDirectory, resolvedRunIndexPath))
+            {
+                throw new InvalidOperationException(
+                    $"Project catalog workflow requires the run index to stay inside the project catalog directory tree: {resolvedRunIndexPath}");
+            }
+
+            if (!IsPathWithinDirectory(projectCatalogDirectory, resolvedReportPath))
+            {
+                throw new InvalidOperationException(
+                    $"Project catalog workflow requires the report destination to stay inside the project catalog directory tree: {resolvedReportPath}");
+            }
+
+            for (int i = 0; i < resolvedSnapshotPaths.Count; i++)
+            {
+                string resolvedSnapshotPath = Path.GetFullPath(resolvedSnapshotPaths[i]);
+                if (!IsPathWithinDirectory(projectCatalogDirectory, resolvedSnapshotPath))
+                {
+                    throw new InvalidOperationException(
+                        $"Project catalog workflow requires all resolved snapshots to stay inside the project catalog directory tree: {resolvedSnapshotPath}");
+                }
+
+                projectCatalogPathResolver.CreateReference(resolvedProjectCatalogPath, resolvedSnapshotPath);
+
+                if (PathsEqual(resolvedReportPath, resolvedSnapshotPath))
+                {
+                    throw new InvalidOperationException(
+                        $"Project report destination must not be the same file as snapshot {i + 1}: {resolvedReportPath}");
+                }
+            }
+
+            if (PathsEqual(resolvedReportPath, resolvedProjectCatalogPath))
+            {
+                throw new InvalidOperationException(
+                    $"Project report destination must not be the same file as the project catalog: {resolvedReportPath}");
+            }
+
+            if (PathsEqual(resolvedReportPath, resolvedRunIndexPath))
+            {
+                throw new InvalidOperationException(
+                    $"Project report destination must not be the same file as the run index: {resolvedReportPath}");
+            }
+        }
+
+        private static bool PathsEqual(string leftPath, string rightPath)
+        {
+            string resolvedLeft = Path.GetFullPath(leftPath);
+            string resolvedRight = Path.GetFullPath(rightPath);
+            StringComparison comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            return string.Equals(resolvedLeft, resolvedRight, comparison);
+        }
+
+        private static bool IsPathWithinDirectory(string directoryPath, string candidatePath)
+        {
+            string resolvedDirectoryPath = Path.GetFullPath(directoryPath)
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                + Path.DirectorySeparatorChar;
+            string resolvedCandidatePath = Path.GetFullPath(candidatePath);
+            StringComparison comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            return resolvedCandidatePath.StartsWith(resolvedDirectoryPath, comparison);
         }
 
         private static ClashLifecycleResult CreateDerivedComparison(CoordinationRun previousRun, CoordinationRun currentRun)
@@ -752,6 +976,126 @@ namespace OrzioClashReport.Cli
             return true;
         }
 
+        private static bool TryParseCreateProjectArguments(
+            string[] args, out CreateProjectCommandOptions options, out string error)
+        {
+            options = CreateProjectCommandOptions.Empty;
+            error = string.Empty;
+
+            string? projectId = null;
+            string? displayName = null;
+            string? indexPath = null;
+            string? reportPath = null;
+            string? outputPath = null;
+
+            for (int i = 1; i < args.Length; i++)
+            {
+                string argument = args[i];
+                if (!IsRecognizedCreateProjectOption(argument))
+                {
+                    error = $"Unrecognized create-project argument '{argument}'.";
+                    return false;
+                }
+
+                if (i + 1 >= args.Length
+                    || string.IsNullOrWhiteSpace(args[i + 1])
+                    || IsRecognizedCreateProjectOption(args[i + 1]))
+                {
+                    error = $"Missing value for '{argument}'.";
+                    return false;
+                }
+
+                string value = args[i + 1];
+                switch (argument)
+                {
+                    case "--project-id":
+                        if (projectId != null)
+                        {
+                            error = "Duplicate option '--project-id'.";
+                            return false;
+                        }
+
+                        projectId = value;
+                        break;
+                    case "--name":
+                        if (displayName != null)
+                        {
+                            error = "Duplicate option '--name'.";
+                            return false;
+                        }
+
+                        displayName = value;
+                        break;
+                    case "--index":
+                        if (indexPath != null)
+                        {
+                            error = "Duplicate option '--index'.";
+                            return false;
+                        }
+
+                        indexPath = value;
+                        break;
+                    case "--report":
+                        if (reportPath != null)
+                        {
+                            error = "Duplicate option '--report'.";
+                            return false;
+                        }
+
+                        reportPath = value;
+                        break;
+                    case "-o":
+                    case "--output":
+                        if (outputPath != null)
+                        {
+                            error = "Duplicate option '-o/--output'.";
+                            return false;
+                        }
+
+                        outputPath = value;
+                        break;
+                    default:
+                        error = $"Unrecognized create-project argument '{argument}'.";
+                        return false;
+                }
+
+                i++;
+            }
+
+            if (projectId == null)
+            {
+                error = "Missing required option '--project-id'.";
+                return false;
+            }
+
+            if (displayName == null)
+            {
+                error = "Missing required option '--name'.";
+                return false;
+            }
+
+            if (indexPath == null)
+            {
+                error = "Missing required option '--index'.";
+                return false;
+            }
+
+            if (reportPath == null)
+            {
+                error = "Missing required option '--report'.";
+                return false;
+            }
+
+            if (outputPath == null)
+            {
+                error = "Missing required option '-o/--output'.";
+                return false;
+            }
+
+            options = new CreateProjectCommandOptions(projectId, displayName, indexPath, reportPath, outputPath);
+            return true;
+        }
+
         private static bool TryParseCompareIndexArguments(
             string[] args, out CompareIndexCommandOptions options, out string error)
         {
@@ -900,6 +1244,51 @@ namespace OrzioClashReport.Cli
             return true;
         }
 
+        private static bool TryParseRenderProjectArguments(
+            string[] args, out RenderProjectCommandOptions options, out string error)
+        {
+            options = RenderProjectCommandOptions.Empty;
+            error = string.Empty;
+
+            string? projectPath = null;
+
+            for (int i = 1; i < args.Length; i++)
+            {
+                string argument = args[i];
+                if (!IsRecognizedRenderProjectOption(argument))
+                {
+                    error = $"Unrecognized render-project argument '{argument}'.";
+                    return false;
+                }
+
+                if (i + 1 >= args.Length
+                    || string.IsNullOrWhiteSpace(args[i + 1])
+                    || IsRecognizedRenderProjectOption(args[i + 1]))
+                {
+                    error = $"Missing value for '{argument}'.";
+                    return false;
+                }
+
+                if (projectPath != null)
+                {
+                    error = "Duplicate option '--project'.";
+                    return false;
+                }
+
+                projectPath = args[i + 1];
+                i++;
+            }
+
+            if (projectPath == null)
+            {
+                error = "Missing required option '--project'.";
+                return false;
+            }
+
+            options = new RenderProjectCommandOptions(projectPath);
+            return true;
+        }
+
         private static bool IsRecognizedCompareOption(string argument) =>
             argument == "--previous-xml"
             || argument == "--previous-manifest"
@@ -911,6 +1300,14 @@ namespace OrzioClashReport.Cli
         private static bool IsRecognizedSnapshotOption(string argument) =>
             argument == "--xml"
             || argument == "--manifest"
+            || argument == "-o"
+            || argument == "--output";
+
+        private static bool IsRecognizedCreateProjectOption(string argument) =>
+            argument == "--project-id"
+            || argument == "--name"
+            || argument == "--index"
+            || argument == "--report"
             || argument == "-o"
             || argument == "--output";
 
@@ -929,6 +1326,9 @@ namespace OrzioClashReport.Cli
             argument == "--snapshot"
             || argument == "-o"
             || argument == "--output";
+
+        private static bool IsRecognizedRenderProjectOption(string argument) =>
+            argument == "--project";
 
         private static string? ValidateComparePaths(CompareCommandOptions options)
         {
@@ -1042,6 +1442,32 @@ namespace OrzioClashReport.Cli
             public string? OutputPath { get; }
         }
 
+        private sealed class CreateProjectCommandOptions
+        {
+            public static readonly CreateProjectCommandOptions Empty =
+                new CreateProjectCommandOptions(string.Empty, string.Empty, string.Empty, string.Empty, string.Empty);
+
+            public CreateProjectCommandOptions(
+                string projectId,
+                string displayName,
+                string indexPath,
+                string reportPath,
+                string outputPath)
+            {
+                ProjectId = projectId;
+                DisplayName = displayName;
+                IndexPath = indexPath;
+                ReportPath = reportPath;
+                OutputPath = outputPath;
+            }
+
+            public string ProjectId { get; }
+            public string DisplayName { get; }
+            public string IndexPath { get; }
+            public string ReportPath { get; }
+            public string OutputPath { get; }
+        }
+
         private sealed class CompareIndexCommandOptions
         {
             public static readonly CompareIndexCommandOptions Empty = new CompareIndexCommandOptions(string.Empty, null);
@@ -1068,6 +1494,35 @@ namespace OrzioClashReport.Cli
 
             public IReadOnlyList<string> SnapshotPaths { get; }
             public string OutputPath { get; }
+        }
+
+        private sealed class LoadedRunIndexContext
+        {
+            public LoadedRunIndexContext(
+                string resolvedRunIndexPath,
+                IReadOnlyList<CoordinationRun> runs,
+                IReadOnlyList<string> resolvedSnapshotPaths)
+            {
+                ResolvedRunIndexPath = resolvedRunIndexPath;
+                Runs = runs;
+                ResolvedSnapshotPaths = resolvedSnapshotPaths;
+            }
+
+            public string ResolvedRunIndexPath { get; }
+            public IReadOnlyList<CoordinationRun> Runs { get; }
+            public IReadOnlyList<string> ResolvedSnapshotPaths { get; }
+        }
+
+        private sealed class RenderProjectCommandOptions
+        {
+            public static readonly RenderProjectCommandOptions Empty = new RenderProjectCommandOptions(string.Empty);
+
+            public RenderProjectCommandOptions(string projectPath)
+            {
+                ProjectPath = projectPath;
+            }
+
+            public string ProjectPath { get; }
         }
     }
 }

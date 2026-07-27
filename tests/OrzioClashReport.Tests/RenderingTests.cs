@@ -90,12 +90,9 @@ namespace OrzioClashReport.Tests
 
             string actual = renderer.Render(report);
             string goldenPath = Path.Combine(AppContext.BaseDirectory, "Golden", "report.golden.html");
-            string expected = NormalizeGoldenLineEndings(File.ReadAllText(goldenPath));
+            string expected = File.ReadAllText(goldenPath);
 
             Assert.Equal(expected, actual, StringComparer.Ordinal);
         }
-
-        private static string NormalizeGoldenLineEndings(string value) =>
-            value.Replace("\r\n", "\n").Replace("\r", "\n");
     }
 }

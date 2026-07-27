@@ -61,13 +61,10 @@ namespace OrzioClashReport.Tests
         {
             string actual = new HtmlLongitudinalClashReportRenderer().Render(CreateGoldenPresentation());
             string goldenPath = Path.Combine(AppContext.BaseDirectory, "Golden", "longitudinal-report.golden.html");
-            string expected = NormalizeGoldenLineEndings(File.ReadAllText(goldenPath));
+            string expected = File.ReadAllText(goldenPath);
 
             Assert.Equal(expected, actual, StringComparer.Ordinal);
         }
-
-        private static string NormalizeGoldenLineEndings(string value) =>
-            value.Replace("\r\n", "\n").Replace("\r", "\n");
 
         [Fact]
         public void Render_DocumentShell_IsHtml5SelfContainedAndStyledInline()

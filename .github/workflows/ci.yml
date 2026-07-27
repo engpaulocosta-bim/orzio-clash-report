@@ -44,6 +44,12 @@ jobs:
       - name: Restore
         run: dotnet restore
 
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --configuration Release --no-build
+
       - name: Publish win-x64 single-file CLI
         run: >
           dotnet publish src/OrzioClashReport.Cli/OrzioClashReport.Cli.csproj

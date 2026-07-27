@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\src\OrzioClashReport.Input.NavisworksXml\OrzioClashReport.Input.NavisworksXml.csproj" />
     <ProjectReference Include="..\..\src\OrzioClashReport.Input.RunManifestJson\OrzioClashReport.Input.RunManifestJson.csproj" />
     <ProjectReference Include="..\..\src\OrzioClashReport.Output.Html\OrzioClashReport.Output.Html.csproj" />
+    <ProjectReference Include="..\..\src\OrzioClashReport.Persistence.ProjectCatalogJson\OrzioClashReport.Persistence.ProjectCatalogJson.csproj" />
     <ProjectReference Include="..\..\src\OrzioClashReport.Persistence.RunIndexJson\OrzioClashReport.Persistence.RunIndexJson.csproj" />
     <ProjectReference Include="..\..\src\OrzioClashReport.Persistence.RunSnapshotJson\OrzioClashReport.Persistence.RunSnapshotJson.csproj" />
   </ItemGroup>

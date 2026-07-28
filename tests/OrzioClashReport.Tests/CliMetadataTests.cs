@@ -44,7 +44,7 @@ namespace OrzioClashReport.Tests
 
             Assert.Equal(0, result.ExitCode);
             Assert.Equal(string.Empty, result.StdErr);
-            Assert.Equal("orzioclash 0.1.0-preview.1\n", result.StdOut);
+            Assert.Equal("orzioclash 0.1.0-preview.2\n", result.StdOut);
             Assert.Single(result.StdOut.Split('\n', StringSplitOptions.RemoveEmptyEntries));
         }
 
@@ -57,7 +57,7 @@ namespace OrzioClashReport.Tests
             Assert.Equal(string.Empty, result.StdOut);
             Assert.Contains("Missing required option '--xml'.", result.StdErr, StringComparison.Ordinal);
             Assert.DoesNotContain("orzioclash - Navisworks Clash Detective report tooling", result.StdErr, StringComparison.Ordinal);
-            Assert.DoesNotContain("0.1.0-preview.1", result.StdErr, StringComparison.Ordinal);
+            Assert.DoesNotContain("0.1.0-preview.2", result.StdErr, StringComparison.Ordinal);
         }
 
         private static MethodInfo ResolveMainMethod()

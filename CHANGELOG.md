@@ -2,13 +2,42 @@
 
 All notable changes for OrzioClashReport are recorded here.
 
-## Unreleased
+## 0.1.0-preview.2
 
-- Added a strict schema-v1 operational project catalog JSON adapter.
-- Added `create-project` and `render-project` CLI commands for regenerable longitudinal
-  project workflows built from immutable snapshots and an explicit run index.
-- Added `append-project-snapshot` for explicit append-only updates to an existing project
-  catalog run index, using a safe in-place run-index replacement workflow.
+Release candidate preparation for Windows `win-x64`.
+
+### Added
+
+- Strict schema-v1 operational project catalog JSON adapter.
+- `create-project` and `render-project` CLI commands for regenerable longitudinal project
+  workflows built from immutable snapshots and an explicit run index.
+- `append-project-snapshot` for explicit append-only updates to an existing project catalog
+  run index, using a safe in-place run-index replacement workflow.
+- Expanded packaged Windows smoke coverage for `create-project`,
+  `append-project-snapshot`, and `render-project`, using repeated anonymized fixtures.
+- `docs/operations/project-catalog.md` in the release package.
+
+### Validation Status
+
+- Single-run parsing, grouping, and HTML presentation were human-validated on one private
+  real export.
+- Longitudinal matching, lifecycle classification, continuity links, continuity paths, and
+  longitudinal HTML have not been validated against three real historical exports.
+- The expanded packaging smoke uses repeated anonymized fixtures only and does not
+  constitute real longitudinal validation.
+- Longitudinal behavior remains experimental.
+
+### Known Limitations
+
+- No persistent clash identity.
+- No Clash Ledger.
+- No `Reopened` lifecycle state.
+- No aggregate multi-run lifecycle.
+- No automatic chronology.
+- No automatic clash responsibility.
+- No PDF export, embedded clash images, WPF UI, licensing, or live Navisworks API adapter.
+- Private validation XML, HTML, PDF, paths, project names, model names, and personal names
+  are not part of the repository or release artifacts.
 
 ## 0.1.0-preview.1
 

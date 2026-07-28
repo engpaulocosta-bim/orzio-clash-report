@@ -5,15 +5,16 @@ complementary workflows: a single-run HTML report grouped by clash test, discipl
 and level, and a revision-aware comparison between two coordination runs with a
 deterministic console summary and optional lifecycle HTML.
 
-Current preview: `0.1.0-preview.1` for Windows `win-x64`. This is an internal preview, not
-a fully validated longitudinal MVP. Single-run parsing, grouping, and HTML were
-human-validated on one private real export. Longitudinal matching, lifecycle, continuity
-links, continuity paths, and longitudinal HTML have not been validated on three real
-historical exports and remain experimental.
+Current source candidate: `0.1.0-preview.2` for Windows `win-x64`. Latest published
+prerelease: `0.1.0-preview.1`. This is still an internal preview, not a fully validated
+longitudinal MVP. Single-run parsing, grouping, and HTML were human-validated on one
+private real export. Longitudinal matching, lifecycle, continuity links, continuity paths,
+and longitudinal HTML have not been validated on three real historical exports and remain
+experimental.
 
-The source tree also contains an unreleased project-catalog workflow. It is available when
-you build the current source, but it is not part of the published `v0.1.0-preview.1`
-binary or its release documentation.
+The project-catalog workflow is included in the `0.1.0-preview.2` release candidate source
+and package documentation. The latest published prerelease remains `v0.1.0-preview.1`
+until the `preview.2` tag and GitHub prerelease are created.
 
 ## Architecture
 
@@ -45,6 +46,14 @@ After downloading and verifying the ZIP, run the tool without the source reposit
 .\orzioclash.exe --version
 .\orzioclash.exe --help
 .\orzioclash.exe ".\inputs\clash-export.xml" -o ".\reports\single-run.html"
+```
+
+Project-catalog quick start from the packaged binary:
+
+```powershell
+.\orzioclash.exe create-project --project-id example-project --name "Example Coordination Project" --index ".\run-index.json" --report ".\reports\project-longitudinal.html" -o ".\project.json"
+.\orzioclash.exe append-project-snapshot --project ".\project.json" --snapshot ".\snapshots\run-004.json"
+.\orzioclash.exe render-project --project ".\project.json"
 ```
 
 For operational steps, checksum verification, manifest preparation, snapshot creation,
@@ -206,10 +215,11 @@ After that prefix, existing pairwise blocks remain unchanged and are emitted in 
 order as `Comparison {i + 1}/{AdjacentComparisonCount}` plus the 11-line pairwise summary
 for that adjacent transition.
 
-## Unreleased Source Workflow: Project Catalogs
+## Project Catalog Workflow
 
-This workflow is available from the current source tree only. It is not part of the
-published `v0.1.0-preview.1` preview binary.
+This workflow is included in the `0.1.0-preview.2` release candidate source and package
+documentation. The latest published prerelease remains `v0.1.0-preview.1` until the
+`preview.2` tag and GitHub prerelease are created.
 
 Create an operational project catalog from an existing run index:
 

@@ -1362,6 +1362,12 @@ namespace OrzioClashReport.Cli
                         return false;
                 }
 
+                if (RequiresNonOptionLikeValue(argument) && IsOptionLikeValueToken(value))
+                {
+                    error = $"Missing value for '{argument}'.";
+                    return false;
+                }
+
                 i++;
             }
 
@@ -1511,6 +1517,12 @@ namespace OrzioClashReport.Cli
                     default:
                         error = $"Unrecognized append-identity-decision argument '{argument}'.";
                         return false;
+                }
+
+                if (RequiresNonOptionLikeValue(argument) && IsOptionLikeValueToken(value))
+                {
+                    error = $"Missing value for '{argument}'.";
+                    return false;
                 }
 
                 i++;
@@ -1927,6 +1939,22 @@ namespace OrzioClashReport.Cli
             argument == "--snapshot"
             || argument == "-o"
             || argument == "--output";
+
+        private static bool RequiresNonOptionLikeValue(string argument) =>
+            argument == "--project-id"
+            || argument == "-o"
+            || argument == "--output"
+            || argument == "--governance"
+            || argument == "--decision-id"
+            || argument == "--decision-kind"
+            || argument == "--left-run-id"
+            || argument == "--right-run-id"
+            || argument == "--persistent-identity-id"
+            || argument == "--reviewer-alias"
+            || argument == "--reason";
+
+        private static bool IsOptionLikeValueToken(string value) =>
+            value.Length > 0 && value[0] == '-';
 
         private static bool IsRecognizedRenderProjectOption(string argument) =>
             argument == "--project";

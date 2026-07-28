@@ -1,7 +1,8 @@
 # Project Catalog Workflow
 
-This document describes the unreleased source-only project catalog workflow. It is not part
-of the published `v0.1.0-preview.1` preview binary.
+The project catalog workflow is included in version `0.1.0-preview.2`.
+This document describes the contents and behavior of version `0.1.0-preview.2` without
+asserting its current publication state.
 
 ## Purpose
 
@@ -166,7 +167,7 @@ or personal information. The project catalog should use safe public aliases only
 
 ## Limitations
 
-- Source-only workflow for now; not part of published `v0.1.0-preview.1`
+- Included in version `0.1.0-preview.2`
 - No persistent clash identity
 - No Clash Ledger
 - No `Reopened`

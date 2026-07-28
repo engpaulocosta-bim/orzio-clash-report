@@ -108,6 +108,7 @@ jobs:
           Copy-Item -LiteralPath "README.md" -Destination (Join-Path $packageRoot "README.md")
           Copy-Item -LiteralPath "CHANGELOG.md" -Destination (Join-Path $packageRoot "CHANGELOG.md")
           Copy-Item -LiteralPath "docs/operations/internal-preview.md" -Destination (Join-Path $packageRoot "docs/operations/internal-preview.md")
+          Copy-Item -LiteralPath "docs/operations/project-catalog.md" -Destination (Join-Path $packageRoot "docs/operations/project-catalog.md")
           Copy-Item -LiteralPath "docs/operations/release-checklist.md" -Destination (Join-Path $packageRoot "docs/operations/release-checklist.md")
           Copy-Item -LiteralPath "scripts/smoke-release.ps1" -Destination (Join-Path $packageRoot "smoke-release.ps1")
           Copy-Item -LiteralPath "samples/sample-clash.xml" -Destination (Join-Path $packageRoot "samples/sample-clash.xml")
@@ -174,6 +175,10 @@ jobs:
           $notes = @"
           Internal preview release.
 
+          Includes the operational project catalog workflow: create-project, append-project-snapshot, and render-project.
+          Run snapshots remain immutable evidence, and the explicit run index remains the only authority for run order.
+          Derived longitudinal reports are regenerated from evidence and are not persisted as truth.
+          Packaging smoke covers project catalog creation, append-only index updates, and report regeneration by repeating anonymized fixtures only. That smoke is not real longitudinal validation with three real exports.
           Single-run parsing, grouping, and HTML were human-validated on one private real export.
           Longitudinal matching, lifecycle, continuity links, continuity paths, and longitudinal HTML have not been validated on three real historical exports.
           Longitudinal behavior remains experimental and does not provide persistent clash identity, Clash Ledger, Reopened, aggregate multi-run lifecycle, automatic chronology, or automatic clash responsibility.

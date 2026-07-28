@@ -24,6 +24,7 @@ Use this checklist before publishing an internal preview artifact or prerelease.
 - [ ] ZIP contains `README.md`.
 - [ ] ZIP contains `CHANGELOG.md`.
 - [ ] ZIP contains the internal preview guide.
+- [ ] ZIP contains the project catalog guide.
 - [ ] ZIP contains this release checklist.
 - [ ] ZIP contains `smoke-release.ps1`.
 - [ ] ZIP contains anonymized sample XML and manifest files.
@@ -42,6 +43,18 @@ Use this checklist before publishing an internal preview artifact or prerelease.
 - [ ] Run index was created.
 - [ ] Longitudinal stdout was produced.
 - [ ] Longitudinal HTML output was created and is non-empty.
+- [ ] `create-project` succeeded.
+- [ ] `project.json` is valid schema v1 JSON with relative references.
+- [ ] `render-project` succeeded with three snapshots.
+- [ ] Fourth snapshot creation succeeded.
+- [ ] `append-project-snapshot` succeeded.
+- [ ] Updated run index contains four entries.
+- [ ] Project catalog bytes were preserved during append.
+- [ ] Snapshot bytes were preserved during append.
+- [ ] Report bytes were preserved during append.
+- [ ] No `.run-index-replace-*.tmp` file remained after append.
+- [ ] `compare-index` and `render-project` produced identical stdout on the updated index.
+- [ ] `compare-index` and `render-project` produced byte-identical HTML on the updated index.
 - [ ] Smoke stderr was empty for successful commands.
 - [ ] Smoke results are understood as packaging smoke only, not real sequential validation.
 
@@ -55,6 +68,8 @@ Use this checklist before publishing an internal preview artifact or prerelease.
 - [ ] No private XML, HTML, PDF, paths, project names, model names, personal names, email
   addresses, NWD, NWF, NWC, RVT, or image artifacts are included.
 - [ ] Release notes clearly state the longitudinal validation limitation.
+- [ ] No document or release note claims `0.1.0-preview.2` is already published before the tag.
+- [ ] Packaged documentation does not hard-code which GitHub prerelease is currently the latest.
 - [ ] Release is marked as a prerelease.
 - [ ] Post-download checksum verification was tested.
 

@@ -64,6 +64,17 @@ gates, see [docs/operations/release-checklist.md](docs/operations/release-checkl
 The packaged preview does not provide persistent clash identity, Clash Ledger, `Reopened`,
 aggregate multi-run lifecycle, automatic chronology, or automatic clash responsibility.
 
+## Source-Only Step 29A Foundation
+
+The source tree now contains the Step 29A foundation for explicit human identity governance:
+`ClashEvidenceEndpoint`, `HumanIdentityDecision`, `IdentityGovernanceDocument`, and the
+strict schema-v1 JSON adapter `OrzioClashReport.Persistence.IdentityGovernanceJson`.
+
+This foundation is source-only as of July 28, 2026. It is not part of the published
+`v0.1.0-preview.2` binary contract. Step 29A does not add a CLI review workflow, report
+projection, Clash Ledger, `Reopened`, automatic identity assignment, automatic chronology,
+or automatic clash responsibility.
+
 Generate a report from a Clash Detective XML export:
 
 ```bash

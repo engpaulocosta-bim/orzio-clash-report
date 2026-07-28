@@ -4,6 +4,22 @@ All notable changes for OrzioClashReport are recorded here.
 
 ## Unreleased
 
+### Added
+
+- Source-only Step 29A foundation for explicit human identity governance in Core:
+  immutable evidence endpoints, explicit human identity decisions, and project-scoped
+  decision documents.
+- Strict deterministic schema-v1 JSON adapter
+  `OrzioClashReport.Persistence.IdentityGovernanceJson`.
+- Unit and contract tests for Step 29A identity-governance validation and serialization.
+
+### Notes
+
+- This Step 29A capability is source-only as of July 28, 2026 and is not part of the
+  published `v0.1.0-preview.2` binary contract.
+- No CLI review workflow, report projection, Clash Ledger, `Reopened`, automatic identity
+  assignment, automatic chronology, or automatic responsibility were added.
+
 ## 0.1.0-preview.2
 
 Internal preview for Windows `win-x64`.

@@ -134,6 +134,22 @@ aggregate multi-run lifecycle, automatic chronology, or automatic clash responsi
 `workflow_dispatch` release runs are packaging dry runs only. Responsibility/authorship
 remains deferred to a later human-governance stage.
 
+## Source-only human identity governance foundation
+
+Step 29A adds a source-only foundation for explicit human identity governance. It is not
+part of the published `v0.1.0-preview.2` binary contract.
+
+- Snapshots remain immutable evidence only.
+- Algorithmic matching remains suggestion only, never persisted truth.
+- Persistent identity exists only when a human creates `ConfirmSameIdentity`.
+- `RejectSameIdentity` must never carry a persistent identity id.
+- Absence of a decision is only absence of a decision; there is no persisted pending state.
+- Evidence endpoints reuse `runId` plus immutable `occurrenceIndex` inside a snapshot.
+- No automatic propagation, no automatic transitivity, no automatic chronology, and no
+  automatic responsibility exist at this stage.
+- No CLI review workflow, no report projection, no Clash Ledger, and no `Reopened` exist in
+  Step 29A.
+
 ## Anti-patterns that fail review
 
 - Core with a `using System.Xml.Linq`, a Navisworks reference, or any HTML string.

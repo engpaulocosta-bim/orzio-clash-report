@@ -24,6 +24,7 @@ namespace OrzioClashReport.Cli
         private const string CompareUsage = "Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json> [-o <output.html> | --output <output.html>]";
         private const string CompareIndexUsage = "Usage: orzioclash compare-index --index <run-index.json> [-o <output.html> | --output <output.html>]";
         private const string CompareSnapshotsUsage = "Usage: orzioclash compare-snapshots --previous-snapshot <previous.json> --current-snapshot <current.json> [-o <output.html> | --output <output.html>]";
+        private const string AppendProjectSnapshotUsage = "Usage: orzioclash append-project-snapshot --project <project.json> --snapshot <run-snapshot.json>";
         private const string CreateProjectUsage = "Usage: orzioclash create-project --project-id <project-id> --name <display-name> --index <run-index.json> --report <longitudinal.html> (-o <project.json> | --output <project.json>)";
         private const string IndexSnapshotsUsage = "Usage: orzioclash index-snapshots --snapshot <run-snapshot.json> [--snapshot <run-snapshot.json> ...] (-o <run-index.json> | --output <run-index.json>)";
         private const string RenderProjectUsage = "Usage: orzioclash render-project --project <project.json>";
@@ -56,6 +57,11 @@ namespace OrzioClashReport.Cli
             if (args.Length > 0 && string.Equals(args[0], "create-project", StringComparison.OrdinalIgnoreCase))
             {
                 return RunCreateProject(args);
+            }
+
+            if (args.Length > 0 && string.Equals(args[0], "append-project-snapshot", StringComparison.OrdinalIgnoreCase))
+            {
+                return RunAppendProjectSnapshot(args);
             }
 
             if (args.Length > 0 && string.Equals(args[0], "render-project", StringComparison.OrdinalIgnoreCase))
@@ -100,6 +106,7 @@ namespace OrzioClashReport.Cli
             Console.WriteLine("  index-snapshots      Create an explicitly ordered run index from snapshots.");
             Console.WriteLine("  compare-index        Compare adjacent snapshot pairs from an explicit run index.");
             Console.WriteLine("  create-project       Create one operational project catalog from an existing run index.");
+            Console.WriteLine("  append-project-snapshot Append one persisted snapshot to an existing project catalog run index.");
             Console.WriteLine("  render-project       Re-render a project catalog's longitudinal report from immutable snapshots.");
             Console.WriteLine();
             Console.WriteLine("Run-index order is authoritative; runs are never reordered by timestamp, revision, or file name.");
@@ -386,6 +393,69 @@ namespace OrzioClashReport.Cli
             }
         }
 
+        private static int RunAppendProjectSnapshot(string[] args)
+        {
+            if (!TryParseAppendProjectSnapshotArguments(args, out AppendProjectSnapshotCommandOptions options, out string parseError))
+            {
+                Console.Error.WriteLine(parseError);
+                Console.Error.WriteLine(AppendProjectSnapshotUsage);
+                return 1;
+            }
+
+            try
+            {
+                EnsurePathIsNotExistingDirectory(options.ProjectPath, "Project catalog");
+
+                var projectCatalogSerializer = new JsonProjectCatalogSerializer();
+                string resolvedProjectCatalogPath = Path.GetFullPath(options.ProjectPath);
+                ProjectCatalogDocument project = projectCatalogSerializer.Load(resolvedProjectCatalogPath);
+
+                var projectCatalogPathResolver = new ProjectCatalogPathResolver();
+                string resolvedRunIndexPath = projectCatalogPathResolver.ResolveReference(resolvedProjectCatalogPath, project.RunIndexPath);
+                string resolvedReportPath = projectCatalogPathResolver.ResolveReference(resolvedProjectCatalogPath, project.LongitudinalReportPath);
+
+                EnsurePathIsNotExistingDirectory(resolvedRunIndexPath, "Run index");
+                LoadedRunIndexContext loadedRunIndex = LoadRunIndexContext(resolvedRunIndexPath, requireComparableSequence: false);
+
+                string resolvedNewSnapshotPath = Path.GetFullPath(options.SnapshotPath);
+                ValidateProjectCatalogWorkspace(
+                    resolvedProjectCatalogPath,
+                    loadedRunIndex.ResolvedRunIndexPath,
+                    loadedRunIndex.ResolvedSnapshotPaths,
+                    resolvedReportPath,
+                    projectCatalogPathResolver,
+                    resolvedNewSnapshotPath);
+
+                var snapshotSerializer = new JsonCoordinationRunSnapshotSerializer();
+                snapshotSerializer.Load(resolvedNewSnapshotPath);
+
+                string newSnapshotReference = new RunIndexSnapshotPathResolver()
+                    .CreateReference(loadedRunIndex.ResolvedRunIndexPath, resolvedNewSnapshotPath);
+
+                var updatedReferences = new List<string>(loadedRunIndex.SnapshotPathReferences.Count + 1);
+                for (int i = 0; i < loadedRunIndex.SnapshotPathReferences.Count; i++)
+                {
+                    updatedReferences.Add(loadedRunIndex.SnapshotPathReferences[i]);
+                }
+
+                updatedReferences.Add(newSnapshotReference);
+
+                var updatedIndex = new RunIndexDocument(updatedReferences);
+                new RunIndexFileReplacer().ReplaceExisting(updatedIndex, loadedRunIndex.ResolvedRunIndexPath);
+
+                Console.WriteLine($"Project: {project.ProjectId}");
+                Console.WriteLine($"Appended snapshot: {newSnapshotReference}");
+                Console.WriteLine($"Indexed snapshots: {updatedReferences.Count}");
+                Console.WriteLine($"Run index updated: {loadedRunIndex.ResolvedRunIndexPath}");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to append project snapshot: {ex.Message}");
+                return 1;
+            }
+        }
+
         private static int RunSnapshot(string[] args)
         {
             if (!TryParseSnapshotArguments(args, out SnapshotCommandOptions options, out string parseError))
@@ -474,13 +544,16 @@ namespace OrzioClashReport.Cli
             return CreateLongitudinalPresentationResult(loadedRunIndex.Runs);
         }
 
-        private static LoadedRunIndexContext LoadRunIndexContext(string indexPath)
+        private static LoadedRunIndexContext LoadRunIndexContext(string indexPath) =>
+            LoadRunIndexContext(indexPath, requireComparableSequence: true);
+
+        private static LoadedRunIndexContext LoadRunIndexContext(string indexPath, bool requireComparableSequence)
         {
             string resolvedRunIndexPath = Path.GetFullPath(indexPath);
             var indexSerializer = new JsonRunIndexSerializer();
             RunIndexDocument index = indexSerializer.Load(resolvedRunIndexPath);
 
-            if (index.SnapshotPaths.Count < 2)
+            if (requireComparableSequence && index.SnapshotPaths.Count < 2)
             {
                 throw new InvalidOperationException(
                     "Run index must contain at least two snapshot references to compare adjacent runs.");
@@ -490,15 +563,18 @@ namespace OrzioClashReport.Cli
             var snapshotSerializer = new JsonCoordinationRunSnapshotSerializer();
             var runs = new List<CoordinationRun>(index.SnapshotPaths.Count);
             var resolvedSnapshotPaths = new List<string>(index.SnapshotPaths.Count);
+            var snapshotPathReferences = new List<string>(index.SnapshotPaths.Count);
 
             for (int i = 0; i < index.SnapshotPaths.Count; i++)
             {
-                string resolvedPath = pathResolver.ResolveReference(resolvedRunIndexPath, index.SnapshotPaths[i]);
+                string reference = index.SnapshotPaths[i];
+                string resolvedPath = pathResolver.ResolveReference(resolvedRunIndexPath, reference);
                 resolvedSnapshotPaths.Add(resolvedPath);
+                snapshotPathReferences.Add(reference);
                 runs.Add(snapshotSerializer.Load(resolvedPath));
             }
 
-            return new LoadedRunIndexContext(resolvedRunIndexPath, runs, resolvedSnapshotPaths);
+            return new LoadedRunIndexContext(resolvedRunIndexPath, runs, resolvedSnapshotPaths, snapshotPathReferences);
         }
 
         private static ClashRunSequencePresentationResult CreateLongitudinalPresentationResult(IReadOnlyList<CoordinationRun> runs)
@@ -554,12 +630,22 @@ namespace OrzioClashReport.Cli
             }
         }
 
+        private static void EnsurePathIsNotExistingDirectory(string path, string label)
+        {
+            string fullPath = Path.GetFullPath(path);
+            if (Directory.Exists(fullPath))
+            {
+                throw new InvalidOperationException($"{label} path cannot be an existing directory: {fullPath}");
+            }
+        }
+
         private static void ValidateProjectCatalogWorkspace(
             string projectCatalogFilePath,
             string resolvedRunIndexPath,
             IReadOnlyList<string> resolvedSnapshotPaths,
             string reportDestinationPath,
-            ProjectCatalogPathResolver projectCatalogPathResolver)
+            ProjectCatalogPathResolver projectCatalogPathResolver,
+            string? appendedSnapshotPath = null)
         {
             string resolvedProjectCatalogPath = Path.GetFullPath(projectCatalogFilePath);
             string projectCatalogDirectory = Path.GetDirectoryName(resolvedProjectCatalogPath)
@@ -613,6 +699,42 @@ namespace OrzioClashReport.Cli
             {
                 throw new InvalidOperationException(
                     $"Project report destination must not be the same file as the run index: {resolvedReportPath}");
+            }
+
+            if (appendedSnapshotPath == null)
+            {
+                return;
+            }
+
+            string resolvedAppendedSnapshotPath = Path.GetFullPath(appendedSnapshotPath);
+            if (Directory.Exists(resolvedAppendedSnapshotPath))
+            {
+                throw new InvalidOperationException(
+                    $"Appended snapshot path cannot be an existing directory: {resolvedAppendedSnapshotPath}");
+            }
+
+            if (!IsPathWithinDirectory(projectCatalogDirectory, resolvedAppendedSnapshotPath))
+            {
+                throw new InvalidOperationException(
+                    $"Project catalog workflow requires the appended snapshot to stay inside the project catalog directory tree: {resolvedAppendedSnapshotPath}");
+            }
+
+            if (PathsEqual(resolvedAppendedSnapshotPath, resolvedProjectCatalogPath))
+            {
+                throw new InvalidOperationException(
+                    $"Appended snapshot must not be the same file as the project catalog: {resolvedAppendedSnapshotPath}");
+            }
+
+            if (PathsEqual(resolvedAppendedSnapshotPath, resolvedRunIndexPath))
+            {
+                throw new InvalidOperationException(
+                    $"Appended snapshot must not be the same file as the run index: {resolvedAppendedSnapshotPath}");
+            }
+
+            if (PathsEqual(resolvedAppendedSnapshotPath, resolvedReportPath))
+            {
+                throw new InvalidOperationException(
+                    $"Appended snapshot must not be the same file as the report destination: {resolvedAppendedSnapshotPath}");
             }
         }
 
@@ -1289,6 +1411,77 @@ namespace OrzioClashReport.Cli
             return true;
         }
 
+        private static bool TryParseAppendProjectSnapshotArguments(
+            string[] args, out AppendProjectSnapshotCommandOptions options, out string error)
+        {
+            options = AppendProjectSnapshotCommandOptions.Empty;
+            error = string.Empty;
+
+            string? projectPath = null;
+            string? snapshotPath = null;
+
+            for (int i = 1; i < args.Length; i++)
+            {
+                string argument = args[i];
+                if (!IsRecognizedAppendProjectSnapshotOption(argument))
+                {
+                    error = $"Unrecognized append-project-snapshot argument '{argument}'.";
+                    return false;
+                }
+
+                if (i + 1 >= args.Length
+                    || string.IsNullOrWhiteSpace(args[i + 1])
+                    || IsRecognizedAppendProjectSnapshotOption(args[i + 1]))
+                {
+                    error = $"Missing value for '{argument}'.";
+                    return false;
+                }
+
+                string value = args[i + 1];
+                switch (argument)
+                {
+                    case "--project":
+                        if (projectPath != null)
+                        {
+                            error = "Duplicate option '--project'.";
+                            return false;
+                        }
+
+                        projectPath = value;
+                        break;
+                    case "--snapshot":
+                        if (snapshotPath != null)
+                        {
+                            error = "Duplicate option '--snapshot'.";
+                            return false;
+                        }
+
+                        snapshotPath = value;
+                        break;
+                    default:
+                        error = $"Unrecognized append-project-snapshot argument '{argument}'.";
+                        return false;
+                }
+
+                i++;
+            }
+
+            if (projectPath == null)
+            {
+                error = "Missing required option '--project'.";
+                return false;
+            }
+
+            if (snapshotPath == null)
+            {
+                error = "Missing required option '--snapshot'.";
+                return false;
+            }
+
+            options = new AppendProjectSnapshotCommandOptions(projectPath, snapshotPath);
+            return true;
+        }
+
         private static bool IsRecognizedCompareOption(string argument) =>
             argument == "--previous-xml"
             || argument == "--previous-manifest"
@@ -1329,6 +1522,10 @@ namespace OrzioClashReport.Cli
 
         private static bool IsRecognizedRenderProjectOption(string argument) =>
             argument == "--project";
+
+        private static bool IsRecognizedAppendProjectSnapshotOption(string argument) =>
+            argument == "--project"
+            || argument == "--snapshot";
 
         private static string? ValidateComparePaths(CompareCommandOptions options)
         {
@@ -1501,16 +1698,19 @@ namespace OrzioClashReport.Cli
             public LoadedRunIndexContext(
                 string resolvedRunIndexPath,
                 IReadOnlyList<CoordinationRun> runs,
-                IReadOnlyList<string> resolvedSnapshotPaths)
+                IReadOnlyList<string> resolvedSnapshotPaths,
+                IReadOnlyList<string> snapshotPathReferences)
             {
                 ResolvedRunIndexPath = resolvedRunIndexPath;
                 Runs = runs;
                 ResolvedSnapshotPaths = resolvedSnapshotPaths;
+                SnapshotPathReferences = snapshotPathReferences;
             }
 
             public string ResolvedRunIndexPath { get; }
             public IReadOnlyList<CoordinationRun> Runs { get; }
             public IReadOnlyList<string> ResolvedSnapshotPaths { get; }
+            public IReadOnlyList<string> SnapshotPathReferences { get; }
         }
 
         private sealed class RenderProjectCommandOptions
@@ -1523,6 +1723,21 @@ namespace OrzioClashReport.Cli
             }
 
             public string ProjectPath { get; }
+        }
+
+        private sealed class AppendProjectSnapshotCommandOptions
+        {
+            public static readonly AppendProjectSnapshotCommandOptions Empty =
+                new AppendProjectSnapshotCommandOptions(string.Empty, string.Empty);
+
+            public AppendProjectSnapshotCommandOptions(string projectPath, string snapshotPath)
+            {
+                ProjectPath = projectPath;
+                SnapshotPath = snapshotPath;
+            }
+
+            public string ProjectPath { get; }
+            public string SnapshotPath { get; }
         }
     }
 }

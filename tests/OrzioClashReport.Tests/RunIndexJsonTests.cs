@@ -10,6 +10,8 @@ namespace OrzioClashReport.Tests
     {
         private static JsonRunIndexSerializer Sut() => new JsonRunIndexSerializer();
 
+        private static RunIndexFileReplacer Replacer() => new RunIndexFileReplacer();
+
         private static RunIndexSnapshotPathResolver Resolver() => new RunIndexSnapshotPathResolver();
 
         private const string MinimalExpectedJson = """
@@ -179,6 +181,221 @@ namespace OrzioClashReport.Tests
             RunIndexDocument loaded = Sut().Parse(Sut().Serialize(original));
 
             Assert.Equal(original.SnapshotPaths, loaded.SnapshotPaths);
+        }
+
+        [Fact]
+        public void ReplaceExisting_ExistingPath_IsReplacedWithDeterministicJson()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string outputPath = Path.Combine(tempDirectory, "run-index.json");
+            var serializer = Sut();
+            var index = new RunIndexDocument(new[] { "runs/run-001.json", "archive/run-002.json" });
+
+            try
+            {
+                File.WriteAllText(outputPath, "ORIGINAL", new UTF8Encoding(false));
+
+                Replacer().ReplaceExisting(index, outputPath);
+
+                Assert.Equal(serializer.Serialize(index), File.ReadAllText(outputPath), StringComparer.Ordinal);
+            }
+            finally
+            {
+                DeleteFileIfExists(outputPath);
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void ReplaceExisting_WritesUtf8WithoutBom()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string outputPath = Path.Combine(tempDirectory, "run-index.json");
+
+            try
+            {
+                File.WriteAllText(outputPath, "ORIGINAL", new UTF8Encoding(false));
+
+                Replacer().ReplaceExisting(new RunIndexDocument(new[] { "run-001.json" }), outputPath);
+
+                byte[] bytes = File.ReadAllBytes(outputPath);
+                Assert.False(bytes.Length >= 3 && bytes[0] == 0xEF && bytes[1] == 0xBB && bytes[2] == 0xBF);
+            }
+            finally
+            {
+                DeleteFileIfExists(outputPath);
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void ReplaceExisting_UsesLfLineEndingsOnly()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string outputPath = Path.Combine(tempDirectory, "run-index.json");
+
+            try
+            {
+                File.WriteAllText(outputPath, "ORIGINAL", new UTF8Encoding(false));
+
+                Replacer().ReplaceExisting(new RunIndexDocument(new[] { "run-001.json" }), outputPath);
+
+                string json = File.ReadAllText(outputPath);
+                Assert.DoesNotContain("\r", json, StringComparison.Ordinal);
+            }
+            finally
+            {
+                DeleteFileIfExists(outputPath);
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void ReplaceExisting_EndsWithExactlyOneTrailingLf()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string outputPath = Path.Combine(tempDirectory, "run-index.json");
+
+            try
+            {
+                File.WriteAllText(outputPath, "ORIGINAL", new UTF8Encoding(false));
+
+                Replacer().ReplaceExisting(new RunIndexDocument(new[] { "run-001.json" }), outputPath);
+
+                string json = File.ReadAllText(outputPath);
+                Assert.EndsWith("\n", json, StringComparison.Ordinal);
+                Assert.False(json.EndsWith("\n\n", StringComparison.Ordinal));
+            }
+            finally
+            {
+                DeleteFileIfExists(outputPath);
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void ReplaceExisting_MissingDestination_IsRejected()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string outputPath = Path.Combine(tempDirectory, "run-index.json");
+
+            try
+            {
+                var ex = Assert.Throws<RunIndexFormatException>(
+                    () => Replacer().ReplaceExisting(new RunIndexDocument(new[] { "run-001.json" }), outputPath));
+
+                Assert.Contains("Run index file not found:", ex.Message, StringComparison.Ordinal);
+                Assert.False(File.Exists(outputPath));
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void ReplaceExisting_DestinationDirectory_IsRejected()
+        {
+            string tempDirectory = CreateTempDirectory();
+
+            try
+            {
+                var ex = Assert.Throws<RunIndexFormatException>(
+                    () => Replacer().ReplaceExisting(new RunIndexDocument(new[] { "run-001.json" }), tempDirectory));
+
+                Assert.Contains("destination cannot be an existing directory", ex.Message, StringComparison.Ordinal);
+                AssertNoReplacementTempFiles(tempDirectory);
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void ReplaceExisting_MissingParentDirectory_IsRejected()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string outputPath = Path.Combine(tempDirectory, "missing-parent", "run-index.json");
+
+            try
+            {
+                var ex = Assert.Throws<RunIndexFormatException>(
+                    () => Replacer().ReplaceExisting(new RunIndexDocument(new[] { "run-001.json" }), outputPath));
+
+                Assert.Contains("Run index parent directory not found:", ex.Message, StringComparison.Ordinal);
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void ReplaceExisting_SerializationFailure_PreservesOriginalBytes()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string outputPath = Path.Combine(tempDirectory, "run-index.json");
+            byte[] originalBytes = Encoding.UTF8.GetBytes("ORIGINAL-RUN-INDEX");
+
+            try
+            {
+                File.WriteAllBytes(outputPath, originalBytes);
+
+                var ex = Assert.Throws<RunIndexFormatException>(
+                    () => Replacer().ReplaceExisting(new RunIndexDocument(Array.Empty<string>()), outputPath));
+
+                Assert.Contains("at least one snapshot path reference", ex.Message, StringComparison.Ordinal);
+                Assert.Equal(originalBytes, File.ReadAllBytes(outputPath));
+            }
+            finally
+            {
+                DeleteFileIfExists(outputPath);
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void ReplaceExisting_SerializationFailure_LeavesNoTemporaryFile()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string outputPath = Path.Combine(tempDirectory, "run-index.json");
+
+            try
+            {
+                File.WriteAllText(outputPath, "ORIGINAL", new UTF8Encoding(false));
+
+                Assert.Throws<RunIndexFormatException>(
+                    () => Replacer().ReplaceExisting(new RunIndexDocument(Array.Empty<string>()), outputPath));
+
+                AssertNoReplacementTempFiles(tempDirectory);
+            }
+            finally
+            {
+                DeleteFileIfExists(outputPath);
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void ReplaceExisting_Success_LeavesNoTemporaryFile()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string outputPath = Path.Combine(tempDirectory, "run-index.json");
+
+            try
+            {
+                File.WriteAllText(outputPath, "ORIGINAL", new UTF8Encoding(false));
+
+                Replacer().ReplaceExisting(new RunIndexDocument(new[] { "run-001.json" }), outputPath);
+
+                AssertNoReplacementTempFiles(tempDirectory);
+            }
+            finally
+            {
+                DeleteFileIfExists(outputPath);
+                DeleteDirectoryIfExists(tempDirectory);
+            }
         }
 
         [Fact]
@@ -727,6 +944,15 @@ namespace OrzioClashReport.Tests
             {
                 Directory.Delete(path, recursive: true);
             }
+        }
+
+        private static void AssertNoReplacementTempFiles(string directoryPath)
+        {
+            string[] temporaryFiles = Directory.Exists(directoryPath)
+                ? Directory.GetFiles(directoryPath, ".run-index-replace-*.tmp", SearchOption.TopDirectoryOnly)
+                : Array.Empty<string>();
+
+            Assert.Empty(temporaryFiles);
         }
     }
 }

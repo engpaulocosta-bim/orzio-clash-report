@@ -232,6 +232,15 @@ dotnet run --project src/OrzioClashReport.Cli -- \
   --project project.json
 ```
 
+Append one new persisted snapshot to the end of the existing project run index:
+
+```bash
+dotnet run --project src/OrzioClashReport.Cli -- \
+  append-project-snapshot \
+  --project project.json \
+  --snapshot snapshots/run-004.json
+```
+
 Contract rules:
 
 1. The project catalog is operational state only. It stores project metadata, one run-index
@@ -239,9 +248,15 @@ Contract rules:
 2. Run snapshots remain immutable evidence.
 3. Run index remains the only order authority.
 4. The report path is only a regenerable derived-artifact destination.
-5. Matching, lifecycle, continuity links, continuity paths, and presentation are always
+5. `append-project-snapshot` preserves every existing run-index reference exactly as loaded,
+   appends exactly one new reference at the end, allows duplicates, and never reorders,
+   deduplicates, removes, or silently normalizes earlier entries.
+6. `append-project-snapshot` updates only the run index. It does not overwrite the project
+   catalog, mutate any snapshot, or regenerate the report automatically. Run
+   `render-project` separately when you want refreshed HTML.
+7. Matching, lifecycle, continuity links, continuity paths, and presentation are always
    recalculated and are never persisted into the project catalog.
-6. There is still no persistent clash identity, Clash Ledger, `Reopened`, database, or
+8. There is still no persistent clash identity, Clash Ledger, `Reopened`, database, or
    automatic chronology.
 
 For a recommended layout and operational notes, see

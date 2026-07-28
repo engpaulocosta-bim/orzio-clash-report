@@ -147,12 +147,53 @@ namespace OrzioClashReport.Tests
 
                 var ex = Assert.Throws<IdentityGovernanceFormatException>(() => Sut().Save(BuildConfirmDocument(), outputPath));
 
-                Assert.Contains("Identity governance file already exists:", ex.Message, StringComparison.Ordinal);
+                Assert.Equal("Identity governance file already exists.", ex.Message);
+                Assert.DoesNotContain(outputPath, ex.Message, StringComparison.OrdinalIgnoreCase);
             }
             finally
             {
                 DeleteFileIfExists(outputPath);
                 DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Save_MissingParentDirectory_FailsWithoutExposingPath()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string outputPath = Path.Combine(tempDirectory, "missing-parent", "identity-governance.json");
+
+            try
+            {
+                var ex = Assert.Throws<IdentityGovernanceFormatException>(() => Sut().Save(BuildConfirmDocument(), outputPath));
+
+                Assert.Equal("Failed to write identity governance document.", ex.Message);
+                Assert.DoesNotContain(outputPath, ex.Message, StringComparison.OrdinalIgnoreCase);
+                Assert.False(File.Exists(outputPath));
+            }
+            finally
+            {
+                DeleteFileIfExists(outputPath);
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Load_MissingFile_FailsWithoutExposingPath()
+        {
+            string inputPath = Path.Combine(CreateTempDirectory(), "missing-identity-governance.json");
+
+            try
+            {
+                var ex = Assert.Throws<IdentityGovernanceFormatException>(() => Sut().Load(inputPath));
+
+                Assert.Equal("Identity governance file not found.", ex.Message);
+                Assert.DoesNotContain(inputPath, ex.Message, StringComparison.OrdinalIgnoreCase);
+            }
+            finally
+            {
+                DeleteFileIfExists(inputPath);
+                DeleteDirectoryIfExists(Path.GetDirectoryName(inputPath)!);
             }
         }
 
@@ -331,21 +372,38 @@ namespace OrzioClashReport.Tests
             Assert.Contains("Duplicate JSON property 'schemaVersion' at root.", ex.Message, StringComparison.Ordinal);
         }
 
+        [Fact]
+        public void Serialize_InvalidUtf16InRequiredIdentifier_FailsWithDeterministicSafeMessage()
+        {
+            string invalidValue = new string(new[] { 'A', '\uD800', 'B' });
+            IdentityGovernanceDocument document = BuildDocumentWithFields(
+                decisionId: invalidValue,
+                reason: "Confirmed from model context");
+
+            var ex = Assert.Throws<IdentityGovernanceFormatException>(() => Sut().Serialize(document));
+
+            Assert.Equal("Field 'decisions[0].decisionId' contains invalid UTF-16 data.", ex.Message);
+            Assert.DoesNotContain(invalidValue, ex.Message, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Serialize_InvalidUtf16InOptionalReason_FailsWithDeterministicSafeMessage()
+        {
+            string invalidValue = new string(new[] { 'O', 'K', '\uDC00' });
+            IdentityGovernanceDocument document = BuildDocumentWithFields(
+                decisionId: "decision-001",
+                reason: invalidValue);
+
+            var ex = Assert.Throws<IdentityGovernanceFormatException>(() => Sut().Serialize(document));
+
+            Assert.Equal("Field 'decisions[0].reason' contains invalid UTF-16 data.", ex.Message);
+            Assert.DoesNotContain(invalidValue, ex.Message, StringComparison.Ordinal);
+        }
+
         private static IdentityGovernanceDocument BuildConfirmDocument() =>
-            new IdentityGovernanceDocument(
-                "coordination-project",
-                new[]
-                {
-                    new HumanIdentityDecision(
-                        "decision-001",
-                        "coordination-project",
-                        HumanIdentityDecisionKind.ConfirmSameIdentity,
-                        new ClashEvidenceEndpoint("run-001", 1),
-                        new ClashEvidenceEndpoint("run-002", 2),
-                        "identity-001",
-                        "coordinator-a",
-                        "Confirmed from model context"),
-                });
+            BuildDocumentWithFields(
+                decisionId: "decision-001",
+                reason: "Confirmed from model context");
 
         private static IdentityGovernanceDocument BuildRejectDocument() =>
             new IdentityGovernanceDocument(
@@ -361,6 +419,22 @@ namespace OrzioClashReport.Tests
                         null,
                         "coordinator-b",
                         null),
+                });
+
+        private static IdentityGovernanceDocument BuildDocumentWithFields(string decisionId, string? reason) =>
+            new IdentityGovernanceDocument(
+                "coordination-project",
+                new[]
+                {
+                    new HumanIdentityDecision(
+                        decisionId,
+                        "coordination-project",
+                        HumanIdentityDecisionKind.ConfirmSameIdentity,
+                        new ClashEvidenceEndpoint("run-001", 1),
+                        new ClashEvidenceEndpoint("run-002", 2),
+                        "identity-001",
+                        "coordinator-a",
+                        reason),
                 });
 
         private static string CreateTempDirectory()

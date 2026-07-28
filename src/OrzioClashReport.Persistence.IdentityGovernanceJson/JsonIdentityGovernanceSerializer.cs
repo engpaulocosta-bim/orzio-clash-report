@@ -65,7 +65,7 @@ namespace OrzioClashReport.Persistence.IdentityGovernanceJson
             if (File.Exists(filePath))
             {
                 throw new IdentityGovernanceFormatException(
-                    $"Identity governance file already exists: '{filePath}'.");
+                    "Identity governance file already exists.");
             }
 
             FileStream stream;
@@ -76,19 +76,19 @@ namespace OrzioClashReport.Persistence.IdentityGovernanceJson
             catch (IOException ex) when (File.Exists(filePath))
             {
                 throw new IdentityGovernanceFormatException(
-                    $"Identity governance file already exists: '{filePath}'.",
+                    "Identity governance file already exists.",
                     ex);
             }
             catch (IOException ex)
             {
                 throw new IdentityGovernanceFormatException(
-                    $"Failed to write identity governance document to '{filePath}'.",
+                    "Failed to write identity governance document.",
                     ex);
             }
             catch (UnauthorizedAccessException ex)
             {
                 throw new IdentityGovernanceFormatException(
-                    $"Failed to write identity governance document to '{filePath}'.",
+                    "Failed to write identity governance document.",
                     ex);
             }
 
@@ -102,13 +102,13 @@ namespace OrzioClashReport.Persistence.IdentityGovernanceJson
             catch (IOException ex)
             {
                 throw new IdentityGovernanceFormatException(
-                    $"Failed to write identity governance document to '{filePath}'.",
+                    "Failed to write identity governance document.",
                     ex);
             }
             catch (UnauthorizedAccessException ex)
             {
                 throw new IdentityGovernanceFormatException(
-                    $"Failed to write identity governance document to '{filePath}'.",
+                    "Failed to write identity governance document.",
                     ex);
             }
         }
@@ -158,19 +158,48 @@ namespace OrzioClashReport.Persistence.IdentityGovernanceJson
             if (!File.Exists(filePath))
             {
                 throw new IdentityGovernanceFormatException(
-                    $"Identity governance file not found: '{filePath}'.");
+                    "Identity governance file not found.");
             }
 
-            string json = File.ReadAllText(filePath, Encoding.UTF8);
+            string json;
+            try
+            {
+                json = File.ReadAllText(filePath, Encoding.UTF8);
+            }
+            catch (IOException ex)
+            {
+                throw new IdentityGovernanceFormatException(
+                    "Failed to read identity governance document.",
+                    ex);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                throw new IdentityGovernanceFormatException(
+                    "Failed to read identity governance document.",
+                    ex);
+            }
+
             return Parse(json);
         }
 
         private static IdentityGovernanceDocumentDto BuildDto(IdentityGovernanceDocument document)
         {
+            EnsureWellFormedUtf16(document.ProjectId, "projectId");
+
             var decisions = new List<HumanIdentityDecisionDto?>(document.Decisions.Count);
             for (int i = 0; i < document.Decisions.Count; i++)
             {
                 HumanIdentityDecision decision = document.Decisions[i];
+                string decisionPath = $"decisions[{i}]";
+
+                EnsureWellFormedUtf16(decision.DecisionId, $"{decisionPath}.decisionId");
+                EnsureWellFormedUtf16(decision.ProjectId, $"{decisionPath}.projectId");
+                EnsureWellFormedUtf16(decision.LeftEvidence.RunId, $"{decisionPath}.leftEvidence.runId");
+                EnsureWellFormedUtf16(decision.RightEvidence.RunId, $"{decisionPath}.rightEvidence.runId");
+                EnsureOptionalWellFormedUtf16(decision.PersistentIdentityId, $"{decisionPath}.persistentIdentityId");
+                EnsureWellFormedUtf16(decision.ReviewerAlias, $"{decisionPath}.reviewerAlias");
+                EnsureOptionalWellFormedUtf16(decision.Reason, $"{decisionPath}.reason");
+
                 decisions.Add(new HumanIdentityDecisionDto
                 {
                     DecisionId = decision.DecisionId,
@@ -319,6 +348,39 @@ namespace OrzioClashReport.Persistence.IdentityGovernanceJson
             }
 
             return ex.Message;
+        }
+
+        private static void EnsureOptionalWellFormedUtf16(string? value, string context)
+        {
+            if (value != null)
+            {
+                EnsureWellFormedUtf16(value, context);
+            }
+        }
+
+        private static void EnsureWellFormedUtf16(string value, string context)
+        {
+            for (int i = 0; i < value.Length; i++)
+            {
+                char current = value[i];
+                if (char.IsHighSurrogate(current))
+                {
+                    if (i + 1 >= value.Length || !char.IsLowSurrogate(value[i + 1]))
+                    {
+                        throw new IdentityGovernanceFormatException(
+                            $"Field '{context}' contains invalid UTF-16 data.");
+                    }
+
+                    i++;
+                    continue;
+                }
+
+                if (char.IsLowSurrogate(current))
+                {
+                    throw new IdentityGovernanceFormatException(
+                        $"Field '{context}' contains invalid UTF-16 data.");
+                }
+            }
         }
 
         private static string FormatJsonExceptionMessage(JsonException ex)

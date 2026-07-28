@@ -25,6 +25,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrzioClashReport.Persistenc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrzioClashReport.Persistence.ProjectCatalogJson", "src\OrzioClashReport.Persistence.ProjectCatalogJson\OrzioClashReport.Persistence.ProjectCatalogJson.csproj", "{FCE87C0E-F01C-4D64-BABA-FF87BCF1EAF9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrzioClashReport.Persistence.IdentityGovernanceJson", "src\OrzioClashReport.Persistence.IdentityGovernanceJson\OrzioClashReport.Persistence.IdentityGovernanceJson.csproj", "{C2C2A835-29C6-49C8-8DB3-4B27C5D85CE7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -70,6 +72,10 @@ Global
 		{FCE87C0E-F01C-4D64-BABA-FF87BCF1EAF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FCE87C0E-F01C-4D64-BABA-FF87BCF1EAF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FCE87C0E-F01C-4D64-BABA-FF87BCF1EAF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C2C2A835-29C6-49C8-8DB3-4B27C5D85CE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C2C2A835-29C6-49C8-8DB3-4B27C5D85CE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C2C2A835-29C6-49C8-8DB3-4B27C5D85CE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C2C2A835-29C6-49C8-8DB3-4B27C5D85CE7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{DCC898D6-AF90-4F16-8DD1-944EABA0D939} = {4F5DFCCE-B943-45BD-80E4-5FBDDCD5AE6B}
@@ -81,5 +87,6 @@ Global
 		{3EB7104B-8B59-4AD3-B600-5D37E0FB9BC7} = {4F5DFCCE-B943-45BD-80E4-5FBDDCD5AE6B}
 		{58ECFCA5-0FD7-40D8-B1CF-C46834A5A4DD} = {4F5DFCCE-B943-45BD-80E4-5FBDDCD5AE6B}
 		{FCE87C0E-F01C-4D64-BABA-FF87BCF1EAF9} = {4F5DFCCE-B943-45BD-80E4-5FBDDCD5AE6B}
+		{C2C2A835-29C6-49C8-8DB3-4B27C5D85CE7} = {4F5DFCCE-B943-45BD-80E4-5FBDDCD5AE6B}
 	EndGlobalSection
 EndGlobal

@@ -26,6 +26,7 @@ namespace OrzioClashReport.Tests
             Assert.Contains("compare-index", result.StdOut, StringComparison.Ordinal);
             Assert.Contains("create-identity-governance", result.StdOut, StringComparison.Ordinal);
             Assert.Contains("append-identity-decision", result.StdOut, StringComparison.Ordinal);
+            Assert.Contains("validate-identity-governance", result.StdOut, StringComparison.Ordinal);
             Assert.Contains("Run-index order is authoritative", result.StdOut, StringComparison.Ordinal);
         }
 

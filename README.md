@@ -66,20 +66,26 @@ aggregate multi-run lifecycle, automatic chronology, or automatic clash responsi
 
 ## Source-Only Identity Governance
 
-The source tree now contains the Step 29A and Step 29B source-only identity-governance
-workflow:
+The source tree now contains the Step 29A, Step 29B, and Step 29C source-only
+identity-governance workflow:
 
 - `ClashEvidenceEndpoint`, `HumanIdentityDecision`, and `IdentityGovernanceDocument`
 - Strict schema-v1 JSON adapter `OrzioClashReport.Persistence.IdentityGovernanceJson`
 - `create-identity-governance` for creating one empty governance document
 - `append-identity-decision` for appending one explicit human decision to an existing
   governance file through safe replace-existing persistence
+- `validate-identity-governance` for read-only evidence validation of a governance
+  document's project binding and every decision's `runId` + `occurrenceIndex` evidence
+  endpoints against one project's indexed, immutable snapshots
 
 This workflow is source-only as of July 28, 2026. It is not part of the published
 `v0.1.0-preview.2` binary contract and is not described as a packaged preview.2 feature.
-Snapshots remain immutable evidence. The identity-governance CLI does not validate against
-snapshots, does not infer or propagate identity, is not an interactive review tool, is not
-a Clash Ledger, and does not project decisions into reports.
+Snapshots remain immutable evidence. The identity-governance CLI does not infer or
+propagate identity, is not an interactive review tool, is not a Clash Ledger, and does not
+project decisions into reports. `validate-identity-governance` is read-only: it never
+writes, replaces, or creates any file, and it validates only project binding and evidence
+existence -- never matcher candidacy, run adjacency, left/right ordering intent,
+transitivity, graph conflicts, identity merges, reopening, or responsibility.
 
 Source example:
 
@@ -101,10 +107,17 @@ dotnet run --project src/OrzioClashReport.Cli -- \
   --persistent-identity-id identity-001 \
   --reviewer-alias coordinator-a \
   --reason "Confirmed from model context"
+
+dotnet run --project src/OrzioClashReport.Cli -- \
+  validate-identity-governance \
+  --project project.json \
+  --governance identity-governance.json
 ```
 
-Operational details for this source-only workflow live in
+Operational details for the authoring workflow live in
 [docs/operations/identity-governance-cli.md](docs/operations/identity-governance-cli.md).
+Operational details for the read-only evidence-validation workflow live in
+[docs/operations/identity-governance-validation.md](docs/operations/identity-governance-validation.md).
 
 Generate a report from a Clash Detective XML export:
 

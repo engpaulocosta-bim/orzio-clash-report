@@ -253,6 +253,10 @@ if ($projectJson.schemaVersion -ne 1) {
     throw "Project catalog schemaVersion must be 1."
 }
 
+Assert-TextEquals -Actual ([string] $projectJson.projectId) -Expected "smoke-project" -Description "Project catalog projectId"
+Assert-TextEquals -Actual ([string] $projectJson.displayName) -Expected "Smoke Project" -Description "Project catalog displayName"
+Assert-TextEquals -Actual ([string] $projectJson.runIndexPath) -Expected "run-index.json" -Description "Project catalog runIndexPath"
+Assert-TextEquals -Actual ([string] $projectJson.longitudinalReportPath) -Expected "reports/project-longitudinal.html" -Description "Project catalog longitudinalReportPath"
 Assert-RelativeReference -Reference $projectJson.runIndexPath -Description "Project catalog runIndexPath"
 Assert-RelativeReference -Reference $projectJson.longitudinalReportPath -Description "Project catalog longitudinalReportPath"
 Assert-TextContains (Get-NormalizedFileText -Path $createProjectResult.StdOutPath) "Project: smoke-project" "Create-project stdout"

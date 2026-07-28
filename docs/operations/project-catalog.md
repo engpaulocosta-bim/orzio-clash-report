@@ -1,8 +1,8 @@
 # Project Catalog Workflow
 
-The project catalog workflow is included in the `0.1.0-preview.2` release candidate.
-The latest published prerelease remains `0.1.0-preview.1` until the `preview.2` tag and
-GitHub prerelease are created.
+The project catalog workflow is included in version `0.1.0-preview.2`.
+This document describes the contents and behavior of version `0.1.0-preview.2` without
+asserting its current publication state.
 
 ## Purpose
 
@@ -167,8 +167,7 @@ or personal information. The project catalog should use safe public aliases only
 
 ## Limitations
 
-- Included in the `0.1.0-preview.2` release candidate, but not yet published as a
-  prerelease until the `preview.2` tag exists
+- Included in version `0.1.0-preview.2`
 - No persistent clash identity
 - No Clash Ledger
 - No `Reopened`

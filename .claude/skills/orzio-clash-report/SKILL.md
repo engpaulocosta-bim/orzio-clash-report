@@ -89,10 +89,11 @@ state exactly what was verified and what remains unverified.
 
 ## Internal preview release contract
 
-Current internal preview candidate: `0.1.0-preview.2`, distributed as `orzioclash.exe` for
-Windows `win-x64`. The latest published prerelease remains `v0.1.0-preview.1` until the
-future release tag `v0.1.0-preview.2` is created; release tags must point to commits
-contained in `master`.
+Current source and package version: `0.1.0-preview.2`, distributed as `orzioclash.exe` for
+Windows `win-x64`. Release availability is determined by the matching Git tag and GitHub
+prerelease. This repository documentation describes version `0.1.0-preview.2` without
+asserting its current publication state. Release tags must point to commits contained in
+`master`.
 
 README and user-facing documentation remain English. Published CLI stdout/stderr contracts
 must not be silently broken after release.

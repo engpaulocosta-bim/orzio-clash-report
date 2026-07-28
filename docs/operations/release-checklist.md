@@ -69,6 +69,7 @@ Use this checklist before publishing an internal preview artifact or prerelease.
   addresses, NWD, NWF, NWC, RVT, or image artifacts are included.
 - [ ] Release notes clearly state the longitudinal validation limitation.
 - [ ] No document or release note claims `0.1.0-preview.2` is already published before the tag.
+- [ ] Packaged documentation does not hard-code which GitHub prerelease is currently the latest.
 - [ ] Release is marked as a prerelease.
 - [ ] Post-download checksum verification was tested.
 

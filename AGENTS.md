@@ -108,9 +108,10 @@ An agent can claim the first two. Only the human can claim the third.
 
 ## Internal preview release contract
 
-Current internal preview target: `0.1.0-preview.1`, distributed as `orzioclash.exe` for
-Windows `win-x64`. The future release tag is `v0.1.0-preview.1`; release tags must point to
-commits contained in `master`.
+Current internal preview candidate: `0.1.0-preview.2`, distributed as `orzioclash.exe` for
+Windows `win-x64`. The latest published prerelease remains `v0.1.0-preview.1` until the
+future release tag `v0.1.0-preview.2` is created; release tags must point to commits
+contained in `master`.
 
 README and user-facing documentation remain English. Published CLI stdout/stderr contracts
 must not be silently broken after release.
@@ -122,7 +123,10 @@ Private validation stays documented only through public aliases and scoped claim
 Validation status is intentionally narrow: single-run parsing, grouping, and HTML were
 human-validated on one private real export. Longitudinal matching, lifecycle, continuity
 links, continuity paths, and longitudinal HTML remain unvalidated against three real
-historical exports and are experimental.
+historical exports and are experimental. Release/package smoke may use repeated anonymized
+fixtures for `--version`, `--help`, single-run HTML, three snapshots, run-index creation,
+`compare-index`, `create-project`, `append-project-snapshot`, and `render-project`, but
+that smoke is packaging coverage only and is not real longitudinal validation.
 
 The preview does not provide persistent clash identity, Clash Ledger, `Reopened`,
 aggregate multi-run lifecycle, automatic chronology, or automatic clash responsibility.

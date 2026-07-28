@@ -1,11 +1,15 @@
 # Internal Preview Guide
 
-This guide explains how to operate the `0.1.0-preview.1` internal preview on Windows
-without opening the source code.
+This guide explains how to operate the `0.1.0-preview.2` internal preview release
+candidate on Windows without opening the source code.
 
 ## Status
 
 This is an internal preview, not a fully validated longitudinal MVP.
+
+The latest published prerelease remains `0.1.0-preview.1` until the `v0.1.0-preview.2`
+tag and GitHub prerelease are created. Until then, this guide describes the release
+candidate source and package contents, not an already-published prerelease.
 
 Single-run parsing, grouping, and HTML were human-validated on one private real export.
 Longitudinal matching, lifecycle classification, continuity links, continuity paths, and
@@ -17,16 +21,16 @@ aggregate multi-run lifecycle, automatic chronology, or automatic clash responsi
 
 ## Download and Verify
 
-Download these files from the internal preview artifact or prerelease:
+Download these files from the internal preview artifact or future prerelease:
 
-- `orzio-clash-report-v0.1.0-preview.1-win-x64.zip`
-- `orzio-clash-report-v0.1.0-preview.1-win-x64.sha256`
+- `orzio-clash-report-v0.1.0-preview.2-win-x64.zip`
+- `orzio-clash-report-v0.1.0-preview.2-win-x64.sha256`
 
 Verify the ZIP checksum in PowerShell:
 
 ```powershell
-$zip = ".\orzio-clash-report-v0.1.0-preview.1-win-x64.zip"
-$expected = (Get-Content ".\orzio-clash-report-v0.1.0-preview.1-win-x64.sha256").Split(" ")[0]
+$zip = ".\orzio-clash-report-v0.1.0-preview.2-win-x64.zip"
+$expected = (Get-Content ".\orzio-clash-report-v0.1.0-preview.2-win-x64.sha256").Split(" ")[0]
 $actual = (Get-FileHash -LiteralPath $zip -Algorithm SHA256).Hash.ToLowerInvariant()
 if ($actual -ne $expected) { throw "Checksum mismatch." }
 ```
@@ -34,7 +38,7 @@ if ($actual -ne $expected) { throw "Checksum mismatch." }
 Extract the ZIP:
 
 ```powershell
-Expand-Archive -LiteralPath ".\orzio-clash-report-v0.1.0-preview.1-win-x64.zip" -DestinationPath ".\orzio-preview"
+Expand-Archive -LiteralPath ".\orzio-clash-report-v0.1.0-preview.2-win-x64.zip" -DestinationPath ".\orzio-preview"
 Set-Location ".\orzio-preview"
 ```
 
@@ -48,7 +52,7 @@ Check the executable:
 Expected version output:
 
 ```text
-orzioclash 0.1.0-preview.1
+orzioclash 0.1.0-preview.2
 ```
 
 ## Recommended Layout
@@ -57,6 +61,7 @@ Keep project inputs, snapshots, and reports in a controlled workspace:
 
 ```text
 coordination-work\
+  project.json
   inputs\
     run-001\
       clash-export.xml
@@ -74,6 +79,7 @@ coordination-work\
   reports\
     single-run.html
     longitudinal.html
+    project-longitudinal.html
   run-index.json
 ```
 
@@ -192,6 +198,52 @@ The package includes `samples/run-index.template.json` as a minimal template.
 The command prints a deterministic longitudinal summary and pairwise adjacent summaries.
 The optional HTML is self-contained.
 
+## Create The Project Catalog
+
+Create one operational project catalog from the validated run index:
+
+```powershell
+.\orzioclash.exe create-project `
+  --project-id coordination-project `
+  --name "Coordination Project" `
+  --index ".\coordination-work\run-index.json" `
+  --report ".\coordination-work\reports\project-longitudinal.html" `
+  -o ".\coordination-work\project.json"
+```
+
+The resulting `project.json` remains operational state only. It stores project metadata,
+one run-index reference, and one report destination. It does not store snapshots,
+matching, lifecycle, continuity, or persistent clash identity.
+
+## Append One Snapshot
+
+Create the next immutable snapshot first, then append it explicitly:
+
+```powershell
+.\orzioclash.exe snapshot `
+  --xml ".\coordination-work\inputs\run-004\clash-export.xml" `
+  --manifest ".\coordination-work\inputs\run-004\run-manifest.json" `
+  -o ".\coordination-work\snapshots\run-004.json"
+
+.\orzioclash.exe append-project-snapshot `
+  --project ".\coordination-work\project.json" `
+  --snapshot ".\coordination-work\snapshots\run-004.json"
+```
+
+`append-project-snapshot` updates only the run index. It does not regenerate the project
+report automatically.
+
+## Render The Project Report
+
+Regenerate the project report from immutable evidence after an append:
+
+```powershell
+.\orzioclash.exe render-project --project ".\coordination-work\project.json"
+```
+
+This reloads the snapshots referenced by the project catalog, recalculates the full
+derived longitudinal result, and rewrites the configured HTML destination.
+
 ## Smoke Test the Package
 
 The package includes `smoke-release.ps1`. It uses repeated anonymized fixtures as a
@@ -221,6 +273,8 @@ New-Item -ItemType Directory -Force -Path $workspace | Out-Null
 - **Coordination run snapshot file already exists**: choose a new snapshot path.
 - **Run index must contain at least two snapshot references**: create an index with two or
   more snapshots.
+- **Project report did not change after append**: this is expected. `append-project-snapshot`
+  updates only the run index. Run `render-project` to regenerate HTML.
 - **Longitudinal result looks odd**: confirm index order. The index order is the sequence
   authority.
 
@@ -231,6 +285,8 @@ New-Item -ItemType Directory -Force -Path $workspace | Out-Null
 - Immutable snapshot creation from XML plus schema-v2 manifest.
 - Explicit ordered run-index creation.
 - Adjacent comparison over an explicit run index.
+- Operational project-catalog creation, append-only snapshot indexing, and report
+  regeneration.
 - Self-contained lifecycle and longitudinal HTML.
 
 ## Unsupported Behavior

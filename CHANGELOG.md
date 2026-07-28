@@ -7,6 +7,8 @@ All notable changes for OrzioClashReport are recorded here.
 - Added a strict schema-v1 operational project catalog JSON adapter.
 - Added `create-project` and `render-project` CLI commands for regenerable longitudinal
   project workflows built from immutable snapshots and an explicit run index.
+- Added `append-project-snapshot` for explicit append-only updates to an existing project
+  catalog run index, using a safe in-place run-index replacement workflow.
 
 ## 0.1.0-preview.1
 

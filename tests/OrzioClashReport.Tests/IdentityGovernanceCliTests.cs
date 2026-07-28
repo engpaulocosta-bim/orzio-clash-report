@@ -130,6 +130,56 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
+        public void Main_CreateIdentityGovernanceMode_UnknownOptionLikeValueForProjectId_IsRejectedAsMissingValue()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string outputPath = Path.Combine(tempDirectory, "identity-governance.json");
+
+            try
+            {
+                var result = InvokeMain(
+                    "create-identity-governance",
+                    "--project-id", "--unknown",
+                    "-o", outputPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("Missing value for '--project-id'.", result.StdErr, StringComparison.Ordinal);
+                Assert.Contains(CreateIdentityGovernanceUsage, result.StdErr, StringComparison.Ordinal);
+                Assert.False(File.Exists(outputPath));
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_CreateIdentityGovernanceMode_ShortOptionLikeValueForProjectId_IsRejectedAsMissingValue()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string outputPath = Path.Combine(tempDirectory, "identity-governance.json");
+
+            try
+            {
+                var result = InvokeMain(
+                    "create-identity-governance",
+                    "--project-id", "-x",
+                    "-o", outputPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("Missing value for '--project-id'.", result.StdErr, StringComparison.Ordinal);
+                Assert.Contains(CreateIdentityGovernanceUsage, result.StdErr, StringComparison.Ordinal);
+                Assert.False(File.Exists(outputPath));
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
         public void Main_AppendIdentityDecisionMode_ConfirmDecision_AppendsAndWritesExactJson()
         {
             string tempDirectory = CreateTempDirectory();
@@ -372,6 +422,7 @@ namespace OrzioClashReport.Tests
             Assert.Equal(1, result.ExitCode);
             Assert.Equal(string.Empty, result.StdOut);
             Assert.Contains("Option '--left-occurrence-index' must be a non-negative decimal integer.", result.StdErr, StringComparison.Ordinal);
+            Assert.DoesNotContain("Missing value for '--left-occurrence-index'.", result.StdErr, StringComparison.Ordinal);
             Assert.Contains(AppendIdentityDecisionUsage, result.StdErr, StringComparison.Ordinal);
         }
 
@@ -481,6 +532,151 @@ namespace OrzioClashReport.Tests
             Assert.Equal(string.Empty, result.StdOut);
             Assert.Contains("Missing required option '--decision-id'.", result.StdErr, StringComparison.Ordinal);
             Assert.Contains(AppendIdentityDecisionUsage, result.StdErr, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Main_AppendIdentityDecisionMode_UnknownOptionLikeValueForReviewerAlias_IsRejectedWithoutTouchingFile()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string governancePath = Path.Combine(tempDirectory, "identity-governance.json");
+
+            try
+            {
+                SaveEmptyGovernance(governancePath, "coordination-project");
+                byte[] originalBytes = File.ReadAllBytes(governancePath);
+
+                var result = InvokeMain(
+                    "append-identity-decision",
+                    "--governance", governancePath,
+                    "--decision-id", "decision-001",
+                    "--decision-kind", "ConfirmSameIdentity",
+                    "--left-run-id", "run-001",
+                    "--left-occurrence-index", "1",
+                    "--right-run-id", "run-002",
+                    "--right-occurrence-index", "2",
+                    "--persistent-identity-id", "identity-001",
+                    "--reviewer-alias", "--unknown");
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("Missing value for '--reviewer-alias'.", result.StdErr, StringComparison.Ordinal);
+                Assert.Contains(AppendIdentityDecisionUsage, result.StdErr, StringComparison.Ordinal);
+                Assert.Equal(originalBytes, File.ReadAllBytes(governancePath));
+                AssertNoReplacementTempFiles(tempDirectory);
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_AppendIdentityDecisionMode_ShortOptionLikeValueForReviewerAlias_IsRejectedWithoutTouchingFile()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string governancePath = Path.Combine(tempDirectory, "identity-governance.json");
+
+            try
+            {
+                SaveEmptyGovernance(governancePath, "coordination-project");
+                byte[] originalBytes = File.ReadAllBytes(governancePath);
+
+                var result = InvokeMain(
+                    "append-identity-decision",
+                    "--governance", governancePath,
+                    "--decision-id", "decision-001",
+                    "--decision-kind", "ConfirmSameIdentity",
+                    "--left-run-id", "run-001",
+                    "--left-occurrence-index", "1",
+                    "--right-run-id", "run-002",
+                    "--right-occurrence-index", "2",
+                    "--persistent-identity-id", "identity-001",
+                    "--reviewer-alias", "-x");
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("Missing value for '--reviewer-alias'.", result.StdErr, StringComparison.Ordinal);
+                Assert.Contains(AppendIdentityDecisionUsage, result.StdErr, StringComparison.Ordinal);
+                Assert.Equal(originalBytes, File.ReadAllBytes(governancePath));
+                AssertNoReplacementTempFiles(tempDirectory);
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_AppendIdentityDecisionMode_UnknownOptionLikeValueForDecisionId_FailsBeforeLoadingOrReplacing()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string governancePath = Path.Combine(tempDirectory, "identity-governance.json");
+
+            try
+            {
+                SaveEmptyGovernance(governancePath, "coordination-project");
+                byte[] originalBytes = File.ReadAllBytes(governancePath);
+
+                var result = InvokeMain(
+                    "append-identity-decision",
+                    "--governance", governancePath,
+                    "--decision-id", "--unknown",
+                    "--decision-kind", "ConfirmSameIdentity",
+                    "--left-run-id", "run-001",
+                    "--left-occurrence-index", "1",
+                    "--right-run-id", "run-002",
+                    "--right-occurrence-index", "2",
+                    "--persistent-identity-id", "identity-001",
+                    "--reviewer-alias", "coordinator-a");
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("Missing value for '--decision-id'.", result.StdErr, StringComparison.Ordinal);
+                Assert.Contains(AppendIdentityDecisionUsage, result.StdErr, StringComparison.Ordinal);
+                Assert.Equal(originalBytes, File.ReadAllBytes(governancePath));
+                AssertNoReplacementTempFiles(tempDirectory);
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
+        [Fact]
+        public void Main_AppendIdentityDecisionMode_UnknownOptionLikeValueForReason_IsRejectedWithoutTouchingFile()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string governancePath = Path.Combine(tempDirectory, "identity-governance.json");
+
+            try
+            {
+                SaveEmptyGovernance(governancePath, "coordination-project");
+                byte[] originalBytes = File.ReadAllBytes(governancePath);
+
+                var result = InvokeMain(
+                    "append-identity-decision",
+                    "--governance", governancePath,
+                    "--decision-id", "decision-001",
+                    "--decision-kind", "ConfirmSameIdentity",
+                    "--left-run-id", "run-001",
+                    "--left-occurrence-index", "1",
+                    "--right-run-id", "run-002",
+                    "--right-occurrence-index", "2",
+                    "--persistent-identity-id", "identity-001",
+                    "--reviewer-alias", "coordinator-a",
+                    "--reason", "--unknown");
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.Equal(string.Empty, result.StdOut);
+                Assert.Contains("Missing value for '--reason'.", result.StdErr, StringComparison.Ordinal);
+                Assert.Contains(AppendIdentityDecisionUsage, result.StdErr, StringComparison.Ordinal);
+                Assert.Equal(originalBytes, File.ReadAllBytes(governancePath));
+                AssertNoReplacementTempFiles(tempDirectory);
+            }
+            finally
+            {
+                DeleteDirectoryIfExists(tempDirectory);
+            }
         }
 
         [Fact]

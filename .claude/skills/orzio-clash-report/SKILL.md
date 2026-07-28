@@ -117,8 +117,8 @@ remains deferred to a later human-governance stage.
 
 ## Source-only human identity governance
 
-Steps 29A and 29B add a source-only workflow for explicit human identity governance. It is
-not part of the published `v0.1.0-preview.2` binary contract.
+Steps 29A, 29B, and 29C add a source-only workflow for explicit human identity governance.
+It is not part of the published `v0.1.0-preview.2` binary contract.
 
 - Snapshots remain immutable evidence only.
 - Algorithmic matching remains suggestion only, never persisted truth.
@@ -130,9 +130,14 @@ not part of the published `v0.1.0-preview.2` binary contract.
 - `append-identity-decision` may append one explicit human decision only, preserving all
   previous decisions and replacing the existing file only after a complete temporary write
   succeeds.
-- The identity-governance CLI never validates against snapshots, never loads project
-  catalogs or run indexes for identity semantics, never infers or propagates identity, and
-  is not an interactive review workflow.
+- The authoring commands (`create-identity-governance`, `append-identity-decision`) never
+  validate against snapshots and never load project catalogs or run indexes for identity
+  semantics.
+- `validate-identity-governance` (Step 29C) is the one command that does load a project
+  catalog, its run index, and its indexed snapshots -- but only to read-only validate
+  project binding and evidence-endpoint existence. It never writes, replaces, or creates
+  any file.
+- No command infers or propagates identity, and none is an interactive review workflow.
 - No report projection, no Clash Ledger, no `Reopened`, no automatic propagation, no
   automatic transitivity, no automatic chronology, and no automatic responsibility exist at
   this stage.
@@ -493,6 +498,55 @@ report destination must stay inside the project catalog directory tree, and the 
 snapshot must not resolve to the project catalog, the run index, or the report destination.
 There is still no automatic chronology, no removal or reordering of runs, and no
 concurrent-writer support.
+
+## Validate identity governance evidence CLI
+
+The `validate-identity-governance` subcommand is an explicit, read-only evidence-validation
+workflow: project-catalog JSON -> resolved run-index JSON -> resolved and loaded indexed
+snapshots -> loaded identity-governance JSON -> `DeterministicIdentityGovernanceEvidenceValidator`
+-> deterministic pass/fail summary. The command is
+`orzioclash validate-identity-governance --project <project.json> --governance <identity-governance.json>`.
+
+It reuses the same project-catalog workspace loading and protections as
+`create-project`/`append-project-snapshot`/`render-project`: the run index and every
+indexed snapshot must resolve inside the project catalog's directory tree. It never
+requires at least two indexed snapshots -- zero decisions, one indexed snapshot, or many
+indexed snapshots are all valid inputs, because this validates evidence, not longitudinal
+comparison.
+
+The command never writes, replaces, or creates any file (including the report destination
+referenced by the project catalog, which is resolved for workspace-consistency checks only
+and is never read or written), never renders HTML, and never runs matching, lifecycle
+classification, or continuity analysis. On success it prints project id, indexed run
+count, decision count, confirmation/rejection counts by `HumanIdentityDecisionKind`, and
+evidence-endpoint count (twice the decision count), followed by
+`Identity governance validation passed.`, exit code `0`. On a semantic validation failure it
+prints `Identity governance validation failed.` plus a numbered, deterministic issue list to
+stderr, stdout stays empty, and exit code is `1` -- usage is never printed for a semantic
+failure, only for a parsing failure. On a load or format failure it prints
+`Failed to validate identity governance: <message>` to stderr with no stack trace, no file
+touched, exit code `1`.
+
+`IIdentityGovernanceEvidenceValidator` / `DeterministicIdentityGovernanceEvidenceValidator`
+(`src/OrzioClashReport.Core/Governance/`) are pure Core: they depend on no filesystem, JSON,
+CLI, project-catalog/run-index/snapshot adapter, HTML, or Navisworks type, perform no I/O,
+and never mutate the governance document or the indexed runs. `Validate` checks, in this
+exact deterministic order: project id (ordinal, never normalized) against the expected
+project id; duplicate indexed run ids in run-index order (one issue per occurrence after
+the first, never resolved by picking a snapshot arbitrarily); then every decision in
+persisted order, `Left` endpoint before `Right` endpoint, each requiring its `runId` to be
+indexed exactly once and its `occurrenceIndex` to satisfy
+`0 <= occurrenceIndex < run.Occurrences.Count`. An endpoint whose `runId` is one of the
+duplicated run ids gets no separate issue -- the duplication issue alone already makes the
+result invalid. Every issue carries an explicit
+`IdentityGovernanceEvidenceValidationIssueKind` (`ProjectIdMismatch`,
+`DuplicateIndexedRunId`, `RunNotIndexed`, `OccurrenceIndexOutOfRange`) plus the structured
+fields relevant to it, so consumers never have to parse `Message` text.
+
+This stage validates only project binding and evidence-endpoint existence. It never
+validates matcher candidacy, run adjacency, left/right ordering intent, transitivity across
+decisions, graph conflicts, identity merges, reopening, decision supersession, reviewer
+identity, timestamps, or responsibility, and it creates no Clash Ledger.
 
 ## Adjacent run sequence comparer (Core)
 

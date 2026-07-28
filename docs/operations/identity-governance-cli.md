@@ -2,9 +2,9 @@
 
 ## Scope
 
-This document describes the source-only Step 29A/29B identity-governance CLI workflow that
-exists in the repository as of July 28, 2026. It is not part of the published
-`v0.1.0-preview.2` binary contract.
+This document describes the source-only Step 29A/29B identity-governance **authoring**
+CLI workflow that exists in the repository as of July 28, 2026. It is not part of the
+published `v0.1.0-preview.2` binary contract.
 
 The workflow is intentionally narrow:
 
@@ -14,9 +14,14 @@ The workflow is intentionally narrow:
 - Preserve existing decisions and their order
 - Replace the governance file only after a complete temporary write succeeds
 
-It does not validate against snapshots, load project catalogs or run indexes for identity
-semantics, infer or propagate identity, act as an interactive review workflow, or serve as
-a Clash Ledger.
+The commands described here do not validate against snapshots, load project catalogs or
+run indexes for identity semantics, infer or propagate identity, act as an interactive
+review workflow, or serve as a Clash Ledger.
+
+Step 29C adds a separate, read-only evidence-validation command,
+`validate-identity-governance`, which does load a project catalog, run index, and its
+indexed snapshots to check project binding and evidence-endpoint existence. See
+[docs/operations/identity-governance-validation.md](identity-governance-validation.md).
 
 ## Create One Empty Governance File
 

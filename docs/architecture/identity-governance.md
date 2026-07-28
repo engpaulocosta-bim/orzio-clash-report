@@ -2,8 +2,8 @@
 
 ## Purpose
 
-Steps 29A and 29B add a narrow, explicit, source-only human identity-governance workflow.
-It exists in the source tree as of July 28, 2026 and is not part of the published
+Steps 29A, 29B, and 29C add a narrow, explicit, source-only human identity-governance
+workflow. It exists in the source tree as of July 28, 2026 and is not part of the published
 `v0.1.0-preview.2` binary contract.
 
 ## Evidence, Suggestion, Decision
@@ -49,9 +49,27 @@ Step 29B adds only two explicit non-interactive source workflows:
 - `append-identity-decision` appends one explicit human decision to the end of an existing
   governance document.
 
-The CLI does not load project catalogs, run indexes, or snapshots for validation. It uses
-the project id already stored in the governance file, preserves existing decisions and
-their order, and replaces the existing file only after a complete temporary write succeeds.
+The authoring CLI itself does not load project catalogs, run indexes, or snapshots for
+validation. It uses the project id already stored in the governance file, preserves
+existing decisions and their order, and replaces the existing file only after a complete
+temporary write succeeds.
+
+## CLI Evidence Validation Scope
+
+Step 29C adds one explicit, read-only source workflow: `validate-identity-governance`. It
+loads a project catalog, resolves and loads the project's indexed run snapshots, loads a
+governance document, and validates two things only:
+
+- The governance document's declared project id matches the project catalog's project id.
+- Every decision's `runId` + `occurrenceIndex` evidence endpoint resolves to a real
+  occurrence slot inside exactly one indexed snapshot.
+
+It never writes, replaces, or creates any file; never renders HTML; never runs matching,
+lifecycle classification, or continuity analysis; never reorders runs, decisions, or
+endpoints; and never requires a minimum number of indexed snapshots -- it validates
+evidence, not longitudinal comparison. It works correctly with zero decisions, one indexed
+run, or many indexed runs, and decisions may reference adjacent or non-adjacent runs
+identically, since only project binding and endpoint existence are in scope.
 
 ## JSON Persistence Scope
 
@@ -71,9 +89,16 @@ semantics that preserve the original file on failure.
 - No Clash Ledger
 - No `Reopened`
 - No interactive review UI or prompt flow
-- No snapshot validation of `runId` or `occurrenceIndex`
+- No matcher-candidacy, run-adjacency, or left/right-inversion validation
 - No report projection of human decisions
 - No project-catalog, run-index, or snapshot mutation
+
+Step 29C narrows exactly one of these: it does validate that a decision's `runId` and
+`occurrenceIndex` resolve to a real occurrence slot inside one indexed snapshot for the
+correct project. It still does not validate matcher candidacy, run adjacency, left/right
+ordering intent, transitivity across decisions, graph conflicts, identity merges,
+reopening, decision supersession, reviewer identity, timestamps, or responsibility, and it
+still never projects decisions into a report.
 
 ## Current Limits
 
@@ -84,6 +109,8 @@ This stage is intentionally narrow:
 - Deterministic schema-v1 JSON serialization and parsing
 - Safe replace-existing persistence for governance files
 - Explicit CLI creation and append workflows
+- Read-only evidence validation of project binding and evidence endpoints against indexed
+  snapshots
 - Unit and contract tests
 
 It does not change published preview.2 behavior, snapshots, run indexes, project catalogs,

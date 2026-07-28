@@ -470,6 +470,33 @@ during rendering: the run index, all resolved snapshots, and the report destinat
 stay inside the project catalog directory tree, and the report destination must never
 resolve to the project catalog, the run index, or any snapshot.
 
+## Append project snapshot CLI
+
+The `append-project-snapshot` subcommand is an explicit operational append-only workflow:
+project-catalog JSON -> resolved run-index JSON -> resolved existing snapshots ->
+resolved appended snapshot path -> workspace validation -> appended snapshot validation ->
+one new run-index reference at the end -> failure-safe replacement of the existing run-index
+file.
+The command is
+`orzioclash append-project-snapshot --project <project.json> --snapshot <run-snapshot.json>`.
+
+`append-project-snapshot` loads the existing project catalog, resolves its run index and
+report destination, loads every already-indexed snapshot, validates the appended snapshot,
+and only then replaces the run-index file in place. It preserves every existing
+`snapshotPaths` entry exactly as loaded, in the same order, and appends exactly one new
+reference at the end. It never reorders, deduplicates, removes, updates, or silently
+normalizes earlier entries. Duplicate references remain allowed, including appending the
+same snapshot again or appending a distinct snapshot that carries the same `RunId`.
+
+The command mutates only the run index. It does not overwrite the project catalog, does not
+mutate any snapshot, and does not regenerate the report automatically. Run
+`render-project` separately when refreshed longitudinal HTML is needed. The same workspace
+rule still applies: the run index, all existing snapshots, the appended snapshot, and the
+report destination must stay inside the project catalog directory tree, and the appended
+snapshot must not resolve to the project catalog, the run index, or the report destination.
+There is still no automatic chronology, no removal or reordering of runs, and no
+concurrent-writer support.
+
 ## Adjacent run sequence comparer (Core)
 
 `IClashRunSequenceComparer` (`src/OrzioClashReport.Core/Abstractions/IClashRunSequenceComparer.cs`)

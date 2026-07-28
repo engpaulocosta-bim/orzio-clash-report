@@ -2,6 +2,7 @@ using OrzioClashReport.Core.Abstractions;
 using OrzioClashReport.Core.Analysis;
 using OrzioClashReport.Core.Assembly;
 using OrzioClashReport.Core.Continuity;
+using OrzioClashReport.Core.Governance;
 using OrzioClashReport.Core.Grouping;
 using OrzioClashReport.Core.Lifecycle;
 using OrzioClashReport.Core.Matching;
@@ -33,6 +34,7 @@ namespace OrzioClashReport.Cli
         private const string IndexSnapshotsUsage = "Usage: orzioclash index-snapshots --snapshot <run-snapshot.json> [--snapshot <run-snapshot.json> ...] (-o <run-index.json> | --output <run-index.json>)";
         private const string RenderProjectUsage = "Usage: orzioclash render-project --project <project.json>";
         private const string SnapshotUsage = "Usage: orzioclash snapshot --xml <input.xml> --manifest <run-manifest.json> (-o <run-snapshot.json> | --output <run-snapshot.json>)";
+        private const string ValidateIdentityGovernanceUsage = "Usage: orzioclash validate-identity-governance --project <project.json> --governance <identity-governance.json>";
 
         private static int Main(string[] args)
         {
@@ -71,6 +73,11 @@ namespace OrzioClashReport.Cli
             if (args.Length > 0 && string.Equals(args[0], "append-identity-decision", StringComparison.OrdinalIgnoreCase))
             {
                 return RunAppendIdentityDecision(args);
+            }
+
+            if (args.Length > 0 && string.Equals(args[0], "validate-identity-governance", StringComparison.OrdinalIgnoreCase))
+            {
+                return RunValidateIdentityGovernance(args);
             }
 
             if (args.Length > 0 && string.Equals(args[0], "append-project-snapshot", StringComparison.OrdinalIgnoreCase))
@@ -122,6 +129,7 @@ namespace OrzioClashReport.Cli
             Console.WriteLine("  create-project       Create one operational project catalog from an existing run index.");
             Console.WriteLine("  create-identity-governance Create one empty explicit identity-governance document.");
             Console.WriteLine("  append-identity-decision Append one explicit human identity decision to an existing governance file.");
+            Console.WriteLine("  validate-identity-governance Validate explicit decisions against one project's indexed snapshots.");
             Console.WriteLine("  append-project-snapshot Append one persisted snapshot to an existing project catalog run index.");
             Console.WriteLine("  render-project       Re-render a project catalog's longitudinal report from immutable snapshots.");
             Console.WriteLine();
@@ -440,6 +448,71 @@ namespace OrzioClashReport.Cli
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Failed to append identity decision: {ex.Message}");
+                return 1;
+            }
+        }
+
+        private static int RunValidateIdentityGovernance(string[] args)
+        {
+            if (!TryParseValidateIdentityGovernanceArguments(args, out ValidateIdentityGovernanceCommandOptions options, out string parseError))
+            {
+                Console.Error.WriteLine(parseError);
+                Console.Error.WriteLine(ValidateIdentityGovernanceUsage);
+                return 1;
+            }
+
+            try
+            {
+                var projectCatalogSerializer = new JsonProjectCatalogSerializer();
+                string resolvedProjectCatalogPath = Path.GetFullPath(options.ProjectPath);
+                ProjectCatalogDocument project = projectCatalogSerializer.Load(resolvedProjectCatalogPath);
+
+                var projectCatalogPathResolver = new ProjectCatalogPathResolver();
+                string resolvedRunIndexPath = projectCatalogPathResolver.ResolveReference(resolvedProjectCatalogPath, project.RunIndexPath);
+                string resolvedReportPath = projectCatalogPathResolver.ResolveReference(resolvedProjectCatalogPath, project.LongitudinalReportPath);
+
+                LoadedRunIndexContext loadedRunIndex = LoadRunIndexContext(resolvedRunIndexPath, requireComparableSequence: false);
+                ValidateProjectCatalogWorkspace(
+                    resolvedProjectCatalogPath,
+                    loadedRunIndex.ResolvedRunIndexPath,
+                    loadedRunIndex.ResolvedSnapshotPaths,
+                    resolvedReportPath,
+                    projectCatalogPathResolver);
+
+                var governanceSerializer = new JsonIdentityGovernanceSerializer();
+                IdentityGovernanceDocument governance = governanceSerializer.Load(options.GovernancePath);
+
+                IIdentityGovernanceEvidenceValidator validator = new DeterministicIdentityGovernanceEvidenceValidator();
+                IdentityGovernanceEvidenceValidationResult result =
+                    validator.Validate(project.ProjectId, governance, loadedRunIndex.Runs);
+
+                if (!result.IsValid)
+                {
+                    Console.Error.WriteLine("Identity governance validation failed.");
+                    Console.Error.WriteLine($"Issues: {result.Issues.Count}");
+                    for (int i = 0; i < result.Issues.Count; i++)
+                    {
+                        Console.Error.WriteLine($"{i + 1}. {result.Issues[i].Message}");
+                    }
+
+                    return 1;
+                }
+
+                int confirmationCount = governance.Decisions.Count(d => d.DecisionKind == HumanIdentityDecisionKind.ConfirmSameIdentity);
+                int rejectionCount = governance.Decisions.Count(d => d.DecisionKind == HumanIdentityDecisionKind.RejectSameIdentity);
+
+                Console.WriteLine($"Project: {project.ProjectId}");
+                Console.WriteLine($"Indexed runs: {loadedRunIndex.Runs.Count}");
+                Console.WriteLine($"Decisions: {governance.Decisions.Count}");
+                Console.WriteLine($"Confirmations: {confirmationCount}");
+                Console.WriteLine($"Rejections: {rejectionCount}");
+                Console.WriteLine($"Evidence endpoints: {governance.Decisions.Count * 2}");
+                Console.WriteLine("Identity governance validation passed.");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to validate identity governance: {ex.Message}");
                 return 1;
             }
         }
@@ -1885,6 +1958,78 @@ namespace OrzioClashReport.Cli
             return true;
         }
 
+        private static bool TryParseValidateIdentityGovernanceArguments(
+            string[] args, out ValidateIdentityGovernanceCommandOptions options, out string error)
+        {
+            options = ValidateIdentityGovernanceCommandOptions.Empty;
+            error = string.Empty;
+
+            string? projectPath = null;
+            string? governancePath = null;
+
+            for (int i = 1; i < args.Length; i++)
+            {
+                string argument = args[i];
+                if (!IsRecognizedValidateIdentityGovernanceOption(argument))
+                {
+                    error = $"Unrecognized validate-identity-governance argument '{argument}'.";
+                    return false;
+                }
+
+                if (i + 1 >= args.Length
+                    || string.IsNullOrWhiteSpace(args[i + 1])
+                    || IsRecognizedValidateIdentityGovernanceOption(args[i + 1])
+                    || IsOptionLikeValueToken(args[i + 1]))
+                {
+                    error = $"Missing value for '{argument}'.";
+                    return false;
+                }
+
+                string value = args[i + 1];
+                switch (argument)
+                {
+                    case "--project":
+                        if (projectPath != null)
+                        {
+                            error = "Duplicate option '--project'.";
+                            return false;
+                        }
+
+                        projectPath = value;
+                        break;
+                    case "--governance":
+                        if (governancePath != null)
+                        {
+                            error = "Duplicate option '--governance'.";
+                            return false;
+                        }
+
+                        governancePath = value;
+                        break;
+                    default:
+                        error = $"Unrecognized validate-identity-governance argument '{argument}'.";
+                        return false;
+                }
+
+                i++;
+            }
+
+            if (projectPath == null)
+            {
+                error = "Missing required option '--project'.";
+                return false;
+            }
+
+            if (governancePath == null)
+            {
+                error = "Missing required option '--governance'.";
+                return false;
+            }
+
+            options = new ValidateIdentityGovernanceCommandOptions(projectPath, governancePath);
+            return true;
+        }
+
         private static bool IsRecognizedCompareOption(string argument) =>
             argument == "--previous-xml"
             || argument == "--previous-manifest"
@@ -1962,6 +2107,10 @@ namespace OrzioClashReport.Cli
         private static bool IsRecognizedAppendProjectSnapshotOption(string argument) =>
             argument == "--project"
             || argument == "--snapshot";
+
+        private static bool IsRecognizedValidateIdentityGovernanceOption(string argument) =>
+            argument == "--project"
+            || argument == "--governance";
 
         private static string? ValidateComparePaths(CompareCommandOptions options)
         {
@@ -2317,6 +2466,21 @@ namespace OrzioClashReport.Cli
 
             public string ProjectPath { get; }
             public string SnapshotPath { get; }
+        }
+
+        private sealed class ValidateIdentityGovernanceCommandOptions
+        {
+            public static readonly ValidateIdentityGovernanceCommandOptions Empty =
+                new ValidateIdentityGovernanceCommandOptions(string.Empty, string.Empty);
+
+            public ValidateIdentityGovernanceCommandOptions(string projectPath, string governancePath)
+            {
+                ProjectPath = projectPath;
+                GovernancePath = governancePath;
+            }
+
+            public string ProjectPath { get; }
+            public string GovernancePath { get; }
         }
     }
 }

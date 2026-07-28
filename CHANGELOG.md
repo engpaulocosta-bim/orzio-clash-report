@@ -16,17 +16,35 @@ All notable changes for OrzioClashReport are recorded here.
 - Safe replace-existing persistence for identity-governance JSON through
   `IdentityGovernanceFileReplacer`, preserving original bytes on failure and cleaning
   temporary files.
+- Source-only Step 29C read-only CLI evidence-validation workflow:
+  `validate-identity-governance`, which loads one project catalog, its indexed run
+  snapshots, and a governance document, and validates the document's project binding and
+  every decision's `runId` + `occurrenceIndex` evidence endpoints against the indexed
+  snapshots.
+- Pure Core evidence validator `OrzioClashReport.Core.Governance`:
+  `IIdentityGovernanceEvidenceValidator` / `DeterministicIdentityGovernanceEvidenceValidator`,
+  with explicitly typed `ProjectIdMismatch`, `DuplicateIndexedRunId`, `RunNotIndexed`, and
+  `OccurrenceIndexOutOfRange` issues in deterministic order.
 - Unit and contract tests for Step 29A identity-governance validation and serialization.
 - Unit and contract tests for Step 29B CLI parsing, append conflicts, and replace-existing
   persistence behavior.
+- Unit and contract tests for Step 29C evidence validation and CLI read-only behavior,
+  including byte-for-byte proof that no project catalog, run index, snapshot, governance
+  file, report destination, or other file is ever created or modified.
 
 ### Notes
 
-- This Step 29A/29B capability is source-only as of July 28, 2026 and is not part of the
-  published `v0.1.0-preview.2` binary contract.
-- The source-only CLI creates and appends explicit human decisions only. It does not
-  validate against snapshots, infer or propagate identity, act as an interactive review
+- This Step 29A/29B/29C capability is source-only as of July 28, 2026 and is not part of
+  the published `v0.1.0-preview.2` binary contract.
+- The Step 29A/29B authoring CLI creates and appends explicit human decisions only. It does
+  not validate against snapshots, infer or propagate identity, act as an interactive review
   workflow, project decisions into reports, or introduce a Clash Ledger.
+- The Step 29C `validate-identity-governance` command is read-only: it never writes,
+  replaces, or creates any file. It validates only project binding and evidence-endpoint
+  existence -- never matcher candidacy, run adjacency, left/right ordering intent,
+  transitivity across decisions, graph conflicts, identity merges, reopening, decision
+  supersession, reviewer identity, timestamps, or responsibility, and it does not project
+  decisions into reports or introduce a Clash Ledger.
 
 ## 0.1.0-preview.2
 

@@ -11,14 +11,22 @@ All notable changes for OrzioClashReport are recorded here.
   decision documents.
 - Strict deterministic schema-v1 JSON adapter
   `OrzioClashReport.Persistence.IdentityGovernanceJson`.
+- Source-only Step 29B CLI authoring workflow:
+  `create-identity-governance` and `append-identity-decision`.
+- Safe replace-existing persistence for identity-governance JSON through
+  `IdentityGovernanceFileReplacer`, preserving original bytes on failure and cleaning
+  temporary files.
 - Unit and contract tests for Step 29A identity-governance validation and serialization.
+- Unit and contract tests for Step 29B CLI parsing, append conflicts, and replace-existing
+  persistence behavior.
 
 ### Notes
 
-- This Step 29A capability is source-only as of July 28, 2026 and is not part of the
+- This Step 29A/29B capability is source-only as of July 28, 2026 and is not part of the
   published `v0.1.0-preview.2` binary contract.
-- No CLI review workflow, report projection, Clash Ledger, `Reopened`, automatic identity
-  assignment, automatic chronology, or automatic responsibility were added.
+- The source-only CLI creates and appends explicit human decisions only. It does not
+  validate against snapshots, infer or propagate identity, act as an interactive review
+  workflow, project decisions into reports, or introduce a Clash Ledger.
 
 ## 0.1.0-preview.2
 

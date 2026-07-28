@@ -72,6 +72,8 @@ namespace OrzioClashReport.Core.Governance
                 }
             }
 
+            var seenRunIds = new HashSet<string>(StringComparer.Ordinal);
+
             for (int i = 0; i < indexedRuns.Count; i++)
             {
                 var run = indexedRuns[i];
@@ -80,8 +82,10 @@ namespace OrzioClashReport.Core.Governance
                     continue;
                 }
 
-                bool isFirstOccurrence = ReferenceEquals(run, firstRunByRunId[run.RunId]);
-                if (isFirstOccurrence)
+                // The first position at which a given RunId is seen is determined purely by sequence and
+                // ordinal RunId value, never by object reference: the same CoordinationRun instance repeated
+                // in indexedRuns must still produce one issue per position after the first.
+                if (seenRunIds.Add(run.RunId))
                 {
                     continue;
                 }

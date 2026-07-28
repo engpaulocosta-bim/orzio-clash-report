@@ -293,6 +293,63 @@ namespace OrzioClashReport.Tests
             Assert.Equal(IdentityGovernanceEvidenceValidationIssueKind.DuplicateIndexedRunId, issue.Kind);
         }
 
+        // ===================== rejection: duplicate run id via repeated instance =====================
+
+        [Fact]
+        public void Validate_SameInstanceTwice_ProducesOneDuplicateIssue()
+        {
+            var run = MakeRun("duplicate-run", 2);
+
+            var result = CreateValidator().Validate("coordination-project", Governance("coordination-project"), new[] { run, run });
+
+            Assert.False(result.IsValid);
+            var issue = Assert.Single(result.Issues);
+            Assert.Equal(IdentityGovernanceEvidenceValidationIssueKind.DuplicateIndexedRunId, issue.Kind);
+            Assert.Equal("duplicate-run", issue.RunId);
+        }
+
+        [Fact]
+        public void Validate_SameInstanceThreeTimes_ProducesTwoDuplicateIssues()
+        {
+            var run = MakeRun("duplicate-run", 2);
+
+            var result = CreateValidator().Validate("coordination-project", Governance("coordination-project"), new[] { run, run, run });
+
+            Assert.Equal(2, result.Issues.Count);
+            Assert.Equal(IdentityGovernanceEvidenceValidationIssueKind.DuplicateIndexedRunId, result.Issues[0].Kind);
+            Assert.Equal("duplicate-run", result.Issues[0].RunId);
+            Assert.Equal(IdentityGovernanceEvidenceValidationIssueKind.DuplicateIndexedRunId, result.Issues[1].Kind);
+            Assert.Equal("duplicate-run", result.Issues[1].RunId);
+        }
+
+        [Fact]
+        public void Validate_EndpointReferencingRepeatedInstance_DoesNotProduceExtraIssue()
+        {
+            var run = MakeRun("duplicate-run", 2);
+            var governance = Governance(
+                "coordination-project",
+                Confirm("decision-1", "coordination-project", Endpoint("duplicate-run", 0), Endpoint("duplicate-run", 1)));
+
+            var result = CreateValidator().Validate("coordination-project", governance, new[] { run, run });
+
+            var issue = Assert.Single(result.Issues);
+            Assert.Equal(IdentityGovernanceEvidenceValidationIssueKind.DuplicateIndexedRunId, issue.Kind);
+            Assert.False(result.IsValid);
+        }
+
+        [Fact]
+        public void Validate_RepeatedInstanceMixedWithDistinctObject_ProducesTwoDuplicateIssuesInOrder()
+        {
+            var runA = MakeRun("duplicate-run", 2);
+            var runB = MakeRun("duplicate-run", 2);
+
+            var result = CreateValidator().Validate("coordination-project", Governance("coordination-project"), new[] { runA, runA, runB });
+
+            Assert.Equal(2, result.Issues.Count);
+            Assert.Equal(IdentityGovernanceEvidenceValidationIssueKind.DuplicateIndexedRunId, result.Issues[0].Kind);
+            Assert.Equal(IdentityGovernanceEvidenceValidationIssueKind.DuplicateIndexedRunId, result.Issues[1].Kind);
+        }
+
         // ===================== ordering =====================
 
         [Fact]

@@ -134,10 +134,10 @@ aggregate multi-run lifecycle, automatic chronology, or automatic clash responsi
 `workflow_dispatch` release runs are packaging dry runs only. Responsibility/authorship
 remains deferred to a later human-governance stage.
 
-## Source-only human identity governance foundation
+## Source-only human identity governance
 
-Step 29A adds a source-only foundation for explicit human identity governance. It is not
-part of the published `v0.1.0-preview.2` binary contract.
+Steps 29A and 29B add a source-only workflow for explicit human identity governance. It is
+not part of the published `v0.1.0-preview.2` binary contract.
 
 - Snapshots remain immutable evidence only.
 - Algorithmic matching remains suggestion only, never persisted truth.
@@ -145,10 +145,16 @@ part of the published `v0.1.0-preview.2` binary contract.
 - `RejectSameIdentity` must never carry a persistent identity id.
 - Absence of a decision is only absence of a decision; there is no persisted pending state.
 - Evidence endpoints reuse `runId` plus immutable `occurrenceIndex` inside a snapshot.
-- No automatic propagation, no automatic transitivity, no automatic chronology, and no
-  automatic responsibility exist at this stage.
-- No CLI review workflow, no report projection, no Clash Ledger, and no `Reopened` exist in
-  Step 29A.
+- `create-identity-governance` may create one empty governance document only.
+- `append-identity-decision` may append one explicit human decision only, preserving all
+  previous decisions and replacing the existing file only after a complete temporary write
+  succeeds.
+- The identity-governance CLI never validates against snapshots, never loads project
+  catalogs or run indexes for identity semantics, never infers or propagates identity, and
+  is not an interactive review workflow.
+- No report projection, no Clash Ledger, no `Reopened`, no automatic propagation, no
+  automatic transitivity, no automatic chronology, and no automatic responsibility exist at
+  this stage.
 
 ## Anti-patterns that fail review
 

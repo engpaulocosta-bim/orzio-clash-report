@@ -10,9 +10,11 @@ using OrzioClashReport.Core.Presentation;
 using OrzioClashReport.Input.NavisworksXml;
 using OrzioClashReport.Input.RunManifestJson;
 using OrzioClashReport.Output.Html;
+using OrzioClashReport.Persistence.IdentityGovernanceJson;
 using OrzioClashReport.Persistence.ProjectCatalogJson;
 using OrzioClashReport.Persistence.RunIndexJson;
 using OrzioClashReport.Persistence.RunSnapshotJson;
+using System.Globalization;
 using System.Reflection;
 
 namespace OrzioClashReport.Cli
@@ -24,6 +26,8 @@ namespace OrzioClashReport.Cli
         private const string CompareUsage = "Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json> [-o <output.html> | --output <output.html>]";
         private const string CompareIndexUsage = "Usage: orzioclash compare-index --index <run-index.json> [-o <output.html> | --output <output.html>]";
         private const string CompareSnapshotsUsage = "Usage: orzioclash compare-snapshots --previous-snapshot <previous.json> --current-snapshot <current.json> [-o <output.html> | --output <output.html>]";
+        private const string CreateIdentityGovernanceUsage = "Usage: orzioclash create-identity-governance --project-id <project-id> (-o <identity-governance.json> | --output <identity-governance.json>)";
+        private const string AppendIdentityDecisionUsage = "Usage: orzioclash append-identity-decision --governance <identity-governance.json> --decision-id <decision-id> --decision-kind <ConfirmSameIdentity|RejectSameIdentity> --left-run-id <run-id> --left-occurrence-index <zero-based-index> --right-run-id <run-id> --right-occurrence-index <zero-based-index> --reviewer-alias <alias> [--persistent-identity-id <persistent-id>] [--reason <text>]";
         private const string AppendProjectSnapshotUsage = "Usage: orzioclash append-project-snapshot --project <project.json> --snapshot <run-snapshot.json>";
         private const string CreateProjectUsage = "Usage: orzioclash create-project --project-id <project-id> --name <display-name> --index <run-index.json> --report <longitudinal.html> (-o <project.json> | --output <project.json>)";
         private const string IndexSnapshotsUsage = "Usage: orzioclash index-snapshots --snapshot <run-snapshot.json> [--snapshot <run-snapshot.json> ...] (-o <run-index.json> | --output <run-index.json>)";
@@ -57,6 +61,16 @@ namespace OrzioClashReport.Cli
             if (args.Length > 0 && string.Equals(args[0], "create-project", StringComparison.OrdinalIgnoreCase))
             {
                 return RunCreateProject(args);
+            }
+
+            if (args.Length > 0 && string.Equals(args[0], "create-identity-governance", StringComparison.OrdinalIgnoreCase))
+            {
+                return RunCreateIdentityGovernance(args);
+            }
+
+            if (args.Length > 0 && string.Equals(args[0], "append-identity-decision", StringComparison.OrdinalIgnoreCase))
+            {
+                return RunAppendIdentityDecision(args);
             }
 
             if (args.Length > 0 && string.Equals(args[0], "append-project-snapshot", StringComparison.OrdinalIgnoreCase))
@@ -106,6 +120,8 @@ namespace OrzioClashReport.Cli
             Console.WriteLine("  index-snapshots      Create an explicitly ordered run index from snapshots.");
             Console.WriteLine("  compare-index        Compare adjacent snapshot pairs from an explicit run index.");
             Console.WriteLine("  create-project       Create one operational project catalog from an existing run index.");
+            Console.WriteLine("  create-identity-governance Create one empty explicit identity-governance document.");
+            Console.WriteLine("  append-identity-decision Append one explicit human identity decision to an existing governance file.");
             Console.WriteLine("  append-project-snapshot Append one persisted snapshot to an existing project catalog run index.");
             Console.WriteLine("  render-project       Re-render a project catalog's longitudinal report from immutable snapshots.");
             Console.WriteLine();
@@ -349,6 +365,81 @@ namespace OrzioClashReport.Cli
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Failed to create project catalog: {ex.Message}");
+                return 1;
+            }
+        }
+
+        private static int RunCreateIdentityGovernance(string[] args)
+        {
+            if (!TryParseCreateIdentityGovernanceArguments(args, out CreateIdentityGovernanceCommandOptions options, out string parseError))
+            {
+                Console.Error.WriteLine(parseError);
+                Console.Error.WriteLine(CreateIdentityGovernanceUsage);
+                return 1;
+            }
+
+            try
+            {
+                var document = new IdentityGovernanceDocument(options.ProjectId, Array.Empty<HumanIdentityDecision>());
+                new JsonIdentityGovernanceSerializer().Save(document, options.OutputPath);
+
+                Console.WriteLine($"Project: {document.ProjectId}");
+                Console.WriteLine($"Decisions: {document.Decisions.Count}");
+                Console.WriteLine($"Identity governance written to {options.OutputPath}");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to create identity governance: {ex.Message}");
+                return 1;
+            }
+        }
+
+        private static int RunAppendIdentityDecision(string[] args)
+        {
+            if (!TryParseAppendIdentityDecisionArguments(args, out AppendIdentityDecisionCommandOptions options, out string parseError))
+            {
+                Console.Error.WriteLine(parseError);
+                Console.Error.WriteLine(AppendIdentityDecisionUsage);
+                return 1;
+            }
+
+            try
+            {
+                var serializer = new JsonIdentityGovernanceSerializer();
+                IdentityGovernanceDocument existingDocument = serializer.Load(options.GovernancePath);
+                HumanIdentityDecision newDecision = CreateHumanIdentityDecision(existingDocument.ProjectId, options);
+
+                var updatedDecisions = new List<HumanIdentityDecision>(existingDocument.Decisions.Count + 1);
+                for (int i = 0; i < existingDocument.Decisions.Count; i++)
+                {
+                    updatedDecisions.Add(existingDocument.Decisions[i]);
+                }
+
+                updatedDecisions.Add(newDecision);
+
+                IdentityGovernanceDocument updatedDocument;
+                try
+                {
+                    updatedDocument = new IdentityGovernanceDocument(existingDocument.ProjectId, updatedDecisions);
+                }
+                catch (ArgumentException ex)
+                {
+                    throw new InvalidOperationException(FormatArgumentExceptionMessage(ex), ex);
+                }
+
+                new IdentityGovernanceFileReplacer().ReplaceExisting(updatedDocument, options.GovernancePath);
+
+                Console.WriteLine($"Project: {updatedDocument.ProjectId}");
+                Console.WriteLine($"Decision: {newDecision.DecisionId}");
+                Console.WriteLine($"Decision kind: {newDecision.DecisionKind}");
+                Console.WriteLine($"Decisions: {updatedDocument.Decisions.Count}");
+                Console.WriteLine($"Identity governance updated: {options.GovernancePath}");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to append identity decision: {ex.Message}");
                 return 1;
             }
         }
@@ -1218,6 +1309,318 @@ namespace OrzioClashReport.Cli
             return true;
         }
 
+        private static bool TryParseCreateIdentityGovernanceArguments(
+            string[] args, out CreateIdentityGovernanceCommandOptions options, out string error)
+        {
+            options = CreateIdentityGovernanceCommandOptions.Empty;
+            error = string.Empty;
+
+            string? projectId = null;
+            string? outputPath = null;
+
+            for (int i = 1; i < args.Length; i++)
+            {
+                string argument = args[i];
+                if (!IsRecognizedCreateIdentityGovernanceOption(argument))
+                {
+                    error = $"Unrecognized create-identity-governance argument '{argument}'.";
+                    return false;
+                }
+
+                if (i + 1 >= args.Length
+                    || string.IsNullOrWhiteSpace(args[i + 1])
+                    || IsRecognizedCreateIdentityGovernanceOption(args[i + 1]))
+                {
+                    error = $"Missing value for '{argument}'.";
+                    return false;
+                }
+
+                string value = args[i + 1];
+                switch (argument)
+                {
+                    case "--project-id":
+                        if (projectId != null)
+                        {
+                            error = "Duplicate option '--project-id'.";
+                            return false;
+                        }
+
+                        projectId = value;
+                        break;
+                    case "-o":
+                    case "--output":
+                        if (outputPath != null)
+                        {
+                            error = "Duplicate option '-o/--output'.";
+                            return false;
+                        }
+
+                        outputPath = value;
+                        break;
+                    default:
+                        error = $"Unrecognized create-identity-governance argument '{argument}'.";
+                        return false;
+                }
+
+                if (RequiresNonOptionLikeValue(argument) && IsOptionLikeValueToken(value))
+                {
+                    error = $"Missing value for '{argument}'.";
+                    return false;
+                }
+
+                i++;
+            }
+
+            if (projectId == null)
+            {
+                error = "Missing required option '--project-id'.";
+                return false;
+            }
+
+            if (outputPath == null)
+            {
+                error = "Missing required option '-o/--output'.";
+                return false;
+            }
+
+            options = new CreateIdentityGovernanceCommandOptions(projectId, outputPath);
+            return true;
+        }
+
+        private static bool TryParseAppendIdentityDecisionArguments(
+            string[] args, out AppendIdentityDecisionCommandOptions options, out string error)
+        {
+            options = AppendIdentityDecisionCommandOptions.Empty;
+            error = string.Empty;
+
+            string? governancePath = null;
+            string? decisionId = null;
+            string? decisionKindText = null;
+            string? leftRunId = null;
+            string? leftOccurrenceIndexText = null;
+            string? rightRunId = null;
+            string? rightOccurrenceIndexText = null;
+            string? persistentIdentityId = null;
+            string? reviewerAlias = null;
+            string? reason = null;
+
+            for (int i = 1; i < args.Length; i++)
+            {
+                string argument = args[i];
+                if (!IsRecognizedAppendIdentityDecisionOption(argument))
+                {
+                    error = $"Unrecognized append-identity-decision argument '{argument}'.";
+                    return false;
+                }
+
+                if (i + 1 >= args.Length
+                    || string.IsNullOrWhiteSpace(args[i + 1])
+                    || IsRecognizedAppendIdentityDecisionOption(args[i + 1]))
+                {
+                    error = $"Missing value for '{argument}'.";
+                    return false;
+                }
+
+                string value = args[i + 1];
+                switch (argument)
+                {
+                    case "--governance":
+                        if (governancePath != null)
+                        {
+                            error = "Duplicate option '--governance'.";
+                            return false;
+                        }
+
+                        governancePath = value;
+                        break;
+                    case "--decision-id":
+                        if (decisionId != null)
+                        {
+                            error = "Duplicate option '--decision-id'.";
+                            return false;
+                        }
+
+                        decisionId = value;
+                        break;
+                    case "--decision-kind":
+                        if (decisionKindText != null)
+                        {
+                            error = "Duplicate option '--decision-kind'.";
+                            return false;
+                        }
+
+                        decisionKindText = value;
+                        break;
+                    case "--left-run-id":
+                        if (leftRunId != null)
+                        {
+                            error = "Duplicate option '--left-run-id'.";
+                            return false;
+                        }
+
+                        leftRunId = value;
+                        break;
+                    case "--left-occurrence-index":
+                        if (leftOccurrenceIndexText != null)
+                        {
+                            error = "Duplicate option '--left-occurrence-index'.";
+                            return false;
+                        }
+
+                        leftOccurrenceIndexText = value;
+                        break;
+                    case "--right-run-id":
+                        if (rightRunId != null)
+                        {
+                            error = "Duplicate option '--right-run-id'.";
+                            return false;
+                        }
+
+                        rightRunId = value;
+                        break;
+                    case "--right-occurrence-index":
+                        if (rightOccurrenceIndexText != null)
+                        {
+                            error = "Duplicate option '--right-occurrence-index'.";
+                            return false;
+                        }
+
+                        rightOccurrenceIndexText = value;
+                        break;
+                    case "--persistent-identity-id":
+                        if (persistentIdentityId != null)
+                        {
+                            error = "Duplicate option '--persistent-identity-id'.";
+                            return false;
+                        }
+
+                        persistentIdentityId = value;
+                        break;
+                    case "--reviewer-alias":
+                        if (reviewerAlias != null)
+                        {
+                            error = "Duplicate option '--reviewer-alias'.";
+                            return false;
+                        }
+
+                        reviewerAlias = value;
+                        break;
+                    case "--reason":
+                        if (reason != null)
+                        {
+                            error = "Duplicate option '--reason'.";
+                            return false;
+                        }
+
+                        reason = value;
+                        break;
+                    default:
+                        error = $"Unrecognized append-identity-decision argument '{argument}'.";
+                        return false;
+                }
+
+                if (RequiresNonOptionLikeValue(argument) && IsOptionLikeValueToken(value))
+                {
+                    error = $"Missing value for '{argument}'.";
+                    return false;
+                }
+
+                i++;
+            }
+
+            if (governancePath == null)
+            {
+                error = "Missing required option '--governance'.";
+                return false;
+            }
+
+            if (decisionId == null)
+            {
+                error = "Missing required option '--decision-id'.";
+                return false;
+            }
+
+            if (decisionKindText == null)
+            {
+                error = "Missing required option '--decision-kind'.";
+                return false;
+            }
+
+            if (!TryParseHumanIdentityDecisionKind(decisionKindText, out HumanIdentityDecisionKind decisionKind))
+            {
+                error = "Option '--decision-kind' must be 'ConfirmSameIdentity' or 'RejectSameIdentity'.";
+                return false;
+            }
+
+            if (leftRunId == null)
+            {
+                error = "Missing required option '--left-run-id'.";
+                return false;
+            }
+
+            if (leftOccurrenceIndexText == null)
+            {
+                error = "Missing required option '--left-occurrence-index'.";
+                return false;
+            }
+
+            if (!TryParseNonNegativeInt32(leftOccurrenceIndexText, out int leftOccurrenceIndex))
+            {
+                error = "Option '--left-occurrence-index' must be a non-negative decimal integer.";
+                return false;
+            }
+
+            if (rightRunId == null)
+            {
+                error = "Missing required option '--right-run-id'.";
+                return false;
+            }
+
+            if (rightOccurrenceIndexText == null)
+            {
+                error = "Missing required option '--right-occurrence-index'.";
+                return false;
+            }
+
+            if (!TryParseNonNegativeInt32(rightOccurrenceIndexText, out int rightOccurrenceIndex))
+            {
+                error = "Option '--right-occurrence-index' must be a non-negative decimal integer.";
+                return false;
+            }
+
+            if (reviewerAlias == null)
+            {
+                error = "Missing required option '--reviewer-alias'.";
+                return false;
+            }
+
+            if (decisionKind == HumanIdentityDecisionKind.ConfirmSameIdentity && persistentIdentityId == null)
+            {
+                error = "Option '--persistent-identity-id' is required when '--decision-kind' is 'ConfirmSameIdentity'.";
+                return false;
+            }
+
+            if (decisionKind == HumanIdentityDecisionKind.RejectSameIdentity && persistentIdentityId != null)
+            {
+                error = "Option '--persistent-identity-id' is not allowed when '--decision-kind' is 'RejectSameIdentity'.";
+                return false;
+            }
+
+            options = new AppendIdentityDecisionCommandOptions(
+                governancePath,
+                decisionId,
+                decisionKind,
+                leftRunId,
+                leftOccurrenceIndex,
+                rightRunId,
+                rightOccurrenceIndex,
+                persistentIdentityId,
+                reviewerAlias,
+                reason);
+
+            return true;
+        }
+
         private static bool TryParseCompareIndexArguments(
             string[] args, out CompareIndexCommandOptions options, out string error)
         {
@@ -1496,6 +1899,11 @@ namespace OrzioClashReport.Cli
             || argument == "-o"
             || argument == "--output";
 
+        private static bool IsRecognizedCreateIdentityGovernanceOption(string argument) =>
+            argument == "--project-id"
+            || argument == "-o"
+            || argument == "--output";
+
         private static bool IsRecognizedCreateProjectOption(string argument) =>
             argument == "--project-id"
             || argument == "--name"
@@ -1503,6 +1911,18 @@ namespace OrzioClashReport.Cli
             || argument == "--report"
             || argument == "-o"
             || argument == "--output";
+
+        private static bool IsRecognizedAppendIdentityDecisionOption(string argument) =>
+            argument == "--governance"
+            || argument == "--decision-id"
+            || argument == "--decision-kind"
+            || argument == "--left-run-id"
+            || argument == "--left-occurrence-index"
+            || argument == "--right-run-id"
+            || argument == "--right-occurrence-index"
+            || argument == "--persistent-identity-id"
+            || argument == "--reviewer-alias"
+            || argument == "--reason";
 
         private static bool IsRecognizedCompareIndexOption(string argument) =>
             argument == "--index"
@@ -1519,6 +1939,22 @@ namespace OrzioClashReport.Cli
             argument == "--snapshot"
             || argument == "-o"
             || argument == "--output";
+
+        private static bool RequiresNonOptionLikeValue(string argument) =>
+            argument == "--project-id"
+            || argument == "-o"
+            || argument == "--output"
+            || argument == "--governance"
+            || argument == "--decision-id"
+            || argument == "--decision-kind"
+            || argument == "--left-run-id"
+            || argument == "--right-run-id"
+            || argument == "--persistent-identity-id"
+            || argument == "--reviewer-alias"
+            || argument == "--reason";
+
+        private static bool IsOptionLikeValueToken(string value) =>
+            value.Length > 0 && value[0] == '-';
 
         private static bool IsRecognizedRenderProjectOption(string argument) =>
             argument == "--project";
@@ -1580,6 +2016,83 @@ namespace OrzioClashReport.Cli
             }
 
             return null;
+        }
+
+        private static HumanIdentityDecision CreateHumanIdentityDecision(
+            string projectId,
+            AppendIdentityDecisionCommandOptions options)
+        {
+            try
+            {
+                return new HumanIdentityDecision(
+                    options.DecisionId,
+                    projectId,
+                    options.DecisionKind,
+                    new ClashEvidenceEndpoint(options.LeftRunId, options.LeftOccurrenceIndex),
+                    new ClashEvidenceEndpoint(options.RightRunId, options.RightOccurrenceIndex),
+                    options.PersistentIdentityId,
+                    options.ReviewerAlias,
+                    options.Reason);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new InvalidOperationException(FormatArgumentExceptionMessage(ex), ex);
+            }
+        }
+
+        private static string FormatArgumentExceptionMessage(ArgumentException ex)
+        {
+            string message = ex.Message;
+            if (!string.IsNullOrEmpty(ex.ParamName))
+            {
+                string suffix = $" (Parameter '{ex.ParamName}')";
+                if (message.EndsWith(suffix, StringComparison.Ordinal))
+                {
+                    message = message.Substring(0, message.Length - suffix.Length);
+                }
+            }
+
+            int newlineIndex = message.IndexOfAny(new[] { '\r', '\n' });
+            return newlineIndex >= 0
+                ? message.Substring(0, newlineIndex)
+                : message;
+        }
+
+        private static bool TryParseHumanIdentityDecisionKind(string value, out HumanIdentityDecisionKind decisionKind)
+        {
+            if (string.Equals(value, nameof(HumanIdentityDecisionKind.ConfirmSameIdentity), StringComparison.Ordinal))
+            {
+                decisionKind = HumanIdentityDecisionKind.ConfirmSameIdentity;
+                return true;
+            }
+
+            if (string.Equals(value, nameof(HumanIdentityDecisionKind.RejectSameIdentity), StringComparison.Ordinal))
+            {
+                decisionKind = HumanIdentityDecisionKind.RejectSameIdentity;
+                return true;
+            }
+
+            decisionKind = default;
+            return false;
+        }
+
+        private static bool TryParseNonNegativeInt32(string value, out int parsedValue)
+        {
+            parsedValue = default;
+            if (string.IsNullOrEmpty(value))
+            {
+                return false;
+            }
+
+            for (int i = 0; i < value.Length; i++)
+            {
+                if (value[i] < '0' || value[i] > '9')
+                {
+                    return false;
+                }
+            }
+
+            return int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out parsedValue);
         }
 
         private sealed class CompareCommandOptions
@@ -1665,6 +2178,21 @@ namespace OrzioClashReport.Cli
             public string OutputPath { get; }
         }
 
+        private sealed class CreateIdentityGovernanceCommandOptions
+        {
+            public static readonly CreateIdentityGovernanceCommandOptions Empty =
+                new CreateIdentityGovernanceCommandOptions(string.Empty, string.Empty);
+
+            public CreateIdentityGovernanceCommandOptions(string projectId, string outputPath)
+            {
+                ProjectId = projectId;
+                OutputPath = outputPath;
+            }
+
+            public string ProjectId { get; }
+            public string OutputPath { get; }
+        }
+
         private sealed class CompareIndexCommandOptions
         {
             public static readonly CompareIndexCommandOptions Empty = new CompareIndexCommandOptions(string.Empty, null);
@@ -1691,6 +2219,57 @@ namespace OrzioClashReport.Cli
 
             public IReadOnlyList<string> SnapshotPaths { get; }
             public string OutputPath { get; }
+        }
+
+        private sealed class AppendIdentityDecisionCommandOptions
+        {
+            public static readonly AppendIdentityDecisionCommandOptions Empty =
+                new AppendIdentityDecisionCommandOptions(
+                    string.Empty,
+                    string.Empty,
+                    HumanIdentityDecisionKind.ConfirmSameIdentity,
+                    string.Empty,
+                    0,
+                    string.Empty,
+                    0,
+                    string.Empty,
+                    string.Empty,
+                    null);
+
+            public AppendIdentityDecisionCommandOptions(
+                string governancePath,
+                string decisionId,
+                HumanIdentityDecisionKind decisionKind,
+                string leftRunId,
+                int leftOccurrenceIndex,
+                string rightRunId,
+                int rightOccurrenceIndex,
+                string? persistentIdentityId,
+                string reviewerAlias,
+                string? reason)
+            {
+                GovernancePath = governancePath;
+                DecisionId = decisionId;
+                DecisionKind = decisionKind;
+                LeftRunId = leftRunId;
+                LeftOccurrenceIndex = leftOccurrenceIndex;
+                RightRunId = rightRunId;
+                RightOccurrenceIndex = rightOccurrenceIndex;
+                PersistentIdentityId = persistentIdentityId;
+                ReviewerAlias = reviewerAlias;
+                Reason = reason;
+            }
+
+            public string GovernancePath { get; }
+            public string DecisionId { get; }
+            public HumanIdentityDecisionKind DecisionKind { get; }
+            public string LeftRunId { get; }
+            public int LeftOccurrenceIndex { get; }
+            public string RightRunId { get; }
+            public int RightOccurrenceIndex { get; }
+            public string? PersistentIdentityId { get; }
+            public string ReviewerAlias { get; }
+            public string? Reason { get; }
         }
 
         private sealed class LoadedRunIndexContext

@@ -64,16 +64,47 @@ gates, see [docs/operations/release-checklist.md](docs/operations/release-checkl
 The packaged preview does not provide persistent clash identity, Clash Ledger, `Reopened`,
 aggregate multi-run lifecycle, automatic chronology, or automatic clash responsibility.
 
-## Source-Only Step 29A Foundation
+## Source-Only Identity Governance
 
-The source tree now contains the Step 29A foundation for explicit human identity governance:
-`ClashEvidenceEndpoint`, `HumanIdentityDecision`, `IdentityGovernanceDocument`, and the
-strict schema-v1 JSON adapter `OrzioClashReport.Persistence.IdentityGovernanceJson`.
+The source tree now contains the Step 29A and Step 29B source-only identity-governance
+workflow:
 
-This foundation is source-only as of July 28, 2026. It is not part of the published
-`v0.1.0-preview.2` binary contract. Step 29A does not add a CLI review workflow, report
-projection, Clash Ledger, `Reopened`, automatic identity assignment, automatic chronology,
-or automatic clash responsibility.
+- `ClashEvidenceEndpoint`, `HumanIdentityDecision`, and `IdentityGovernanceDocument`
+- Strict schema-v1 JSON adapter `OrzioClashReport.Persistence.IdentityGovernanceJson`
+- `create-identity-governance` for creating one empty governance document
+- `append-identity-decision` for appending one explicit human decision to an existing
+  governance file through safe replace-existing persistence
+
+This workflow is source-only as of July 28, 2026. It is not part of the published
+`v0.1.0-preview.2` binary contract and is not described as a packaged preview.2 feature.
+Snapshots remain immutable evidence. The identity-governance CLI does not validate against
+snapshots, does not infer or propagate identity, is not an interactive review tool, is not
+a Clash Ledger, and does not project decisions into reports.
+
+Source example:
+
+```bash
+dotnet run --project src/OrzioClashReport.Cli -- \
+  create-identity-governance \
+  --project-id coordination-project \
+  -o identity-governance.json
+
+dotnet run --project src/OrzioClashReport.Cli -- \
+  append-identity-decision \
+  --governance identity-governance.json \
+  --decision-id decision-001 \
+  --decision-kind ConfirmSameIdentity \
+  --left-run-id run-001 \
+  --left-occurrence-index 4 \
+  --right-run-id run-002 \
+  --right-occurrence-index 7 \
+  --persistent-identity-id identity-001 \
+  --reviewer-alias coordinator-a \
+  --reason "Confirmed from model context"
+```
+
+Operational details for this source-only workflow live in
+[docs/operations/identity-governance-cli.md](docs/operations/identity-governance-cli.md).
 
 Generate a report from a Clash Detective XML export:
 

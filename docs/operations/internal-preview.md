@@ -1,15 +1,15 @@
 # Internal Preview Guide
 
-This guide explains how to operate the `0.1.0-preview.2` internal preview release
-candidate on Windows without opening the source code.
+This guide explains how to operate version `0.1.0-preview.2` on Windows without opening
+the source code.
 
 ## Status
 
 This is an internal preview, not a fully validated longitudinal MVP.
 
-The latest published prerelease remains `0.1.0-preview.1` until the `v0.1.0-preview.2`
-tag and GitHub prerelease are created. Until then, this guide describes the release
-candidate source and package contents, not an already-published prerelease.
+Current source and package version: `0.1.0-preview.2`. Release availability is determined
+by the matching Git tag and GitHub prerelease. This document describes the contents and
+behavior of version `0.1.0-preview.2` without asserting its current publication state.
 
 Single-run parsing, grouping, and HTML were human-validated on one private real export.
 Longitudinal matching, lifecycle classification, continuity links, continuity paths, and
@@ -21,7 +21,8 @@ aggregate multi-run lifecycle, automatic chronology, or automatic clash responsi
 
 ## Download and Verify
 
-Download these files from the internal preview artifact or future prerelease:
+Download these files from the version `0.1.0-preview.2` artifact bundle or the matching
+GitHub prerelease when available:
 
 - `orzio-clash-report-v0.1.0-preview.2-win-x64.zip`
 - `orzio-clash-report-v0.1.0-preview.2-win-x64.sha256`

@@ -5,16 +5,16 @@ complementary workflows: a single-run HTML report grouped by clash test, discipl
 and level, and a revision-aware comparison between two coordination runs with a
 deterministic console summary and optional lifecycle HTML.
 
-Current source candidate: `0.1.0-preview.2` for Windows `win-x64`. Latest published
-prerelease: `0.1.0-preview.1`. This is still an internal preview, not a fully validated
+Current source and package version: `0.1.0-preview.2` for Windows `win-x64`. Release
+availability is determined by the matching Git tag and GitHub prerelease. This README
+describes the contents and behavior of version `0.1.0-preview.2` without asserting its
+current publication state. This is still an internal preview, not a fully validated
 longitudinal MVP. Single-run parsing, grouping, and HTML were human-validated on one
 private real export. Longitudinal matching, lifecycle, continuity links, continuity paths,
 and longitudinal HTML have not been validated on three real historical exports and remain
 experimental.
 
-The project-catalog workflow is included in the `0.1.0-preview.2` release candidate source
-and package documentation. The latest published prerelease remains `v0.1.0-preview.1`
-until the `preview.2` tag and GitHub prerelease are created.
+The project-catalog workflow is included in version `0.1.0-preview.2`.
 
 ## Architecture
 
@@ -217,9 +217,9 @@ for that adjacent transition.
 
 ## Project Catalog Workflow
 
-This workflow is included in the `0.1.0-preview.2` release candidate source and package
-documentation. The latest published prerelease remains `v0.1.0-preview.1` until the
-`preview.2` tag and GitHub prerelease are created.
+This workflow is included in version `0.1.0-preview.2`. This section describes the
+contents and behavior of version `0.1.0-preview.2` without asserting its current
+publication state.
 
 Create an operational project catalog from an existing run index:
 

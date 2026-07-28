@@ -2,9 +2,11 @@
 
 All notable changes for OrzioClashReport are recorded here.
 
+## Unreleased
+
 ## 0.1.0-preview.2
 
-Release candidate preparation for Windows `win-x64`.
+Internal preview for Windows `win-x64`.
 
 ### Added
 

@@ -94,6 +94,54 @@ and the report destination must stay inside the project catalog directory tree, 
 report destination must never resolve to the project catalog, the run index, or any
 snapshot.
 
+## Append One Snapshot To The Project
+
+Append one persisted snapshot explicitly to the end of the existing project run index:
+
+```bash
+dotnet run --project src/OrzioClashReport.Cli -- \
+  append-project-snapshot \
+  --project project.json \
+  --snapshot snapshots/run-004.json
+```
+
+Operational notes:
+
+- `append-project-snapshot` loads the project catalog, resolves the existing run index,
+  loads every already-indexed snapshot, validates the new snapshot, and only then replaces
+  the run-index file in place.
+- The command preserves every existing run-index reference exactly as loaded and appends one
+  new reference at the end. It never reorders, deduplicates, removes, or silently rewrites
+  earlier entries.
+- Duplicate references remain allowed. Appending the same snapshot again is valid.
+- The project catalog file remains unchanged.
+- Existing snapshots and the appended snapshot remain immutable evidence.
+- The report is not regenerated automatically. Run `render-project` separately after a
+  successful append when you want refreshed HTML.
+- The same workspace rule still applies: the run index, all existing snapshots, the new
+  snapshot, and the report destination must stay inside the project catalog directory tree.
+- There is still no automatic chronology, no removal or reordering of runs, and no
+  concurrent-writer support.
+
+Recommended operational sequence:
+
+```bash
+dotnet run --project src/OrzioClashReport.Cli -- \
+  snapshot \
+  --xml inputs/run-004.xml \
+  --manifest manifests/run-004.json \
+  -o snapshots/run-004.json
+
+dotnet run --project src/OrzioClashReport.Cli -- \
+  append-project-snapshot \
+  --project project.json \
+  --snapshot snapshots/run-004.json
+
+dotnet run --project src/OrzioClashReport.Cli -- \
+  render-project \
+  --project project.json
+```
+
 ## Relative-Path Portability
 
 The project catalog path rules are intentionally strict:

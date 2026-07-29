@@ -2,9 +2,9 @@
 
 ## Purpose
 
-Steps 29A, 29B, 29C, and 30A add a narrow, explicit, source-only human identity-governance
-workflow. It exists in the source tree as of July 29, 2026 and is not part of the published
-`v0.1.0-preview.2` binary contract.
+Steps 29A, 29B, 29C, and 30A add a narrow, explicit human identity-governance workflow.
+`v0.1.0-preview.2` did not package it; `v0.1.0-preview.3` packages it for an internal
+controlled pilot.
 
 ## Evidence, Suggestion, Decision
 
@@ -73,7 +73,7 @@ identically, since only project binding and endpoint existence are in scope.
 
 ## Standalone Review Report Scope
 
-Step 30A adds one explicit, source-only, derived HTML review workflow:
+Step 30A adds one explicit, derived HTML review workflow:
 `render-identity-governance-report`. It loads one project catalog, its indexed snapshots,
 and one governance document, requires Step 29C evidence validation to pass, and then
 renders one standalone, self-contained HTML review of the persisted human decisions.
@@ -136,5 +136,5 @@ This stage is intentionally narrow:
   snapshots
 - Unit and contract tests
 
-It does not change published preview.2 behavior, snapshots, run indexes, project catalogs,
+It does not change snapshot, run-index, project-catalog, or domain semantics,
 lifecycle classification, continuity projection, or existing HTML renderers.

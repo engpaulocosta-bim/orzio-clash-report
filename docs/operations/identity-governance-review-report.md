@@ -2,9 +2,13 @@
 
 ## Scope
 
-This document describes the source-only Step 30A standalone identity-governance review
-report that exists in the repository as of July 29, 2026. It is not part of the published
-`v0.1.0-preview.2` binary contract.
+This document describes the Step 30A standalone identity-governance review report packaged
+for the internal controlled pilot candidate `v0.1.0-preview.3`.
+
+Version history:
+
+- `v0.1.0-preview.2` did not package the identity-governance workflow.
+- `v0.1.0-preview.3` does package it.
 
 The workflow is intentionally narrow:
 
@@ -121,6 +125,7 @@ It shows:
   formatting, clash test name, clash status, model A/B human identifiers, and minimal clash
   object A/B identifiers using only data already present in `CoordinationRun` and
   `ClashOccurrence`
+- Raw `ClashObject.SourceModel` is intentionally excluded from the review report
 
 Optional fields render as `Not provided`. Dynamic content is HTML-encoded.
 

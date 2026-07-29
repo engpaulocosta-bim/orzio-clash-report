@@ -70,6 +70,58 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
+        public void Render_PrivateSourceModelPaths_AreExcludedWhileSafeFieldsRemainVisible()
+        {
+            IdentityGovernanceReviewPresentation presentation = CreatePresentation(
+                IdentityGovernanceReviewTestData.CreateRunsWithPrivateSourceModels(),
+                IdentityGovernanceReviewTestData.Confirm("decision-001", "run-001", 0, "run-003", 2));
+
+            string html = Sut().Render(presentation);
+
+            Assert.DoesNotContain("C:\\Clients", html, StringComparison.Ordinal);
+            Assert.DoesNotContain("\\\\fileserver", html, StringComparison.Ordinal);
+            Assert.DoesNotContain("/srv/customer", html, StringComparison.Ordinal);
+            Assert.DoesNotContain("Model-A.nwc", html, StringComparison.Ordinal);
+            Assert.DoesNotContain("Element A source model", html, StringComparison.Ordinal);
+            Assert.DoesNotContain("Element B source model", html, StringComparison.Ordinal);
+            Assert.Contains("Sigma A / Structure / Core A @ RA1", html, StringComparison.Ordinal);
+            Assert.Contains("Alfa A / HVAC / Services A @ RA2", html, StringComparison.Ordinal);
+            Assert.Contains("A-001", html, StringComparison.Ordinal);
+            Assert.Contains("Duct 01", html, StringComparison.Ordinal);
+            Assert.Contains("Level 01", html, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Render_ConfirmationOnly_ShowsPersistentIdentityIdAndEscapesValue()
+        {
+            IdentityGovernanceReviewPresentation presentation = CreatePresentation(
+                IdentityGovernanceReviewTestData.Confirm(
+                    "decision-001",
+                    "run-001",
+                    0,
+                    "run-003",
+                    1,
+                    persistentIdentityId: "identity-<one>&\"'"));
+
+            string html = Sut().Render(presentation);
+
+            Assert.Contains("Persistent identity id", html, StringComparison.Ordinal);
+            Assert.Contains("identity-&lt;one&gt;&amp;&quot;&#39;", html, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Render_RejectionOnly_OmitsPersistentIdentityIdAndPreservesNotProvidedReason()
+        {
+            IdentityGovernanceReviewPresentation presentation = CreatePresentation(
+                IdentityGovernanceReviewTestData.Reject("decision-001", "run-001", 0, "run-003", 1));
+
+            string html = Sut().Render(presentation);
+
+            Assert.DoesNotContain("Persistent identity id", html, StringComparison.Ordinal);
+            Assert.Contains(">Not provided<", html, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void Render_IsDeterministicAndLfOnly()
         {
             IdentityGovernanceReviewPresentation presentation = CreatePresentation(
@@ -88,7 +140,13 @@ namespace OrzioClashReport.Tests
 
         private static IdentityGovernanceReviewPresentation CreatePresentation(params HumanIdentityDecision[] decisions)
         {
-            var runs = IdentityGovernanceReviewTestData.CreateRuns();
+            return CreatePresentation(IdentityGovernanceReviewTestData.CreateRuns(), decisions);
+        }
+
+        private static IdentityGovernanceReviewPresentation CreatePresentation(
+            System.Collections.Generic.IReadOnlyList<CoordinationRun> runs,
+            params HumanIdentityDecision[] decisions)
+        {
             var governance = IdentityGovernanceReviewTestData.CreateGovernance(decisions);
             return new DeterministicIdentityGovernanceReviewPresenter().Present(
                 "coordination-project",

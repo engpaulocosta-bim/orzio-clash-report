@@ -2,8 +2,8 @@
 
 ## Purpose
 
-Steps 29A, 29B, and 29C add a narrow, explicit, source-only human identity-governance
-workflow. It exists in the source tree as of July 28, 2026 and is not part of the published
+Steps 29A, 29B, 29C, and 30A add a narrow, explicit, source-only human identity-governance
+workflow. It exists in the source tree as of July 29, 2026 and is not part of the published
 `v0.1.0-preview.2` binary contract.
 
 ## Evidence, Suggestion, Decision
@@ -71,6 +71,27 @@ evidence, not longitudinal comparison. It works correctly with zero decisions, o
 run, or many indexed runs, and decisions may reference adjacent or non-adjacent runs
 identically, since only project binding and endpoint existence are in scope.
 
+## Standalone Review Report Scope
+
+Step 30A adds one explicit, source-only, derived HTML review workflow:
+`render-identity-governance-report`. It loads one project catalog, its indexed snapshots,
+and one governance document, requires Step 29C evidence validation to pass, and then
+renders one standalone, self-contained HTML review of the persisted human decisions.
+
+The report is operational and regenerable only:
+
+- It is not primary evidence.
+- It does not change the governance document.
+- It does not change snapshots.
+- It does not change the project catalog schema.
+- It does not change the longitudinal report path or bytes referenced by the project
+  catalog.
+
+It presents persisted decisions exactly in persisted order, Left endpoint before Right
+endpoint, with run resolution still based only on `runId` + `occurrenceIndex`. It does not
+run matching, lifecycle, continuity, grouping, identity inference, propagation,
+transitivity, Clash Ledger, or `Reopened`.
+
 ## JSON Persistence Scope
 
 `OrzioClashReport.Persistence.IdentityGovernanceJson` owns a strict deterministic
@@ -90,7 +111,9 @@ semantics that preserve the original file on failure.
 - No `Reopened`
 - No interactive review UI or prompt flow
 - No matcher-candidacy, run-adjacency, or left/right-inversion validation
-- No report projection of human decisions
+- No projection of human decisions into the existing longitudinal report
+- No grouping of decisions by `persistentIdentityId`
+- No graph merge or transitive closure over decisions
 - No project-catalog, run-index, or snapshot mutation
 
 Step 29C narrows exactly one of these: it does validate that a decision's `runId` and

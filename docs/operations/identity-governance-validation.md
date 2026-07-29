@@ -16,6 +16,12 @@ does not run matching, lifecycle classification, or continuity analysis; does no
 propagate identity; does not project decisions into a report; and does not implement a
 Clash Ledger.
 
+Step 30A adds a separate command, `render-identity-governance-report`, that may render one
+standalone HTML review only after this validation gate passes. That report remains derived
+and regenerable, does not alter the project catalog or the longitudinal report, and is
+documented separately in
+[docs/operations/identity-governance-review-report.md](identity-governance-review-report.md).
+
 ## Command
 
 ```bash

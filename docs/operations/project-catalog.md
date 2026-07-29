@@ -1,8 +1,8 @@
 # Project Catalog Workflow
 
-The project catalog workflow is included in version `0.1.0-preview.2`.
-This document describes the contents and behavior of version `0.1.0-preview.2` without
-asserting its current publication state.
+This workflow is included in versions `0.1.0-preview.2` and `0.1.0-preview.3`. This
+document describes the operational behavior packaged for version `0.1.0-preview.3`
+without asserting its current publication state.
 
 ## Purpose
 
@@ -18,11 +18,13 @@ Clash Ledger data, `Reopened`, or chronology.
 
 ## Recommended Layout
 
-Keep the project catalog, run index, snapshots, and reports inside one movable folder tree:
+Keep the project catalog, run index, snapshots, governance JSON, and reports inside one
+movable folder tree:
 
 ```text
 coordination-project/
   project.json
+  identity-governance.json
   run-index.json
   snapshots/
     run-001.json
@@ -30,12 +32,13 @@ coordination-project/
     run-003.json
   reports/
     longitudinal.html
+    identity-governance-review.html
 ```
 
 The project catalog stores canonical relative references with `/` separators, so the whole
 folder can be moved to another root without rewriting the JSON.
 
-## Create The Run Index
+## Create the Run Index
 
 Create immutable run snapshots first, then build the explicit ordered run index:
 
@@ -50,7 +53,7 @@ dotnet run --project src/OrzioClashReport.Cli -- \
 
 The order of `--snapshot` arguments is the only sequence authority.
 
-## Create The Project Catalog
+## Create the Project Catalog
 
 Create the project catalog from the validated run index:
 
@@ -76,7 +79,7 @@ Operational notes:
 - The report parent directory must already exist.
 - The catalog file is create-new only and is never overwritten in place.
 
-## Render The Project
+## Render the Project
 
 Recalculate the full longitudinal result from immutable evidence and rewrite the HTML:
 
@@ -86,16 +89,11 @@ dotnet run --project src/OrzioClashReport.Cli -- \
   --project project.json
 ```
 
-`render-project` resolves the run index and report path relative to `project.json`, reloads
-all snapshots, reruns the same derived longitudinal pipeline used by `compare-index`, and
-rewrites the report destination.
+`render-project` resolves the run index and report path relative to `project.json`,
+reloads all snapshots, reruns the same derived longitudinal pipeline used by
+`compare-index`, and rewrites the report destination.
 
-The same workspace rule applies during rendering: the run index, every resolved snapshot,
-and the report destination must stay inside the project catalog directory tree, and the
-report destination must never resolve to the project catalog, the run index, or any
-snapshot.
-
-## Append One Snapshot To The Project
+## Append One Snapshot to the Project
 
 Append one persisted snapshot explicitly to the end of the existing project run index:
 
@@ -111,18 +109,15 @@ Operational notes:
 - `append-project-snapshot` loads the project catalog, resolves the existing run index,
   loads every already-indexed snapshot, validates the new snapshot, and only then replaces
   the run-index file in place.
-- The command preserves every existing run-index reference exactly as loaded and appends one
-  new reference at the end. It never reorders, deduplicates, removes, or silently rewrites
-  earlier entries.
-- Duplicate references remain allowed. Appending the same snapshot again is valid.
+- The command preserves every existing run-index reference exactly as loaded and appends
+  one new reference at the end.
+- Duplicate references remain allowed.
 - The project catalog file remains unchanged.
 - Existing snapshots and the appended snapshot remain immutable evidence.
 - The report is not regenerated automatically. Run `render-project` separately after a
   successful append when you want refreshed HTML.
 - The same workspace rule still applies: the run index, all existing snapshots, the new
   snapshot, and the report destination must stay inside the project catalog directory tree.
-- There is still no automatic chronology, no removal or reordering of runs, and no
-  concurrent-writer support.
 
 Recommended operational sequence:
 
@@ -143,31 +138,23 @@ dotnet run --project src/OrzioClashReport.Cli -- \
   --project project.json
 ```
 
-## Relative-Path Portability
+## Relationship to Identity Governance
 
-The project catalog path rules are intentionally strict:
+The project catalog remains minimal operational state even in `v0.1.0-preview.3`.
+Identity-governance files are separate explicit inputs:
 
-- references are relative
-- references use `/` only
-- references do not contain `.` or `..`
-- references stay inside the project catalog directory tree
-
-That keeps the project workspace portable as one directory unit.
-
-## Report Regeneration
-
-The longitudinal HTML is a derived artifact, not persisted truth. Deleting or overwriting
-the report does not lose evidence because the report can be regenerated from the immutable
-snapshots and explicit run index.
+- `identity-governance.json` is not stored in the project catalog
+- `render-identity-governance-report` does not add a review path to the project catalog
+- `validate-identity-governance` and `render-identity-governance-report` reuse the project
+  catalog only to resolve the authoritative run index and immutable snapshots
 
 ## Privacy
 
 Do not commit private validation exports, private project names, local filesystem details,
-or personal information. The project catalog should use safe public aliases only.
+or personal information. Use safe aliases only.
 
 ## Limitations
 
-- Included in version `0.1.0-preview.2`
 - No persistent clash identity
 - No Clash Ledger
 - No `Reopened`

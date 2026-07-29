@@ -5,16 +5,17 @@ complementary workflows: a single-run HTML report grouped by clash test, discipl
 and level, and a revision-aware comparison between two coordination runs with a
 deterministic console summary and optional lifecycle HTML.
 
-Current source and package version: `0.1.0-preview.2` for Windows `win-x64`. Release
-availability is determined by the matching Git tag and GitHub prerelease. This README
-describes the contents and behavior of version `0.1.0-preview.2` without asserting its
-current publication state. This is still an internal preview, not a fully validated
-longitudinal MVP. Single-run parsing, grouping, and HTML were human-validated on one
-private real export. Longitudinal matching, lifecycle, continuity links, continuity paths,
-and longitudinal HTML have not been validated on three real historical exports and remain
-experimental.
+Current source and package candidate version: `0.1.0-preview.3` for Windows `win-x64`.
+Release availability is determined by the matching Git tag and GitHub prerelease. This
+README describes the contents and behavior of version `0.1.0-preview.3` without asserting
+its current publication state. This remains an internal controlled pilot, not a public
+release, and not a fully validated longitudinal MVP. Single-run
+parsing, grouping, and HTML were human-validated on one private real export. Longitudinal
+matching, lifecycle, continuity links, continuity paths, and longitudinal HTML have not
+been validated on three real historical exports and remain experimental.
 
-The project-catalog workflow is included in version `0.1.0-preview.2`.
+The project-catalog workflow is included in version `0.1.0-preview.3`.
+The identity-governance workflow is included in version `0.1.0-preview.3`.
 
 ## Architecture
 
@@ -56,18 +57,37 @@ Project-catalog quick start from the packaged binary:
 .\orzioclash.exe render-project --project ".\project.json"
 ```
 
+Identity-governance quick start from the packaged binary:
+
+```powershell
+.\orzioclash.exe create-identity-governance --project-id coordination-project -o ".\identity-governance.json"
+.\orzioclash.exe append-identity-decision --governance ".\identity-governance.json" --decision-id decision-001 --decision-kind ConfirmSameIdentity --left-run-id run-001 --left-occurrence-index 0 --right-run-id run-002 --right-occurrence-index 0 --persistent-identity-id identity-001 --reviewer-alias coordinator-a --reason "Confirmed from review"
+.\orzioclash.exe validate-identity-governance --project ".\project.json" --governance ".\identity-governance.json"
+.\orzioclash.exe render-identity-governance-report --project ".\project.json" --governance ".\identity-governance.json" -o ".\reports\identity-governance-review.html"
+```
+
 For operational steps, checksum verification, manifest preparation, snapshot creation,
 run-index creation, and longitudinal output, see
 [docs/operations/internal-preview.md](docs/operations/internal-preview.md). For release
 gates, see [docs/operations/release-checklist.md](docs/operations/release-checklist.md).
+For controlled pilot execution and feedback, see
+[docs/operations/pilot-evaluation.md](docs/operations/pilot-evaluation.md).
 
-The packaged preview does not provide persistent clash identity, Clash Ledger, `Reopened`,
-aggregate multi-run lifecycle, automatic chronology, or automatic clash responsibility.
+Persistent clash identity exists only through an explicit human `ConfirmSameIdentity`
+decision carrying a `persistentIdentityId`. The packaged preview does not assign identity
+automatically, propagate identity, infer transitivity, build a project-wide identity graph
+or Clash Ledger, integrate persistent identities into longitudinal lifecycle, provide
+`Reopened`, infer chronology automatically, or assign clash responsibility automatically.
 
-## Source-Only Identity Governance
+## Identity Governance Workflow
 
-The source tree now contains the Step 29A, Step 29B, Step 29C, and Step 30A source-only
-identity-governance workflow:
+Version history:
+
+- `v0.1.0-preview.2` did not package the identity-governance workflow.
+- `v0.1.0-preview.3` does package the identity-governance workflow for an internal
+  controlled pilot.
+
+The packaged preview.3 workflow includes:
 
 - `ClashEvidenceEndpoint`, `HumanIdentityDecision`, and `IdentityGovernanceDocument`
 - Strict schema-v1 JSON adapter `OrzioClashReport.Persistence.IdentityGovernanceJson`
@@ -81,17 +101,15 @@ identity-governance workflow:
   review of already-validated human decisions without changing the project catalog,
   snapshots, governance document, or longitudinal report
 
-This workflow is source-only as of July 28, 2026. It is not part of the published
-`v0.1.0-preview.2` binary contract and is not described as a packaged preview.2 feature.
 Snapshots remain immutable evidence. The identity-governance CLI does not infer or
 propagate identity, is not an interactive review tool, is not a Clash Ledger, and does not
-project decisions into reports. `validate-identity-governance` is read-only: it never
-writes, replaces, or creates any file, and it validates only project binding and evidence
-existence -- never matcher candidacy, run adjacency, left/right ordering intent,
-transitivity, graph conflicts, identity merges, reopening, or responsibility.
-Step 30A adds one derived and regenerable standalone review report, but it still does not
-infer identity, group decisions by persistent identity, implement transitivity, introduce a
-Clash Ledger, or alter the longitudinal report already referenced by a project catalog.
+project decisions into the longitudinal report. `validate-identity-governance` is
+read-only: it never writes, replaces, or creates any file, and it validates only project
+binding and evidence existence -- never matcher candidacy, run adjacency, left/right
+ordering intent, transitivity, graph conflicts, identity merges, reopening, or
+responsibility. The standalone review report remains derived and regenerable, does not
+project raw `ClashObject.SourceModel`, and does not alter the longitudinal report already
+referenced by a project catalog.
 
 Source example:
 
@@ -132,6 +150,8 @@ Operational details for the read-only evidence-validation workflow live in
 [docs/operations/identity-governance-validation.md](docs/operations/identity-governance-validation.md).
 Operational details for the standalone review report live in
 [docs/operations/identity-governance-review-report.md](docs/operations/identity-governance-review-report.md).
+
+Legal distribution terms remain an owner decision.
 
 Generate a report from a Clash Detective XML export:
 
@@ -286,8 +306,8 @@ for that adjacent transition.
 
 ## Project Catalog Workflow
 
-This workflow is included in version `0.1.0-preview.2`. This section describes the
-contents and behavior of version `0.1.0-preview.2` without asserting its current
+This workflow is included in version `0.1.0-preview.3`. This section describes the
+contents and behavior of version `0.1.0-preview.3` without asserting its current
 publication state.
 
 Create an operational project catalog from an existing run index:

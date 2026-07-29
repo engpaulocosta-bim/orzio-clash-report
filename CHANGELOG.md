@@ -4,69 +4,84 @@ All notable changes for OrzioClashReport are recorded here.
 
 ## Unreleased
 
+## 0.1.0-preview.3
+
+Internal controlled pilot candidate for Windows `win-x64`.
+
 ### Added
 
-- Source-only Step 29A foundation for explicit human identity governance in Core:
-  immutable evidence endpoints, explicit human identity decisions, and project-scoped
-  decision documents.
+- Step 29A foundation for explicit human identity governance in Core: immutable evidence
+  endpoints, explicit human identity decisions, and project-scoped decision documents.
 - Strict deterministic schema-v1 JSON adapter
   `OrzioClashReport.Persistence.IdentityGovernanceJson`.
-- Source-only Step 29B CLI authoring workflow:
-  `create-identity-governance` and `append-identity-decision`.
+- Step 29B CLI authoring workflow: `create-identity-governance` and
+  `append-identity-decision`.
 - Safe replace-existing persistence for identity-governance JSON through
   `IdentityGovernanceFileReplacer`, preserving original bytes on failure and cleaning
   temporary files.
-- Source-only Step 29C read-only CLI evidence-validation workflow:
+- Step 29C read-only CLI evidence-validation workflow:
   `validate-identity-governance`, which loads one project catalog, its indexed run
   snapshots, and a governance document, and validates the document's project binding and
   every decision's `runId` + `occurrenceIndex` evidence endpoints against the indexed
   snapshots.
-- Source-only Step 30A standalone review workflow:
-  `render-identity-governance-report`, which renders one deterministic, self-contained HTML
-  review of explicit human identity decisions only after evidence validation succeeds.
+- Step 30A standalone review workflow: `render-identity-governance-report`, which renders
+  one deterministic, self-contained HTML review of explicit human identity decisions only
+  after evidence validation succeeds.
 - Pure Core Step 30A presentation pipeline:
   `IIdentityGovernanceReviewPresenter` / `DeterministicIdentityGovernanceReviewPresenter`
   plus immutable review presentation types for resolved endpoints and persisted decision
   order.
-- Dedicated HTML adapter for Step 30A:
-  `IdentityGovernanceReviewHtmlRenderer`, with strict HTML encoding and a standalone visual
-  contract that does not modify the existing longitudinal renderer.
+- Dedicated HTML adapter for Step 30A: `IdentityGovernanceReviewHtmlRenderer`, with strict
+  HTML encoding and a standalone visual contract that does not modify the existing
+  longitudinal renderer.
 - Safe replace/create writer for derived HTML output through `DerivedHtmlReportWriter`,
   preserving the destination on failure and cleaning temporary files.
 - Pure Core evidence validator `OrzioClashReport.Core.Governance`:
   `IIdentityGovernanceEvidenceValidator` / `DeterministicIdentityGovernanceEvidenceValidator`,
   with explicitly typed `ProjectIdMismatch`, `DuplicateIndexedRunId`, `RunNotIndexed`, and
   `OccurrenceIndexOutOfRange` issues in deterministic order.
-- Unit and contract tests for Step 29A identity-governance validation and serialization.
-- Unit and contract tests for Step 29B CLI parsing, append conflicts, and replace-existing
-  persistence behavior.
-- Unit and contract tests for Step 29C evidence validation and CLI read-only behavior,
-  including byte-for-byte proof that no project catalog, run index, snapshot, governance
-  file, report destination, or other file is ever created or modified.
-- Unit and contract tests for Step 30A Core presentation, standalone HTML rendering, CLI
-  parsing, evidence gating, collision handling, safe replacement, LF-only/UTF-8 output,
-  and byte-for-byte proof that project catalog, run index, snapshots, governance JSON, and
-  longitudinal report remain unchanged.
+- Packaged Windows internal controlled pilot coverage for the project-catalog and
+  identity-governance workflows through `smoke-release.ps1`, using repeated anonymized
+  fixtures only.
+- Packaged operational guides for the identity-governance workflow and the controlled
+  pilot evaluation procedure.
 
-### Notes
+### Validation Status
 
-- This Step 29A/29B/29C capability is source-only as of July 28, 2026 and is not part of
-  the published `v0.1.0-preview.2` binary contract.
-- The Step 29A/29B authoring CLI creates and appends explicit human decisions only. It does
-  not validate against snapshots, infer or propagate identity, act as an interactive review
-  workflow, project decisions into reports, or introduce a Clash Ledger.
+- Single-run parsing, grouping, and HTML presentation were human-validated on one private
+  real export.
+- Longitudinal matching, lifecycle classification, continuity links, continuity paths, and
+  longitudinal HTML have not been validated against three real historical exports.
+- Packaging smoke uses repeated anonymized fixtures only and does not constitute real
+  longitudinal validation.
+- Matching, lifecycle, and continuity remain experimental.
+
+### Known Limitations
+
+- `v0.1.0-preview.2` did not package the identity-governance workflow.
+- `v0.1.0-preview.3` packages the identity-governance workflow only for an internal
+  controlled pilot.
+- The Step 29A/29B authoring CLI creates and appends explicit human decisions only. It
+  does not validate against snapshots, infer or propagate identity, act as an interactive
+  review workflow, project decisions into reports, or introduce a Clash Ledger.
 - The Step 29C `validate-identity-governance` command is read-only: it never writes,
   replaces, or creates any file. It validates only project binding and evidence-endpoint
-  existence -- never matcher candidacy, run adjacency, left/right ordering intent,
+  existence, never matcher candidacy, run adjacency, left/right ordering intent,
   transitivity across decisions, graph conflicts, identity merges, reopening, decision
-  supersession, reviewer identity, timestamps, or responsibility, and it does not project
-  decisions into reports or introduce a Clash Ledger.
-- The Step 30A `render-identity-governance-report` command is source-only as of July 29,
-  2026 and is not part of the published `v0.1.0-preview.2` binary contract. It renders one
-  standalone review report only after validation succeeds, does not alter the project
-  catalog schema, does not touch the existing longitudinal report, does not group
-  decisions by persistent identity, and does not implement transitivity, Clash Ledger, or
-  `Reopened`.
+  supersession, reviewer identity, timestamps, or responsibility.
+- The Step 30A `render-identity-governance-report` command renders one standalone review
+  report only after validation succeeds, does not alter the project catalog schema, does
+  not touch the existing longitudinal report, does not group decisions by persistent
+  identity, does not project raw `ClashObject.SourceModel`, and does not implement
+  transitivity, Clash Ledger, or `Reopened`.
+- Persistent clash identity exists only through an explicit human
+  `ConfirmSameIdentity` decision carrying a `persistentIdentityId`.
+- No Clash Ledger.
+- No `Reopened` lifecycle state.
+- No automatic identity assignment, propagation, transitivity, graph merge, project-wide
+  identity graph, longitudinal identity integration, chronology, or clash responsibility.
+- No interactive review workflow, database, multi-user workflow, or auth.
+- Legal distribution terms remain an owner decision.
 
 ## 0.1.0-preview.2
 

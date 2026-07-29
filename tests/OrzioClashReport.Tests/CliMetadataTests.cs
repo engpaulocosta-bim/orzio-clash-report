@@ -24,9 +24,13 @@ namespace OrzioClashReport.Tests
             Assert.Contains("compare-snapshots", result.StdOut, StringComparison.Ordinal);
             Assert.Contains("index-snapshots", result.StdOut, StringComparison.Ordinal);
             Assert.Contains("compare-index", result.StdOut, StringComparison.Ordinal);
+            Assert.Contains("create-project", result.StdOut, StringComparison.Ordinal);
+            Assert.Contains("append-project-snapshot", result.StdOut, StringComparison.Ordinal);
+            Assert.Contains("render-project", result.StdOut, StringComparison.Ordinal);
             Assert.Contains("create-identity-governance", result.StdOut, StringComparison.Ordinal);
             Assert.Contains("append-identity-decision", result.StdOut, StringComparison.Ordinal);
             Assert.Contains("validate-identity-governance", result.StdOut, StringComparison.Ordinal);
+            Assert.Contains("render-identity-governance-report", result.StdOut, StringComparison.Ordinal);
             Assert.Contains("Run-index order is authoritative", result.StdOut, StringComparison.Ordinal);
         }
 
@@ -47,7 +51,7 @@ namespace OrzioClashReport.Tests
 
             Assert.Equal(0, result.ExitCode);
             Assert.Equal(string.Empty, result.StdErr);
-            Assert.Equal("orzioclash 0.1.0-preview.2\n", result.StdOut);
+            Assert.Equal("orzioclash 0.1.0-preview.3\n", result.StdOut);
             Assert.Single(result.StdOut.Split('\n', StringSplitOptions.RemoveEmptyEntries));
         }
 
@@ -60,7 +64,7 @@ namespace OrzioClashReport.Tests
             Assert.Equal(string.Empty, result.StdOut);
             Assert.Contains("Missing required option '--xml'.", result.StdErr, StringComparison.Ordinal);
             Assert.DoesNotContain("orzioclash - Navisworks Clash Detective report tooling", result.StdErr, StringComparison.Ordinal);
-            Assert.DoesNotContain("0.1.0-preview.2", result.StdErr, StringComparison.Ordinal);
+            Assert.DoesNotContain("0.1.0-preview.3", result.StdErr, StringComparison.Ordinal);
         }
 
         private static MethodInfo ResolveMainMethod()

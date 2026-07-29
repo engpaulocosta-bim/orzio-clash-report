@@ -435,7 +435,7 @@ namespace OrzioClashReport.Tests
 
             Assert.Equal(0, result.ExitCode);
             Assert.Equal(string.Empty, result.StdErr);
-            Assert.Contains("0.1.0-preview.2", result.StdOut, StringComparison.Ordinal);
+            Assert.Contains("0.1.0-preview.3", result.StdOut, StringComparison.Ordinal);
         }
 
         private static void AssertCollisionFailure(Func<Workspace, string> outputPathSelector, string expectedMessageFragment)

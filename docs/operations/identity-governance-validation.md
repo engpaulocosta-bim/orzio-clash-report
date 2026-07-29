@@ -2,9 +2,13 @@
 
 ## Scope
 
-This document describes the source-only Step 29C identity-governance evidence-validation
-CLI workflow that exists in the repository as of July 28, 2026. It is not part of the
-published `v0.1.0-preview.2` binary contract.
+This document describes the Step 29C identity-governance evidence-validation CLI workflow
+packaged for the internal controlled pilot candidate `v0.1.0-preview.3`.
+
+Version history:
+
+- `v0.1.0-preview.2` did not package the identity-governance workflow.
+- `v0.1.0-preview.3` does package it.
 
 The workflow is intentionally narrow: `validate-identity-governance` answers, for one
 project, whether every explicit human identity decision's `runId` + `occurrenceIndex`

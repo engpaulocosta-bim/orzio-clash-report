@@ -89,11 +89,11 @@ state exactly what was verified and what remains unverified.
 
 ## Internal preview release contract
 
-Current source and package version: `0.1.0-preview.2`, distributed as `orzioclash.exe` for
-Windows `win-x64`. Release availability is determined by the matching Git tag and GitHub
-prerelease. This repository documentation describes version `0.1.0-preview.2` without
-asserting its current publication state. Release tags must point to commits contained in
-`master`.
+Current source and package candidate version: `0.1.0-preview.3`, distributed as
+`orzioclash.exe` for Windows `win-x64`. Release availability is determined by the matching
+Git tag and GitHub prerelease. This repository documentation describes version
+`0.1.0-preview.3` without asserting its current publication state. Release tags must point
+to commits contained in `master`.
 
 README and user-facing documentation remain English. Published CLI stdout/stderr contracts
 must not be silently broken after release.
@@ -107,18 +107,24 @@ human-validated on one private real export. Longitudinal matching, lifecycle, co
 links, continuity paths, and longitudinal HTML remain unvalidated against three real
 historical exports and are experimental. Release/package smoke may use repeated anonymized
 fixtures for `--version`, `--help`, single-run HTML, three snapshots, run-index creation,
-`compare-index`, `create-project`, `append-project-snapshot`, and `render-project`, but
-that smoke is packaging coverage only and is not real longitudinal validation.
+`compare-index`, `create-project`, `append-project-snapshot`, `render-project`,
+`create-identity-governance`, `append-identity-decision`, `validate-identity-governance`,
+and `render-identity-governance-report`, but that smoke is packaging coverage only and is
+not real longitudinal validation.
 
-The preview does not provide persistent clash identity, Clash Ledger, `Reopened`,
-aggregate multi-run lifecycle, automatic chronology, or automatic clash responsibility.
+Persistent clash identity exists only through an explicit human `ConfirmSameIdentity`
+decision carrying a `persistentIdentityId`. The preview does not assign identity
+automatically, propagate identity, infer transitivity, build a project-wide identity graph
+or Clash Ledger, integrate persistent identities into longitudinal lifecycle, provide
+`Reopened`, infer chronology automatically, or assign clash responsibility automatically.
 `workflow_dispatch` release runs are packaging dry runs only. Responsibility/authorship
 remains deferred to a later human-governance stage.
 
-## Source-only human identity governance
+## Human identity governance
 
-Steps 29A, 29B, 29C, and 30A add a source-only workflow for explicit human identity
-governance. It is not part of the published `v0.1.0-preview.2` binary contract.
+Steps 29A, 29B, 29C, and 30A add the explicit human identity-governance workflow.
+`v0.1.0-preview.2` did not package it; `v0.1.0-preview.3` packages it for an internal
+controlled pilot.
 
 - Snapshots remain immutable evidence only.
 - Algorithmic matching remains suggestion only, never persisted truth.
@@ -554,7 +560,7 @@ identity, timestamps, or responsibility, and it creates no Clash Ledger.
 
 ## Render identity governance review report CLI
 
-The `render-identity-governance-report` subcommand is an explicit, source-only, standalone
+The `render-identity-governance-report` subcommand is an explicit, standalone
 review workflow: project-catalog JSON -> resolved run-index JSON -> resolved and loaded
 indexed snapshots -> loaded identity-governance JSON ->
 `DeterministicIdentityGovernanceEvidenceValidator` -> pure

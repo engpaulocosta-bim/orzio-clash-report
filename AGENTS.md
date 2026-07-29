@@ -136,8 +136,8 @@ remains deferred to a later human-governance stage.
 
 ## Source-only human identity governance
 
-Steps 29A, 29B, and 29C add a source-only workflow for explicit human identity governance.
-It is not part of the published `v0.1.0-preview.2` binary contract.
+Steps 29A, 29B, 29C, and 30A add a source-only workflow for explicit human identity
+governance. It is not part of the published `v0.1.0-preview.2` binary contract.
 
 - Snapshots remain immutable evidence only.
 - Algorithmic matching remains suggestion only, never persisted truth.
@@ -156,6 +156,10 @@ It is not part of the published `v0.1.0-preview.2` binary contract.
   catalog, its run index, and its indexed snapshots -- but only to read-only validate
   project binding and evidence-endpoint existence. It never writes, replaces, or creates
   any file.
+- `render-identity-governance-report` (Step 30A) is the one command that renders one
+  standalone, regenerable HTML review of explicit human decisions -- but only after Step
+  29C evidence validation succeeds, and without mutating the project catalog, the
+  governance file, any snapshot, or the existing longitudinal report.
 - No command infers or propagates identity, and none is an interactive review workflow.
 - No report projection, no Clash Ledger, no `Reopened`, no automatic propagation, no
   automatic transitivity, no automatic chronology, and no automatic responsibility exist at
@@ -577,6 +581,32 @@ This stage validates only project binding and evidence-endpoint existence. It ne
 validates matcher candidacy, run adjacency, left/right ordering intent, transitivity across
 decisions, graph conflicts, identity merges, reopening, decision supersession, reviewer
 identity, timestamps, or responsibility, and it creates no Clash Ledger.
+
+## Render identity governance review report CLI
+
+The `render-identity-governance-report` subcommand is an explicit, source-only, standalone
+review workflow: project-catalog JSON -> resolved run-index JSON -> resolved and loaded
+indexed snapshots -> loaded identity-governance JSON ->
+`DeterministicIdentityGovernanceEvidenceValidator` -> pure
+`DeterministicIdentityGovernanceReviewPresenter` -> `IdentityGovernanceReviewHtmlRenderer`
+-> `DerivedHtmlReportWriter`. The command is
+`orzioclash render-identity-governance-report --project <project.json> --governance <identity-governance.json> (-o <identity-governance.html> | --output <identity-governance.html>)`.
+
+It reuses the same project-catalog workspace protections as Step 29C for the catalog, run
+index, snapshots, and longitudinal report path, and it adds explicit collision protection:
+the requested output must not resolve to the same file as the project catalog, run index,
+any snapshot, the governance JSON, or the longitudinal report. The command validates all
+inputs, runs the evidence validator, and refuses to render when any issue exists. Semantic
+validation failure reuses the exact numbered issue format of `validate-identity-governance`,
+with stdout empty, usage omitted, exit code `1`, existing output preserved byte-identically,
+and no temporary file left behind.
+
+The report is a derived, regenerable artifact only. It is not evidence, not identity
+inference, and not longitudinal integration. It presents persisted decisions exactly in
+persisted order, Left endpoint before Right endpoint, with endpoint resolution still based
+only on `runId` + `occurrenceIndex`. It does not run matching, lifecycle, continuity,
+grouping, propagation, transitivity, Clash Ledger, or `Reopened`, and it never changes the
+project catalog schema or the existing longitudinal report.
 
 ## Adjacent run sequence comparer (Core)
 

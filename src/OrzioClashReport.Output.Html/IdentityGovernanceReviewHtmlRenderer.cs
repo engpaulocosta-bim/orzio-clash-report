@@ -133,7 +133,11 @@ namespace OrzioClashReport.Output.Html
             AppendDefinitionRow(html, "Decision kind", Encode(decision.DecisionKind.ToString()));
             AppendDefinitionRow(html, "Reviewer alias", Encode(decision.ReviewerAlias));
             AppendDefinitionRow(html, "Reason", FormatOptionalEncoded(decision.Reason));
-            AppendDefinitionRow(html, "Persistent identity id", FormatOptionalEncoded(decision.PersistentIdentityId));
+            if (decision.PersistentIdentityId != null)
+            {
+                AppendDefinitionRow(html, "Persistent identity id", Encode(decision.PersistentIdentityId));
+            }
+
             html.Append("</dl>\n");
 
             html.Append("<div class=\"endpoint-grid\">\n");
@@ -160,11 +164,9 @@ namespace OrzioClashReport.Output.Html
             AppendDefinitionRow(html, "Element A id", Encode(endpoint.ElementAId));
             AppendDefinitionRow(html, "Element A name", FormatOptionalEncoded(endpoint.ElementAName));
             AppendDefinitionRow(html, "Element A level", FormatOptionalEncoded(endpoint.ElementALevel));
-            AppendDefinitionRow(html, "Element A source model", FormatOptionalEncoded(endpoint.ElementASourceModel));
             AppendDefinitionRow(html, "Element B id", Encode(endpoint.ElementBId));
             AppendDefinitionRow(html, "Element B name", FormatOptionalEncoded(endpoint.ElementBName));
             AppendDefinitionRow(html, "Element B level", FormatOptionalEncoded(endpoint.ElementBLevel));
-            AppendDefinitionRow(html, "Element B source model", FormatOptionalEncoded(endpoint.ElementBSourceModel));
             html.Append("</dl>\n");
             html.Append("</article>\n");
         }

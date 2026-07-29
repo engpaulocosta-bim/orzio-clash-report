@@ -79,11 +79,9 @@ namespace OrzioClashReport.Tests
             Assert.Equal("A-002", decision.LeftEndpoint.ElementAId);
             Assert.Equal("Pipe 02", decision.LeftEndpoint.ElementAName);
             Assert.Null(decision.LeftEndpoint.ElementALevel);
-            Assert.Null(decision.LeftEndpoint.ElementASourceModel);
             Assert.Equal("B-002", decision.LeftEndpoint.ElementBId);
             Assert.Null(decision.LeftEndpoint.ElementBName);
             Assert.Equal("Level 02", decision.LeftEndpoint.ElementBLevel);
-            Assert.Null(decision.LeftEndpoint.ElementBSourceModel);
 
             Assert.Equal("run-003", decision.RightEndpoint.RunId);
             Assert.Equal(2, decision.RightEndpoint.OccurrenceIndex);
@@ -92,7 +90,6 @@ namespace OrzioClashReport.Tests
             Assert.Equal("A-003", decision.RightEndpoint.ElementAId);
             Assert.Null(decision.RightEndpoint.ElementAName);
             Assert.Equal("Level 03", decision.RightEndpoint.ElementALevel);
-            Assert.Equal("HVAC-C", decision.RightEndpoint.ElementASourceModel);
         }
 
         [Fact]
@@ -108,6 +105,32 @@ namespace OrzioClashReport.Tests
             Assert.Equal(HumanIdentityDecisionKind.RejectSameIdentity, decision.DecisionKind);
             Assert.Null(decision.PersistentIdentityId);
             Assert.Null(decision.Reason);
+        }
+
+        [Fact]
+        public void Present_PrivateSourceModelPaths_DoNotAffectSafeEndpointProjection()
+        {
+            var runs = IdentityGovernanceReviewTestData.CreateRunsWithPrivateSourceModels();
+            var governance = IdentityGovernanceReviewTestData.CreateGovernance(
+                IdentityGovernanceReviewTestData.Confirm("decision-001", "run-001", 0, "run-003", 2));
+
+            var presentation = Sut().Present("coordination-project", "Coordination Project", governance, runs);
+            IdentityGovernanceReviewDecisionPresentation decision = presentation.Decisions[0];
+
+            Assert.Equal("Sigma A / Structure / Core A @ RA1", decision.LeftEndpoint.ModelADisplay);
+            Assert.Equal("Alfa A / HVAC / Services A @ RA2", decision.LeftEndpoint.ModelBDisplay);
+            Assert.Equal("A-001", decision.LeftEndpoint.ElementAId);
+            Assert.Equal("Duct 01", decision.LeftEndpoint.ElementAName);
+            Assert.Equal("Level 01", decision.LeftEndpoint.ElementALevel);
+            Assert.Equal("B-001", decision.LeftEndpoint.ElementBId);
+            Assert.Equal("Beam 01", decision.LeftEndpoint.ElementBName);
+            Assert.Equal("Level 01", decision.LeftEndpoint.ElementBLevel);
+            Assert.Equal("A-003", decision.RightEndpoint.ElementAId);
+            Assert.Null(decision.RightEndpoint.ElementAName);
+            Assert.Equal("Level 03", decision.RightEndpoint.ElementALevel);
+            Assert.Equal("B-003", decision.RightEndpoint.ElementBId);
+            Assert.Equal("Column 03", decision.RightEndpoint.ElementBName);
+            Assert.Null(decision.RightEndpoint.ElementBLevel);
         }
 
         [Fact]

@@ -28,15 +28,11 @@ namespace OrzioClashReport.Core.Model
 
         public string? ElementALevel { get; }
 
-        public string? ElementASourceModel { get; }
-
         public string ElementBId { get; }
 
         public string? ElementBName { get; }
 
         public string? ElementBLevel { get; }
-
-        public string? ElementBSourceModel { get; }
 
         public IdentityGovernanceReviewEndpointPresentation(
             IdentityGovernanceEvidenceEndpointSide side,
@@ -50,11 +46,9 @@ namespace OrzioClashReport.Core.Model
             string elementAId,
             string? elementAName,
             string? elementALevel,
-            string? elementASourceModel,
             string elementBId,
             string? elementBName,
-            string? elementBLevel,
-            string? elementBSourceModel)
+            string? elementBLevel)
         {
             if (occurrenceIndex < 0)
             {
@@ -75,11 +69,9 @@ namespace OrzioClashReport.Core.Model
             ElementAId = RequireNonBlank(elementAId, nameof(elementAId));
             ElementAName = NormalizeOptional(elementAName);
             ElementALevel = NormalizeOptional(elementALevel);
-            ElementASourceModel = NormalizeOptional(elementASourceModel);
             ElementBId = RequireNonBlank(elementBId, nameof(elementBId));
             ElementBName = NormalizeOptional(elementBName);
             ElementBLevel = NormalizeOptional(elementBLevel);
-            ElementBSourceModel = NormalizeOptional(elementBSourceModel);
         }
 
         private static string RequireNonBlank(string value, string paramName)

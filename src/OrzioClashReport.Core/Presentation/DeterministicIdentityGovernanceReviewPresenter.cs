@@ -106,11 +106,9 @@ namespace OrzioClashReport.Core.Presentation
                 clash.ElementA.ElementId,
                 clash.ElementA.ElementName,
                 clash.ElementA.Level,
-                clash.ElementA.SourceModel,
                 clash.ElementB.ElementId,
                 clash.ElementB.ElementName,
-                clash.ElementB.Level,
-                clash.ElementB.SourceModel);
+                clash.ElementB.Level);
         }
 
         private static string FormatModel(ModelRevision model) =>

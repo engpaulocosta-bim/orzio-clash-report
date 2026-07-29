@@ -131,8 +131,11 @@ fixtures for `--version`, `--help`, single-run HTML, three snapshots, run-index 
 and `render-identity-governance-report`, but that smoke is packaging coverage only and is
 not real longitudinal validation.
 
-The preview does not provide persistent clash identity, Clash Ledger, `Reopened`,
-aggregate multi-run lifecycle, automatic chronology, or automatic clash responsibility.
+Persistent clash identity exists only through an explicit human `ConfirmSameIdentity`
+decision carrying a `persistentIdentityId`. The preview does not assign identity
+automatically, propagate identity, infer transitivity, build a project-wide identity graph
+or Clash Ledger, integrate persistent identities into longitudinal lifecycle, provide
+`Reopened`, infer chronology automatically, or assign clash responsibility automatically.
 `workflow_dispatch` release runs are packaging dry runs only. Responsibility/authorship
 remains deferred to a later human-governance stage.
 

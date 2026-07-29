@@ -74,11 +74,12 @@ Internal controlled pilot candidate for Windows `win-x64`.
   not touch the existing longitudinal report, does not group decisions by persistent
   identity, does not project raw `ClashObject.SourceModel`, and does not implement
   transitivity, Clash Ledger, or `Reopened`.
-- No persistent clash identity.
+- Persistent clash identity exists only through an explicit human
+  `ConfirmSameIdentity` decision carrying a `persistentIdentityId`.
 - No Clash Ledger.
 - No `Reopened` lifecycle state.
-- No automatic propagation, transitivity, graph merge, chronology, or clash
-  responsibility.
+- No automatic identity assignment, propagation, transitivity, graph merge, project-wide
+  identity graph, longitudinal identity integration, chronology, or clash responsibility.
 - No interactive review workflow, database, multi-user workflow, or auth.
 - Legal distribution terms remain an owner decision.
 

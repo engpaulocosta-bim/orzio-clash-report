@@ -73,8 +73,11 @@ gates, see [docs/operations/release-checklist.md](docs/operations/release-checkl
 For controlled pilot execution and feedback, see
 [docs/operations/pilot-evaluation.md](docs/operations/pilot-evaluation.md).
 
-The packaged preview does not provide persistent clash identity, Clash Ledger, `Reopened`,
-aggregate multi-run lifecycle, automatic chronology, or automatic clash responsibility.
+Persistent clash identity exists only through an explicit human `ConfirmSameIdentity`
+decision carrying a `persistentIdentityId`. The packaged preview does not assign identity
+automatically, propagate identity, infer transitivity, build a project-wide identity graph
+or Clash Ledger, integrate persistent identities into longitudinal lifecycle, provide
+`Reopened`, infer chronology automatically, or assign clash responsibility automatically.
 
 ## Identity Governance Workflow
 

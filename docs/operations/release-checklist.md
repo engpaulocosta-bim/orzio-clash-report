@@ -120,6 +120,9 @@ Use this checklist before publishing an internal preview artifact or prerelease.
 - [ ] No document or release note claims production-ready, enterprise-ready, AI-verified,
   commercially released, latest release, automatic clash identity, or validated
   longitudinal MVP.
-- [ ] The preview does not claim persistent clash identity, Clash Ledger, `Reopened`,
-  automatic propagation, transitivity, graph merge, inferred chronology, automatic clash
-  responsibility, interactive review, database, multi-user workflow, or auth.
+- [ ] The preview claims persistent identity only through explicit human
+  `ConfirmSameIdentity` decisions carrying `persistentIdentityId`.
+- [ ] No document claims automatic identity assignment, automatic propagation,
+  transitivity, graph merge, a project-wide identity graph, Clash Ledger, longitudinal
+  identity integration, `Reopened`, inferred chronology, automatic clash responsibility,
+  interactive review, database, multi-user workflow, or auth.

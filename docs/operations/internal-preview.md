@@ -23,9 +23,12 @@ Longitudinal matching, lifecycle classification, continuity links, continuity pa
 longitudinal HTML have not been validated on three real historical exports. Matching,
 lifecycle, and continuity remain experimental.
 
-The preview does not provide persistent clash identity, Clash Ledger, `Reopened`,
-automatic identity propagation, transitivity, graph merge, inferred chronology, or
-automatic clash responsibility.
+Persistent clash identity exists only through an explicit human `ConfirmSameIdentity`
+decision carrying a `persistentIdentityId`. The preview does not assign identity
+automatically, propagate identity, infer transitivity, perform graph merge, build a
+project-wide identity graph or Clash Ledger, integrate persistent identities into
+longitudinal lifecycle, provide `Reopened`, infer chronology automatically, or assign clash
+responsibility automatically.
 
 Legal distribution terms remain an owner decision.
 

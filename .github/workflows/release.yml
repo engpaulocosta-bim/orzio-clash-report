@@ -108,6 +108,10 @@ jobs:
           Copy-Item -LiteralPath "README.md" -Destination (Join-Path $packageRoot "README.md")
           Copy-Item -LiteralPath "CHANGELOG.md" -Destination (Join-Path $packageRoot "CHANGELOG.md")
           Copy-Item -LiteralPath "docs/operations/internal-preview.md" -Destination (Join-Path $packageRoot "docs/operations/internal-preview.md")
+          Copy-Item -LiteralPath "docs/operations/identity-governance-cli.md" -Destination (Join-Path $packageRoot "docs/operations/identity-governance-cli.md")
+          Copy-Item -LiteralPath "docs/operations/identity-governance-validation.md" -Destination (Join-Path $packageRoot "docs/operations/identity-governance-validation.md")
+          Copy-Item -LiteralPath "docs/operations/identity-governance-review-report.md" -Destination (Join-Path $packageRoot "docs/operations/identity-governance-review-report.md")
+          Copy-Item -LiteralPath "docs/operations/pilot-evaluation.md" -Destination (Join-Path $packageRoot "docs/operations/pilot-evaluation.md")
           Copy-Item -LiteralPath "docs/operations/project-catalog.md" -Destination (Join-Path $packageRoot "docs/operations/project-catalog.md")
           Copy-Item -LiteralPath "docs/operations/release-checklist.md" -Destination (Join-Path $packageRoot "docs/operations/release-checklist.md")
           Copy-Item -LiteralPath "scripts/smoke-release.ps1" -Destination (Join-Path $packageRoot "smoke-release.ps1")
@@ -116,11 +120,84 @@ jobs:
           Copy-Item -LiteralPath "samples/run-manifest.sample.json" -Destination (Join-Path $packageRoot "samples/run-manifest.sample.json")
           Copy-Item -LiteralPath "samples/run-index.template.json" -Destination (Join-Path $packageRoot "samples/run-index.template.json")
 
+          $expectedFiles = @(
+            "CHANGELOG.md",
+            "README.md",
+            "docs/operations/identity-governance-cli.md",
+            "docs/operations/identity-governance-review-report.md",
+            "docs/operations/identity-governance-validation.md",
+            "docs/operations/internal-preview.md",
+            "docs/operations/pilot-evaluation.md",
+            "docs/operations/project-catalog.md",
+            "docs/operations/release-checklist.md",
+            "orzioclash.exe",
+            "samples/run-index.template.json",
+            "samples/run-manifest.sample.json",
+            "samples/sample-clash.run-manifest.json",
+            "samples/sample-clash.xml",
+            "smoke-release.ps1"
+          ) | Sort-Object
+
+          $actualFiles = @(Get-ChildItem -LiteralPath $packageRoot -Recurse -File | ForEach-Object {
+            $_.FullName.Substring($packageRoot.Length + 1).Replace('\', '/')
+          } | Sort-Object)
+
+          if ($actualFiles.Count -ne $expectedFiles.Count) {
+            throw "Package file count mismatch. Expected $($expectedFiles.Count), actual $($actualFiles.Count)."
+          }
+
+          for ($i = 0; $i -lt $expectedFiles.Count; $i++) {
+            if (-not [string]::Equals($actualFiles[$i], $expectedFiles[$i], [StringComparison]::Ordinal)) {
+              throw "Unexpected packaged file set. Expected '$($expectedFiles[$i])', actual '$($actualFiles[$i])'."
+            }
+          }
+
+          $pdbFiles = @(Get-ChildItem -LiteralPath $packageRoot -Recurse -File -Filter "*.pdb")
+          if ($pdbFiles.Count -ne 0) {
+            throw "PDB files must not be included in the release package."
+          }
+
+          $forbiddenFiles = @($actualFiles | Where-Object {
+            $_ -match '(^|/)\.(derived-html-report|identity-governance-replace|run-index-replace)-' -or
+            $_ -match '\.tmp$' -or
+            $_ -match '\.(nwd|nwf|nwc|rvt|pdf|png|jpg|jpeg|gif)$'
+          })
+          if ($forbiddenFiles.Count -ne 0) {
+            throw "Forbidden files were included in the package: $($forbiddenFiles -join ', ')"
+          }
+
           $zipPath = Join-Path $PWD "artifacts/$packageName.zip"
           Compress-Archive -Path (Join-Path $packageRoot "*") -DestinationPath $zipPath
+
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip = [System.IO.Compression.ZipFile]::OpenRead($zipPath)
+          try {
+            $zipEntries = @($zip.Entries | Where-Object { $_.FullName -notmatch '/$' } | ForEach-Object {
+              $_.FullName.Replace('\', '/')
+            } | Sort-Object)
+
+            if ($zipEntries.Count -ne $expectedFiles.Count) {
+              throw "ZIP entry count mismatch. Expected $($expectedFiles.Count), actual $($zipEntries.Count)."
+            }
+
+            for ($i = 0; $i -lt $expectedFiles.Count; $i++) {
+              if (-not [string]::Equals($zipEntries[$i], $expectedFiles[$i], [StringComparison]::Ordinal)) {
+                throw "Unexpected ZIP contents. Expected '$($expectedFiles[$i])', actual '$($zipEntries[$i])'."
+              }
+            }
+          }
+          finally {
+            $zip.Dispose()
+          }
+
           $hash = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
           $checksumPath = Join-Path $PWD "artifacts/$packageName.sha256"
           Set-Content -LiteralPath $checksumPath -Value "$hash  $packageName.zip" -NoNewline -Encoding ascii
+
+          $checksumText = Get-Content -LiteralPath $checksumPath -Raw
+          if ($checksumText -notmatch "^[0-9a-f]{64}  $([regex]::Escape($packageName)).zip$") {
+            throw "Checksum file format is invalid."
+          }
 
           "zip-path=$zipPath" >> $env:GITHUB_OUTPUT
           "checksum-path=$checksumPath" >> $env:GITHUB_OUTPUT
@@ -173,15 +250,20 @@ jobs:
           }
 
           $notes = @"
-          Internal preview release.
+          Internal controlled pilot release candidate.
 
           Includes the operational project catalog workflow: create-project, append-project-snapshot, and render-project.
-          Run snapshots remain immutable evidence, and the explicit run index remains the only authority for run order.
-          Derived longitudinal reports are regenerated from evidence and are not persisted as truth.
-          Packaging smoke covers project catalog creation, append-only index updates, and report regeneration by repeating anonymized fixtures only. That smoke is not real longitudinal validation with three real exports.
+          Includes the human identity-governance JSON workflow: create-identity-governance, append-identity-decision, validate-identity-governance, and render-identity-governance-report.
+          Human decisions remain explicit confirmations and explicit rejections only.
+          Evidence validation remains read-only.
+          Review HTML remains standalone, deterministic, and local.
+          Run snapshots remain immutable evidence, safe persistence preserves original bytes on failure, and the explicit run index remains the only authority for run order.
+          Packaging smoke covers project catalog creation, append-only index updates, governance creation, governance append, read-only validation, and review rendering by repeating anonymized fixtures only. That smoke is not real longitudinal validation with three real exports.
           Single-run parsing, grouping, and HTML were human-validated on one private real export.
           Longitudinal matching, lifecycle, continuity links, continuity paths, and longitudinal HTML have not been validated on three real historical exports.
-          Longitudinal behavior remains experimental and does not provide persistent clash identity, Clash Ledger, Reopened, aggregate multi-run lifecycle, automatic chronology, or automatic clash responsibility.
+          Matching, lifecycle, and continuity remain experimental.
+          Limitations remain explicit: no Clash Ledger, no Reopened, no automatic propagation, no transitivity, no graph merge, no inferred chronology, no automatic responsibility, no interactive review, no database, no multi-user workflow, and no auth.
+          Privacy: the review report does not project raw ClashObject.SourceModel, the package contains anonymized fixtures only, outputs remain local, and real data requires authorization.
           "@
 
           gh release create $tag `

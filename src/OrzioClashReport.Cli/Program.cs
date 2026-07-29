@@ -33,6 +33,7 @@ namespace OrzioClashReport.Cli
         private const string CreateProjectUsage = "Usage: orzioclash create-project --project-id <project-id> --name <display-name> --index <run-index.json> --report <longitudinal.html> (-o <project.json> | --output <project.json>)";
         private const string IndexSnapshotsUsage = "Usage: orzioclash index-snapshots --snapshot <run-snapshot.json> [--snapshot <run-snapshot.json> ...] (-o <run-index.json> | --output <run-index.json>)";
         private const string RenderProjectUsage = "Usage: orzioclash render-project --project <project.json>";
+        private const string RenderIdentityGovernanceReportUsage = "Usage: orzioclash render-identity-governance-report --project <project.json> --governance <identity-governance.json> (-o <identity-governance.html> | --output <identity-governance.html>)";
         private const string SnapshotUsage = "Usage: orzioclash snapshot --xml <input.xml> --manifest <run-manifest.json> (-o <run-snapshot.json> | --output <run-snapshot.json>)";
         private const string ValidateIdentityGovernanceUsage = "Usage: orzioclash validate-identity-governance --project <project.json> --governance <identity-governance.json>";
 
@@ -78,6 +79,11 @@ namespace OrzioClashReport.Cli
             if (args.Length > 0 && string.Equals(args[0], "validate-identity-governance", StringComparison.OrdinalIgnoreCase))
             {
                 return RunValidateIdentityGovernance(args);
+            }
+
+            if (args.Length > 0 && string.Equals(args[0], "render-identity-governance-report", StringComparison.OrdinalIgnoreCase))
+            {
+                return RunRenderIdentityGovernanceReport(args);
             }
 
             if (args.Length > 0 && string.Equals(args[0], "append-project-snapshot", StringComparison.OrdinalIgnoreCase))
@@ -130,6 +136,7 @@ namespace OrzioClashReport.Cli
             Console.WriteLine("  create-identity-governance Create one empty explicit identity-governance document.");
             Console.WriteLine("  append-identity-decision Append one explicit human identity decision to an existing governance file.");
             Console.WriteLine("  validate-identity-governance Validate explicit decisions against one project's indexed snapshots.");
+            Console.WriteLine("  render-identity-governance-report Render one standalone HTML review of explicit human identity decisions.");
             Console.WriteLine("  append-project-snapshot Append one persisted snapshot to an existing project catalog run index.");
             Console.WriteLine("  render-project       Re-render a project catalog's longitudinal report from immutable snapshots.");
             Console.WriteLine();
@@ -488,13 +495,7 @@ namespace OrzioClashReport.Cli
 
                 if (!result.IsValid)
                 {
-                    Console.Error.WriteLine("Identity governance validation failed.");
-                    Console.Error.WriteLine($"Issues: {result.Issues.Count}");
-                    for (int i = 0; i < result.Issues.Count; i++)
-                    {
-                        Console.Error.WriteLine($"{i + 1}. {result.Issues[i].Message}");
-                    }
-
+                    WriteIdentityGovernanceValidationIssues(result);
                     return 1;
                 }
 
@@ -513,6 +514,80 @@ namespace OrzioClashReport.Cli
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Failed to validate identity governance: {ex.Message}");
+                return 1;
+            }
+        }
+
+        private static int RunRenderIdentityGovernanceReport(string[] args)
+        {
+            if (!TryParseRenderIdentityGovernanceReportArguments(args, out RenderIdentityGovernanceReportCommandOptions options, out string parseError))
+            {
+                Console.Error.WriteLine(parseError);
+                Console.Error.WriteLine(RenderIdentityGovernanceReportUsage);
+                return 1;
+            }
+
+            try
+            {
+                var projectCatalogSerializer = new JsonProjectCatalogSerializer();
+                string resolvedProjectCatalogPath = Path.GetFullPath(options.ProjectPath);
+                ProjectCatalogDocument project = projectCatalogSerializer.Load(resolvedProjectCatalogPath);
+
+                var projectCatalogPathResolver = new ProjectCatalogPathResolver();
+                string resolvedRunIndexPath = projectCatalogPathResolver.ResolveReference(resolvedProjectCatalogPath, project.RunIndexPath);
+                string resolvedLongitudinalReportPath = projectCatalogPathResolver.ResolveReference(resolvedProjectCatalogPath, project.LongitudinalReportPath);
+
+                LoadedRunIndexContext loadedRunIndex = LoadRunIndexContext(resolvedRunIndexPath, requireComparableSequence: false);
+                ValidateProjectCatalogWorkspace(
+                    resolvedProjectCatalogPath,
+                    loadedRunIndex.ResolvedRunIndexPath,
+                    loadedRunIndex.ResolvedSnapshotPaths,
+                    resolvedLongitudinalReportPath,
+                    projectCatalogPathResolver);
+
+                string resolvedGovernancePath = Path.GetFullPath(options.GovernancePath);
+                string resolvedOutputPath = Path.GetFullPath(options.OutputPath);
+                EnsureParentDirectoryExists(resolvedOutputPath, "Identity governance review parent directory not found");
+                ValidateIdentityGovernanceReviewOutputPath(
+                    resolvedOutputPath,
+                    resolvedProjectCatalogPath,
+                    loadedRunIndex.ResolvedRunIndexPath,
+                    loadedRunIndex.ResolvedSnapshotPaths,
+                    resolvedGovernancePath,
+                    resolvedLongitudinalReportPath);
+
+                var governanceSerializer = new JsonIdentityGovernanceSerializer();
+                IdentityGovernanceDocument governance = governanceSerializer.Load(resolvedGovernancePath);
+
+                IIdentityGovernanceEvidenceValidator validator = new DeterministicIdentityGovernanceEvidenceValidator();
+                IdentityGovernanceEvidenceValidationResult validationResult =
+                    validator.Validate(project.ProjectId, governance, loadedRunIndex.Runs);
+
+                if (!validationResult.IsValid)
+                {
+                    WriteIdentityGovernanceValidationIssues(validationResult);
+                    return 1;
+                }
+
+                IIdentityGovernanceReviewPresenter presenter = new DeterministicIdentityGovernanceReviewPresenter();
+                IdentityGovernanceReviewPresentation presentation =
+                    presenter.Present(project.ProjectId, project.DisplayName, governance, loadedRunIndex.Runs);
+
+                string html = new IdentityGovernanceReviewHtmlRenderer().Render(presentation);
+                new DerivedHtmlReportWriter().Write(html, resolvedOutputPath);
+
+                Console.WriteLine($"Project: {project.ProjectId}");
+                Console.WriteLine($"Indexed runs: {presentation.IndexedRunCount}");
+                Console.WriteLine($"Decisions: {presentation.DecisionCount}");
+                Console.WriteLine($"Confirmations: {presentation.ConfirmationCount}");
+                Console.WriteLine($"Rejections: {presentation.RejectionCount}");
+                Console.WriteLine($"Evidence endpoints: {presentation.EvidenceEndpointCount}");
+                Console.WriteLine($"Identity governance review written to {resolvedOutputPath}");
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to render identity governance review: {ex.Message}");
                 return 1;
             }
         }
@@ -783,6 +858,16 @@ namespace OrzioClashReport.Cli
             }
         }
 
+        private static void WriteIdentityGovernanceValidationIssues(IdentityGovernanceEvidenceValidationResult result)
+        {
+            Console.Error.WriteLine("Identity governance validation failed.");
+            Console.Error.WriteLine($"Issues: {result.Issues.Count}");
+            for (int i = 0; i < result.Issues.Count; i++)
+            {
+                Console.Error.WriteLine($"{i + 1}. {result.Issues[i].Message}");
+            }
+        }
+
         private static void EnsureParentDirectoryExists(string filePath, string errorPrefix)
         {
             string fullPath = Path.GetFullPath(filePath);
@@ -899,6 +984,55 @@ namespace OrzioClashReport.Cli
             {
                 throw new InvalidOperationException(
                     $"Appended snapshot must not be the same file as the report destination: {resolvedAppendedSnapshotPath}");
+            }
+        }
+
+        private static void ValidateIdentityGovernanceReviewOutputPath(
+            string outputPath,
+            string resolvedProjectCatalogPath,
+            string resolvedRunIndexPath,
+            IReadOnlyList<string> resolvedSnapshotPaths,
+            string resolvedGovernancePath,
+            string resolvedLongitudinalReportPath)
+        {
+            string resolvedOutputPath = Path.GetFullPath(outputPath);
+            if (Directory.Exists(resolvedOutputPath))
+            {
+                throw new InvalidOperationException(
+                    $"Identity governance review destination cannot be an existing directory: {resolvedOutputPath}");
+            }
+
+            if (PathsEqual(resolvedOutputPath, resolvedProjectCatalogPath))
+            {
+                throw new InvalidOperationException(
+                    $"Identity governance review destination must not be the same file as the project catalog: {resolvedOutputPath}");
+            }
+
+            if (PathsEqual(resolvedOutputPath, resolvedRunIndexPath))
+            {
+                throw new InvalidOperationException(
+                    $"Identity governance review destination must not be the same file as the run index: {resolvedOutputPath}");
+            }
+
+            for (int i = 0; i < resolvedSnapshotPaths.Count; i++)
+            {
+                if (PathsEqual(resolvedOutputPath, resolvedSnapshotPaths[i]))
+                {
+                    throw new InvalidOperationException(
+                        $"Identity governance review destination must not be the same file as snapshot {i + 1}: {resolvedOutputPath}");
+                }
+            }
+
+            if (PathsEqual(resolvedOutputPath, resolvedGovernancePath))
+            {
+                throw new InvalidOperationException(
+                    $"Identity governance review destination must not be the same file as the identity governance document: {resolvedOutputPath}");
+            }
+
+            if (PathsEqual(resolvedOutputPath, resolvedLongitudinalReportPath))
+            {
+                throw new InvalidOperationException(
+                    $"Identity governance review destination must not be the same file as the longitudinal report: {resolvedOutputPath}");
             }
         }
 
@@ -2030,6 +2164,95 @@ namespace OrzioClashReport.Cli
             return true;
         }
 
+        private static bool TryParseRenderIdentityGovernanceReportArguments(
+            string[] args, out RenderIdentityGovernanceReportCommandOptions options, out string error)
+        {
+            options = RenderIdentityGovernanceReportCommandOptions.Empty;
+            error = string.Empty;
+
+            string? projectPath = null;
+            string? governancePath = null;
+            string? outputPath = null;
+
+            for (int i = 1; i < args.Length; i++)
+            {
+                string argument = args[i];
+                if (!IsRecognizedRenderIdentityGovernanceReportOption(argument))
+                {
+                    error = $"Unrecognized render-identity-governance-report argument '{argument}'.";
+                    return false;
+                }
+
+                if (i + 1 >= args.Length
+                    || string.IsNullOrWhiteSpace(args[i + 1])
+                    || IsRecognizedRenderIdentityGovernanceReportOption(args[i + 1])
+                    || IsOptionLikeValueToken(args[i + 1]))
+                {
+                    error = $"Missing value for '{argument}'.";
+                    return false;
+                }
+
+                string value = args[i + 1];
+                switch (argument)
+                {
+                    case "--project":
+                        if (projectPath != null)
+                        {
+                            error = "Duplicate option '--project'.";
+                            return false;
+                        }
+
+                        projectPath = value;
+                        break;
+                    case "--governance":
+                        if (governancePath != null)
+                        {
+                            error = "Duplicate option '--governance'.";
+                            return false;
+                        }
+
+                        governancePath = value;
+                        break;
+                    case "-o":
+                    case "--output":
+                        if (outputPath != null)
+                        {
+                            error = "Duplicate option '-o/--output'.";
+                            return false;
+                        }
+
+                        outputPath = value;
+                        break;
+                    default:
+                        error = $"Unrecognized render-identity-governance-report argument '{argument}'.";
+                        return false;
+                }
+
+                i++;
+            }
+
+            if (projectPath == null)
+            {
+                error = "Missing required option '--project'.";
+                return false;
+            }
+
+            if (governancePath == null)
+            {
+                error = "Missing required option '--governance'.";
+                return false;
+            }
+
+            if (outputPath == null)
+            {
+                error = "Missing required option '-o/--output'.";
+                return false;
+            }
+
+            options = new RenderIdentityGovernanceReportCommandOptions(projectPath, governancePath, outputPath);
+            return true;
+        }
+
         private static bool IsRecognizedCompareOption(string argument) =>
             argument == "--previous-xml"
             || argument == "--previous-manifest"
@@ -2103,6 +2326,12 @@ namespace OrzioClashReport.Cli
 
         private static bool IsRecognizedRenderProjectOption(string argument) =>
             argument == "--project";
+
+        private static bool IsRecognizedRenderIdentityGovernanceReportOption(string argument) =>
+            argument == "--project"
+            || argument == "--governance"
+            || argument == "-o"
+            || argument == "--output";
 
         private static bool IsRecognizedAppendProjectSnapshotOption(string argument) =>
             argument == "--project"
@@ -2451,6 +2680,23 @@ namespace OrzioClashReport.Cli
             }
 
             public string ProjectPath { get; }
+        }
+
+        private sealed class RenderIdentityGovernanceReportCommandOptions
+        {
+            public static readonly RenderIdentityGovernanceReportCommandOptions Empty =
+                new RenderIdentityGovernanceReportCommandOptions(string.Empty, string.Empty, string.Empty);
+
+            public RenderIdentityGovernanceReportCommandOptions(string projectPath, string governancePath, string outputPath)
+            {
+                ProjectPath = projectPath;
+                GovernancePath = governancePath;
+                OutputPath = outputPath;
+            }
+
+            public string ProjectPath { get; }
+            public string GovernancePath { get; }
+            public string OutputPath { get; }
         }
 
         private sealed class AppendProjectSnapshotCommandOptions

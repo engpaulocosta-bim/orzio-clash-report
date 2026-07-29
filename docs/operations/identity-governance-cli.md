@@ -20,8 +20,11 @@ review workflow, or serve as a Clash Ledger.
 
 Step 29C adds a separate, read-only evidence-validation command,
 `validate-identity-governance`, which does load a project catalog, run index, and its
-indexed snapshots to check project binding and evidence-endpoint existence. See
-[docs/operations/identity-governance-validation.md](identity-governance-validation.md).
+indexed snapshots to check project binding and evidence-endpoint existence. Step 30A adds a
+separate standalone review-report command, `render-identity-governance-report`, which only
+renders after that same evidence gate passes. See
+[docs/operations/identity-governance-validation.md](identity-governance-validation.md) and
+[docs/operations/identity-governance-review-report.md](identity-governance-review-report.md).
 
 ## Create One Empty Governance File
 
@@ -122,3 +125,4 @@ Identity governance updated: identity-governance.json
 - No report projection
 - No automatic identity propagation or transitivity
 - No update, delete, revoke, supersede, pending, or conflict-resolution workflow
+- No projection into the longitudinal report referenced by the project catalog

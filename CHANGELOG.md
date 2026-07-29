@@ -21,6 +21,18 @@ All notable changes for OrzioClashReport are recorded here.
   snapshots, and a governance document, and validates the document's project binding and
   every decision's `runId` + `occurrenceIndex` evidence endpoints against the indexed
   snapshots.
+- Source-only Step 30A standalone review workflow:
+  `render-identity-governance-report`, which renders one deterministic, self-contained HTML
+  review of explicit human identity decisions only after evidence validation succeeds.
+- Pure Core Step 30A presentation pipeline:
+  `IIdentityGovernanceReviewPresenter` / `DeterministicIdentityGovernanceReviewPresenter`
+  plus immutable review presentation types for resolved endpoints and persisted decision
+  order.
+- Dedicated HTML adapter for Step 30A:
+  `IdentityGovernanceReviewHtmlRenderer`, with strict HTML encoding and a standalone visual
+  contract that does not modify the existing longitudinal renderer.
+- Safe replace/create writer for derived HTML output through `DerivedHtmlReportWriter`,
+  preserving the destination on failure and cleaning temporary files.
 - Pure Core evidence validator `OrzioClashReport.Core.Governance`:
   `IIdentityGovernanceEvidenceValidator` / `DeterministicIdentityGovernanceEvidenceValidator`,
   with explicitly typed `ProjectIdMismatch`, `DuplicateIndexedRunId`, `RunNotIndexed`, and
@@ -31,6 +43,10 @@ All notable changes for OrzioClashReport are recorded here.
 - Unit and contract tests for Step 29C evidence validation and CLI read-only behavior,
   including byte-for-byte proof that no project catalog, run index, snapshot, governance
   file, report destination, or other file is ever created or modified.
+- Unit and contract tests for Step 30A Core presentation, standalone HTML rendering, CLI
+  parsing, evidence gating, collision handling, safe replacement, LF-only/UTF-8 output,
+  and byte-for-byte proof that project catalog, run index, snapshots, governance JSON, and
+  longitudinal report remain unchanged.
 
 ### Notes
 
@@ -45,6 +61,12 @@ All notable changes for OrzioClashReport are recorded here.
   transitivity across decisions, graph conflicts, identity merges, reopening, decision
   supersession, reviewer identity, timestamps, or responsibility, and it does not project
   decisions into reports or introduce a Clash Ledger.
+- The Step 30A `render-identity-governance-report` command is source-only as of July 29,
+  2026 and is not part of the published `v0.1.0-preview.2` binary contract. It renders one
+  standalone review report only after validation succeeds, does not alter the project
+  catalog schema, does not touch the existing longitudinal report, does not group
+  decisions by persistent identity, and does not implement transitivity, Clash Ledger, or
+  `Reopened`.
 
 ## 0.1.0-preview.2
 

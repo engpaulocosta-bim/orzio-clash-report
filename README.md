@@ -66,7 +66,7 @@ aggregate multi-run lifecycle, automatic chronology, or automatic clash responsi
 
 ## Source-Only Identity Governance
 
-The source tree now contains the Step 29A, Step 29B, and Step 29C source-only
+The source tree now contains the Step 29A, Step 29B, Step 29C, and Step 30A source-only
 identity-governance workflow:
 
 - `ClashEvidenceEndpoint`, `HumanIdentityDecision`, and `IdentityGovernanceDocument`
@@ -77,6 +77,9 @@ identity-governance workflow:
 - `validate-identity-governance` for read-only evidence validation of a governance
   document's project binding and every decision's `runId` + `occurrenceIndex` evidence
   endpoints against one project's indexed, immutable snapshots
+- `render-identity-governance-report` for rendering one standalone, self-contained HTML
+  review of already-validated human decisions without changing the project catalog,
+  snapshots, governance document, or longitudinal report
 
 This workflow is source-only as of July 28, 2026. It is not part of the published
 `v0.1.0-preview.2` binary contract and is not described as a packaged preview.2 feature.
@@ -86,6 +89,9 @@ project decisions into reports. `validate-identity-governance` is read-only: it 
 writes, replaces, or creates any file, and it validates only project binding and evidence
 existence -- never matcher candidacy, run adjacency, left/right ordering intent,
 transitivity, graph conflicts, identity merges, reopening, or responsibility.
+Step 30A adds one derived and regenerable standalone review report, but it still does not
+infer identity, group decisions by persistent identity, implement transitivity, introduce a
+Clash Ledger, or alter the longitudinal report already referenced by a project catalog.
 
 Source example:
 
@@ -112,12 +118,20 @@ dotnet run --project src/OrzioClashReport.Cli -- \
   validate-identity-governance \
   --project project.json \
   --governance identity-governance.json
+
+dotnet run --project src/OrzioClashReport.Cli -- \
+  render-identity-governance-report \
+  --project project.json \
+  --governance identity-governance.json \
+  -o reports/identity-governance.html
 ```
 
 Operational details for the authoring workflow live in
 [docs/operations/identity-governance-cli.md](docs/operations/identity-governance-cli.md).
 Operational details for the read-only evidence-validation workflow live in
 [docs/operations/identity-governance-validation.md](docs/operations/identity-governance-validation.md).
+Operational details for the standalone review report live in
+[docs/operations/identity-governance-review-report.md](docs/operations/identity-governance-review-report.md).
 
 Generate a report from a Clash Detective XML export:
 

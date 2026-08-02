@@ -8,8 +8,7 @@
     <TextBlock Classes="title" Text="{Binding Title}" />
     <TextBlock Classes="secondary" Text="{Binding Description}" />
     <Border Classes="sunken" Padding="{DynamicResource OrzioCardPadding}">
-      <TextBlock Classes="tertiary"
-                 Text="Esta secção ainda não está ligada ao motor nesta versão da aplicação." />
+      <TextBlock Classes="tertiary" Text="{Binding NotWiredNote}" />
     </Border>
   </StackPanel>
 

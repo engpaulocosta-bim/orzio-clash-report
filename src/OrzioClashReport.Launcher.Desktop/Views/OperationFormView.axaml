@@ -17,8 +17,7 @@
             IsVisible="{Binding IsExperimental}">
       <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
         <TextBlock Text="!" />
-        <TextBlock Classes="secondary"
-                   Text="Experimental: a comparação entre revisões ainda não foi validada com três exports históricos reais." />
+        <TextBlock Classes="secondary" Text="{Binding ExperimentalNote}" />
       </StackPanel>
     </Border>
 
@@ -38,7 +37,7 @@
               Content="{Binding RunLabel}"
               Command="{Binding RunCommand}"
               IsVisible="{Binding !Runner.IsRunning}" />
-      <Button Content="Cancelar"
+      <Button Content="{Binding Runner.CancelLabel}"
               Command="{Binding Runner.CancelCommand}"
               IsVisible="{Binding Runner.IsRunning}" />
       <Button Content="{Binding FollowUpLabel}"

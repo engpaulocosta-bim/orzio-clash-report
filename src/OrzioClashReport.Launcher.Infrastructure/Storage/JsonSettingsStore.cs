@@ -63,6 +63,8 @@ namespace OrzioClashReport.Launcher.Infrastructure.Storage
         {
             public ThemePreference Theme { get; set; } = ThemePreference.System;
 
+            public InterfaceLanguage Language { get; set; } = InterfaceLanguage.System;
+
             public string? LastOutputDirectory { get; set; }
 
             public bool ShowExperimentalWarnings { get; set; } = true;
@@ -98,7 +100,10 @@ namespace OrzioClashReport.Launcher.Infrastructure.Storage
                 }
 
                 return new LauncherSettings(
-                    document.Theme, document.LastOutputDirectory, document.ShowExperimentalWarnings);
+                    document.Theme,
+                    document.Language,
+                    document.LastOutputDirectory,
+                    document.ShowExperimentalWarnings);
             }
             catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException)
             {
@@ -117,6 +122,7 @@ namespace OrzioClashReport.Launcher.Infrastructure.Storage
             var document = new Document
             {
                 Theme = settings.Theme,
+                Language = settings.Language,
                 LastOutputDirectory = settings.LastOutputDirectory,
                 ShowExperimentalWarnings = settings.ShowExperimentalWarnings,
             };

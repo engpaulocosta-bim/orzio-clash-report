@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using OrzioClashReport.Launcher.Desktop.Localization;
 
 namespace OrzioClashReport.Launcher.Desktop.Platform
 {
@@ -108,6 +109,9 @@ namespace OrzioClashReport.Launcher.Desktop.Platform
             return file?.TryGetLocalPath();
         }
 
+        private static FilePickerFileType Json(string key) =>
+            new FilePickerFileType(Localizer.Instance.Get(key)) { Patterns = new[] { "*.json" } };
+
         private static string DefaultExtensionFor(PickedFileKind kind) =>
             kind == PickedFileKind.ClashXml ? "xml" : kind == PickedFileKind.HtmlReport ? "html" : "json";
 
@@ -116,25 +120,25 @@ namespace OrzioClashReport.Launcher.Desktop.Platform
             switch (kind)
             {
                 case PickedFileKind.ClashXml:
-                    return new FilePickerFileType("Export XML do Clash Detective")
+                    return new FilePickerFileType(Localizer.Instance.Get("Picker.ClashXml"))
                     {
                         Patterns = new[] { "*.xml" },
                     };
                 case PickedFileKind.HtmlReport:
-                    return new FilePickerFileType("Relatório HTML")
+                    return new FilePickerFileType(Localizer.Instance.Get("Picker.HtmlReport"))
                     {
                         Patterns = new[] { "*.html" },
                     };
                 case PickedFileKind.RunManifestJson:
-                    return new FilePickerFileType("Run manifest JSON") { Patterns = new[] { "*.json" } };
+                    return Json("Picker.RunManifestJson");
                 case PickedFileKind.SnapshotJson:
-                    return new FilePickerFileType("Snapshot JSON") { Patterns = new[] { "*.json" } };
+                    return Json("Picker.SnapshotJson");
                 case PickedFileKind.RunIndexJson:
-                    return new FilePickerFileType("Run index JSON") { Patterns = new[] { "*.json" } };
+                    return Json("Picker.RunIndexJson");
                 case PickedFileKind.ProjectCatalogJson:
-                    return new FilePickerFileType("Projeto JSON") { Patterns = new[] { "*.json" } };
+                    return Json("Picker.ProjectCatalogJson");
                 case PickedFileKind.IdentityGovernanceJson:
-                    return new FilePickerFileType("Governança JSON") { Patterns = new[] { "*.json" } };
+                    return Json("Picker.IdentityGovernanceJson");
                 default:
                     throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown file kind.");
             }

@@ -20,41 +20,18 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public string OperationLabel => LabelFor(Entry.OperationKind);
 
+        internal static string LabelFor(LauncherOperationKind kind) => Text(LabelKeyFor(kind));
+
         public string StartedAtDisplay => Entry.StartedAtUtc.ToLocalTime().ToString("g");
 
-        internal static string LabelFor(LauncherOperationKind kind)
+        internal static string LabelKeyFor(LauncherOperationKind kind)
         {
-            switch (kind)
+            if (!Enum.IsDefined(typeof(LauncherOperationKind), kind))
             {
-                case LauncherOperationKind.QuickReport:
-                    return "Relatório rápido";
-                case LauncherOperationKind.CreateSnapshot:
-                    return "Criar snapshot";
-                case LauncherOperationKind.CompareRuns:
-                    return "Comparar duas revisões";
-                case LauncherOperationKind.CompareSnapshots:
-                    return "Comparar snapshots";
-                case LauncherOperationKind.IndexSnapshots:
-                    return "Criar índice de runs";
-                case LauncherOperationKind.CompareIndex:
-                    return "Comparar índice de runs";
-                case LauncherOperationKind.CreateProject:
-                    return "Criar projeto";
-                case LauncherOperationKind.AppendProjectSnapshot:
-                    return "Acrescentar snapshot ao projeto";
-                case LauncherOperationKind.RenderProject:
-                    return "Regenerar relatório do projeto";
-                case LauncherOperationKind.CreateIdentityGovernance:
-                    return "Criar documento de governança";
-                case LauncherOperationKind.AppendIdentityDecision:
-                    return "Registar decisão humana";
-                case LauncherOperationKind.ValidateIdentityGovernance:
-                    return "Validar governança";
-                case LauncherOperationKind.RenderIdentityGovernanceReport:
-                    return "Gerar revisão de governança";
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown launcher operation.");
+                throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown launcher operation.");
             }
+
+            return "Operation." + kind;
         }
     }
 
@@ -76,11 +53,11 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public bool HasJobs => Jobs.Count > 0;
 
-        public string Title => "Operação interrompida";
+        public string Title => Text("Interrupted.Title");
 
-        public string Explanation =>
-            "A aplicação fechou enquanto isto estava a correr. Nada é retomado automaticamente: "
-                + "verifique o ficheiro de destino antes de repetir a operação.";
+        public string Explanation => Text("Interrupted.Explanation");
+
+        public string DismissLabel => Text("Action.Understood");
 
         /// <summary>Loads what the previous session left behind. Called once, at start.</summary>
         public void Load()

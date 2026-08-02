@@ -1,10 +1,11 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:OrzioClashReport.Launcher.Desktop.Localization"
         xmlns:controls="using:OrzioClashReport.Launcher.Desktop.Controls"
         xmlns:vm="using:OrzioClashReport.Launcher.Desktop.ViewModels"
         x:Class="OrzioClashReport.Launcher.Desktop.MainWindow"
         x:DataType="vm:ShellViewModel"
-        Title="Orzio Clash Report"
+        Title="{l:Loc App.Title}"
         Width="{DynamicResource OrzioWindowDefaultWidth}"
         Height="{DynamicResource OrzioWindowDefaultHeight}"
         MinWidth="{DynamicResource OrzioWindowMinWidth}"
@@ -25,7 +26,7 @@
 
           <Border DockPanel.Dock="Top" Padding="{DynamicResource OrzioCardPadding}">
             <TextBlock Classes="subtitle"
-                       Text="Orzio"
+                       Text="{l:Loc Shell.Brand}"
                        IsVisible="{Binding !IsCompactNavigation}" />
           </Border>
 
@@ -82,7 +83,7 @@
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
-              <Button Content="Compreendi"
+              <Button Content="{Binding InterruptedJobs.DismissLabel}"
                       HorizontalAlignment="Left"
                       Command="{Binding InterruptedJobs.DismissCommand}" />
             </StackPanel>

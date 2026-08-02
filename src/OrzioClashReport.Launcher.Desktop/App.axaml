@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:OrzioClashReport.Launcher.Desktop.ViewModels"
              xmlns:views="using:OrzioClashReport.Launcher.Desktop.Views"
+             xmlns:l="using:OrzioClashReport.Launcher.Desktop.Localization"
              x:Class="OrzioClashReport.Launcher.Desktop.App"
              RequestedThemeVariant="Default">
 
@@ -55,10 +56,10 @@
           <TextBlock VerticalAlignment="Center" Text="{Binding FileName}" IsVisible="{Binding HasValue}" />
           <TextBlock Classes="tertiary"
                      VerticalAlignment="Center"
-                     Text="Ainda não escolhido."
+                     Text="{l:Loc Field.NotChosen}"
                      IsVisible="{Binding !HasValue}" />
           <Button Classes="link"
-                  Content="Limpar"
+                  Content="{l:Loc Action.Clear}"
                   Command="{Binding ClearCommand}"
                   IsVisible="{Binding HasValue}" />
         </StackPanel>
@@ -136,7 +137,7 @@
                 <Border Classes="badge caution" IsVisible="{Binding IsDuplicate}">
                   <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceXs}">
                     <TextBlock Text="!" />
-                    <TextBlock Text="repetido" />
+                    <TextBlock Text="{l:Loc OrderedList.DuplicateBadge}" />
                   </StackPanel>
                 </Border>
               </StackPanel>
@@ -145,17 +146,17 @@
         </ListBox>
 
         <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
-          <Button Content="Adicionar…" Command="{Binding AddCommand}" />
-          <Button Content="Remover" Command="{Binding RemoveCommand}" />
-          <Button Content="Subir" Command="{Binding MoveUpCommand}" />
-          <Button Content="Descer" Command="{Binding MoveDownCommand}" />
+          <Button Content="{l:Loc Action.Add}" Command="{Binding AddCommand}" />
+          <Button Content="{l:Loc Action.Remove}" Command="{Binding RemoveCommand}" />
+          <Button Content="{l:Loc Action.MoveUp}" Command="{Binding MoveUpCommand}" />
+          <Button Content="{l:Loc Action.MoveDown}" Command="{Binding MoveDownCommand}" />
         </StackPanel>
 
         <TextBlock Classes="tertiary"
                    IsVisible="{Binding HasDuplicates}"
-                   Text="Há snapshots repetidos. São mantidos exatamente como os declarou; nada é removido." />
+                   Text="{l:Loc OrderedList.DuplicatesWarning}" />
         <TextBlock Classes="tertiary"
-                   Text="A ordem desta lista é a ordem do índice. Nada é ordenado automaticamente." />
+                   Text="{l:Loc OrderedList.OrderNote}" />
       </StackPanel>
     </DataTemplate>
 

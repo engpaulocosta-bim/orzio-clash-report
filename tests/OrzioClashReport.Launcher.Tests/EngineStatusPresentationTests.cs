@@ -17,7 +17,7 @@ public sealed class EngineStatusPresentationTests
             Assert.False(string.IsNullOrWhiteSpace(EngineStatusViewModel.GlyphFor(status)));
             Assert.False(string.IsNullOrWhiteSpace(EngineStatusViewModel.LabelFor(status)));
             Assert.False(string.IsNullOrWhiteSpace(
-                EngineStatusViewModel.DescriptionFor(status, version: null, detail: null)));
+                EngineStatusViewModel.DescriptionFor(status, version: null, expectedVersion: null)));
         }
     }
 

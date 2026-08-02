@@ -55,6 +55,18 @@ UninstallDisplayIcon={app}\{#AppExeName}
 Name: "portuguese"; MessagesFile: "compiler:Languages\Portuguese.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
+[CustomMessages]
+; The installer speaks whichever of the two languages the human picked at the start.
+portuguese.LocalDataPageCaption=Dados locais da aplicação
+portuguese.LocalDataPageDescription=O que fazer com as definições e os registos desta aplicação
+portuguese.LocalDataPageText=As suas definições, registos e estado de trabalhos ficam em%n%LOCALAPPDATA%\Orzio\ClashReportLauncher.%n%nOs seus projetos, exports, snapshots, índices e relatórios NUNCA são guardados aí e nunca são removidos por esta aplicação.
+portuguese.RemoveLocalData=Apagar definições e registos locais ao desinstalar
+
+english.LocalDataPageCaption=Application local data
+english.LocalDataPageDescription=What to do with this application's settings and logs
+english.LocalDataPageText=Your settings, logs, and job state live in%n%LOCALAPPDATA%\Orzio\ClashReportLauncher.%n%nYour projects, exports, snapshots, indexes, and reports are NEVER stored there and are never removed by this application.
+english.RemoveLocalData=Delete local settings and logs when uninstalling
+
 [Tasks]
 ; Unchecked by default: a desktop shortcut is a choice, not an assumption.
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
@@ -86,16 +98,13 @@ procedure InitializeWizard;
 begin
   RemoveLocalDataPage := CreateInputOptionPage(
     wpSelectTasks,
-    'Dados locais da aplicação',
-    'O que fazer com as definições e os registos desta aplicação',
-    'As suas definições, registos e estado de trabalhos ficam em' + #13#10 +
-    '%LOCALAPPDATA%\Orzio\ClashReportLauncher.' + #13#10#13#10 +
-    'Os seus projetos, exports, snapshots, índices e relatórios NUNCA são guardados aí e ' +
-    'nunca são removidos por esta aplicação.',
+    ExpandConstant('{cm:LocalDataPageCaption}'),
+    ExpandConstant('{cm:LocalDataPageDescription}'),
+    ExpandConstant('{cm:LocalDataPageText}'),
     False, False);
 
   { Unchecked by default: nothing local is deleted unless the human asks for it. }
-  RemoveLocalDataPage.Add('Apagar definições e registos locais ao desinstalar');
+  RemoveLocalDataPage.Add(ExpandConstant('{cm:RemoveLocalData}'));
   RemoveLocalDataPage.Values[0] := False;
 end;
 

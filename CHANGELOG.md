@@ -43,8 +43,15 @@ built on the unchanged `0.1.0-preview.3` engine.
   engine's own output are never written.
 - A diagnostic bundle produced only on an explicit action, containing exactly six named
   files, after the human has seen the complete list and the exact redacted log.
-- A per-user Windows installer requiring no administrator rights, with publish, package,
-  and smoke scripts, and a SHA-256 for the installer.
+- A Portuguese and English interface, following the operating system by default and switchable
+  at any time under Definições / Settings, applied immediately without reopening. Every visible
+  string comes from one table carrying both translations; the language changes visible text only
+  and never a value the engine receives, so `ConfirmSameIdentity` and `RejectSameIdentity` are
+  written exactly like that in both languages. Failures are shown from the launcher's own error
+  code rather than from engine text, so they read in the chosen language while the engine's own
+  words stay untranslated beneath them.
+- A per-user Windows installer requiring no administrator rights, in Portuguese and English,
+  with publish, package, and smoke scripts, and a SHA-256 for the installer.
 - `docs/operations/launcher-pilot.md` with the pilot procedure and the evaluation
   questionnaire.
 

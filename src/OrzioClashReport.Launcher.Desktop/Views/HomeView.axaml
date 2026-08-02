@@ -9,14 +9,13 @@
     <StackPanel Spacing="{DynamicResource OrzioSpaceLg}">
 
       <StackPanel Spacing="{DynamicResource OrzioSpaceXs}">
-        <TextBlock Classes="display" Text="Orzio Clash Report" />
-        <TextBlock Classes="secondary"
-                   Text="Transforme exports do Navisworks Clash Detective em relatórios de coordenação, sem terminal." />
+        <TextBlock Classes="display" Text="{Binding Title}" />
+        <TextBlock Classes="secondary" Text="{Binding Tagline}" />
       </StackPanel>
 
       <Border Classes="card">
         <StackPanel Spacing="{DynamicResource OrzioSpaceMd}">
-          <TextBlock Classes="caption" Text="ESTADO DO MOTOR" />
+          <TextBlock Classes="caption" Text="{Binding EngineStateCaption}" />
           <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceMd}">
             <controls:EngineStatusBadge DataContext="{Binding Engine}" />
             <TextBlock Classes="secondary"
@@ -27,24 +26,24 @@
       </Border>
 
       <StackPanel Spacing="{DynamicResource OrzioSpaceSm}">
-        <TextBlock Classes="caption" Text="COMEÇAR" />
+        <TextBlock Classes="caption" Text="{Binding StartCaption}" />
         <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
           <Button Classes="primary"
-                  Content="Relatório rápido"
+                  Content="{Binding QuickReportLabel}"
                   Command="{Binding OpenQuickReportCommand}" />
-          <Button Content="Criar snapshot"
+          <Button Content="{Binding CreateSnapshotLabel}"
                   Command="{Binding OpenCreateSnapshotCommand}" />
-          <Button Content="Comparar revisões"
+          <Button Content="{Binding CompareRevisionsLabel}"
                   Command="{Binding OpenCompareRevisionsCommand}" />
         </StackPanel>
       </StackPanel>
 
       <StackPanel Spacing="{DynamicResource OrzioSpaceSm}">
-        <TextBlock Classes="caption" Text="ÚLTIMOS RESULTADOS" />
+        <TextBlock Classes="caption" Text="{Binding RecentCaption}" />
 
         <TextBlock Classes="tertiary"
                    IsVisible="{Binding !HasRecentOutputs}"
-                   Text="Ainda não foi gerado nenhum resultado nesta máquina." />
+                   Text="{Binding NoRecentNote}" />
 
         <ItemsControl ItemsSource="{Binding RecentOutputs}" IsVisible="{Binding HasRecentOutputs}">
           <ItemsControl.ItemTemplate>
@@ -59,11 +58,11 @@
                   </StackPanel>
                   <Button Grid.Column="1"
                           Classes="link"
-                          Content="Abrir"
+                          Content="{Binding OpenLabel}"
                           Command="{Binding OpenCommand}" />
                   <Button Grid.Column="2"
                           Classes="link"
-                          Content="Mostrar na pasta"
+                          Content="{Binding RevealLabel}"
                           Command="{Binding RevealCommand}" />
                 </Grid>
               </Border>

@@ -3,6 +3,7 @@ using OrzioClashReport.Launcher.Contracts.Engine;
 using OrzioClashReport.Launcher.Contracts.Jobs;
 using OrzioClashReport.Launcher.Contracts.Operations;
 using OrzioClashReport.Launcher.Contracts.Ports;
+using OrzioClashReport.Launcher.Contracts.Settings;
 using OrzioClashReport.Launcher.Desktop.Platform;
 using OrzioClashReport.Launcher.Desktop.ViewModels;
 
@@ -189,7 +190,19 @@ public sealed class QuickReportViewModelTests
         Assert.True(runner.Failed);
         Assert.True(runner.IsCritical);
         Assert.False(runner.HasProducedFile);
-        Assert.Equal("O motor terminou com um erro.", runner.ErrorMessage);
+
+        // The message comes from the error code, so it reads in whichever language is in use.
+        using (LanguageScope.Use(InterfaceLanguage.Portuguese))
+        {
+            Assert.Equal("O motor terminou com um erro.", runner.ErrorMessage);
+        }
+
+        using (LanguageScope.Use(InterfaceLanguage.English))
+        {
+            Assert.Equal("The engine ended with an error.", runner.ErrorMessage);
+        }
+
+        // The engine's own words are shown as-is and are never translated.
         Assert.Contains("could not be parsed", runner.ErrorDetail!, StringComparison.Ordinal);
     }
 

@@ -73,6 +73,10 @@ namespace OrzioClashReport.Launcher.Desktop.Composition
             LauncherLocalPaths localPaths = LauncherLocalPaths.ForCurrentUser();
             localPaths.EnsureCreated();
 
+            // The language is settled before anything visible is built, so nothing is shown twice.
+            var settingsStore = new JsonSettingsStore(localPaths.SettingsFilePath);
+            Localization.Localizer.Instance.Language = settingsStore.Load().Language;
+
             EngineLayout engineLayout = EngineLayout.ForInstalledLauncher();
             var integrityVerifier = new EngineManifestIntegrityVerifier(engineLayout);
             var processRunner = new ProcessJobRunner();
@@ -97,7 +101,7 @@ namespace OrzioClashReport.Launcher.Desktop.Composition
 
             return new CompositionRoot(
                 localPaths,
-                new JsonSettingsStore(localPaths.SettingsFilePath),
+                settingsStore,
                 recentItemsStore,
                 new CliEngineProbe(engineLayout, integrityVerifier, processRunner),
                 new TopLevelOutputRevealer(TopLevel),
@@ -130,16 +134,16 @@ namespace OrzioClashReport.Launcher.Desktop.Composition
                 [ShellSection.Home] = new HomeViewModel(engine, _recentItemsStore, _outputRevealer, Navigate),
                 [ShellSection.QuickReport] = new QuickReportViewModel(CreateRunner(), _fileDialogs, engine),
                 [ShellSection.Snapshots] = new OperationSectionViewModel(
-                    "Snapshots",
-                    "Um snapshot é evidência imutável de um run. O motor nunca substitui um snapshot existente.",
+                    "Section.Snapshots.Title",
+                    "Section.Snapshots.Description",
                     new OperationFormViewModel[]
                     {
                         new CreateSnapshotFormViewModel(CreateRunner(), engine, _fileDialogs),
                         new CompareSnapshotsFormViewModel(CreateRunner(), engine, _fileDialogs),
                     }),
                 [ShellSection.Longitudinal] = new OperationSectionViewModel(
-                    "Longitudinal",
-                    "A ordem dos runs é sempre declarada por si. Nada é ordenado por data, nome ou revisão.",
+                    "Section.Longitudinal.Title",
+                    "Section.Longitudinal.Description",
                     new OperationFormViewModel[]
                     {
                         new CompareRunsFormViewModel(CreateRunner(), engine, _fileDialogs),
@@ -147,8 +151,8 @@ namespace OrzioClashReport.Launcher.Desktop.Composition
                         new CompareIndexFormViewModel(CreateRunner(), engine, _fileDialogs),
                     }),
                 [ShellSection.Projects] = new OperationSectionViewModel(
-                    "Projetos",
-                    "O catálogo guarda referências operacionais. Os snapshots continuam a ser a única evidência.",
+                    "Section.Projects.Title",
+                    "Section.Projects.Description",
                     new OperationFormViewModel[]
                     {
                         new CreateProjectFormViewModel(CreateRunner(), engine, _fileDialogs),
@@ -156,9 +160,8 @@ namespace OrzioClashReport.Launcher.Desktop.Composition
                         new RenderProjectFormViewModel(CreateRunner(), engine, _fileDialogs),
                     }),
                 [ShellSection.Governance] = new OperationSectionViewModel(
-                    "Governança",
-                    "A identidade persistente de um clash só existe quando um humano a confirma. "
-                        + "Uma sugestão do algoritmo nunca é uma decisão.",
+                    "Section.Governance.Title",
+                    "Section.Governance.Description",
                     new OperationFormViewModel[]
                     {
                         new CreateIdentityGovernanceFormViewModel(CreateRunner(), engine, _fileDialogs),

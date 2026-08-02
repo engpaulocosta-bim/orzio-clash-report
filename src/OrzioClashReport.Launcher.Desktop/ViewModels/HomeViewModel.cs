@@ -25,6 +25,10 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public string CreatedAtDisplay => Item.CreatedAtUtc.ToLocalTime().ToString("g");
 
+        public string OpenLabel => Text("Action.Open");
+
+        public string RevealLabel => Text("Action.Reveal");
+
         [RelayCommand]
         private Task OpenAsync() => _revealer.OpenAsync(Item.FullPath);
 
@@ -65,6 +69,24 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         public ObservableCollection<RecentOutputViewModel> RecentOutputs { get; }
 
         public bool HasRecentOutputs => RecentOutputs.Count > 0;
+
+        public string Title => Text("App.Title");
+
+        public string Tagline => Text("App.Tagline");
+
+        public string EngineStateCaption => Text("Home.EngineStateCaption");
+
+        public string StartCaption => Text("Home.StartCaption");
+
+        public string RecentCaption => Text("Home.RecentCaption");
+
+        public string NoRecentNote => Text("Home.NoRecent");
+
+        public string QuickReportLabel => Text("Home.QuickReport");
+
+        public string CreateSnapshotLabel => Text("Home.CreateSnapshot");
+
+        public string CompareRevisionsLabel => Text("Home.CompareRevisions");
 
         public void RefreshRecentOutputs()
         {

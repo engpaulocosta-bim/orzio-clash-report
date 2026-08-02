@@ -7,13 +7,13 @@
   <ScrollViewer>
     <StackPanel Spacing="{DynamicResource OrzioSpaceLg}">
 
-      <TextBlock Classes="title" Text="Definições" />
+      <TextBlock Classes="title" Text="{Binding Title}" />
 
       <Border Classes="card">
         <StackPanel Spacing="{DynamicResource OrzioSpaceMd}">
-          <TextBlock Classes="caption" Text="APARÊNCIA" />
+          <TextBlock Classes="caption" Text="{Binding AppearanceCaption}" />
           <StackPanel Spacing="{DynamicResource OrzioSpaceXs}">
-            <TextBlock Text="Tema" />
+            <TextBlock Text="{Binding ThemeLabel}" />
             <ComboBox ItemsSource="{Binding Themes}"
                       SelectedItem="{Binding SelectedTheme}"
                       HorizontalAlignment="Left"
@@ -25,49 +25,62 @@
               </ComboBox.ItemTemplate>
             </ComboBox>
           </StackPanel>
-        </StackPanel>
-      </Border>
-
-      <Border Classes="card">
-        <StackPanel Spacing="{DynamicResource OrzioSpaceMd}">
-          <TextBlock Classes="caption" Text="AVISOS" />
-          <CheckBox IsChecked="{Binding ShowExperimentalWarnings}"
-                    Content="Mostrar aviso quando uma operação for experimental" />
-          <TextBlock Classes="tertiary"
-                     Text="A comparação entre revisões ainda não foi validada com três exports históricos reais." />
-        </StackPanel>
-      </Border>
-
-      <Border Classes="card">
-        <StackPanel Spacing="{DynamicResource OrzioSpaceMd}">
-          <TextBlock Classes="caption" Text="DADOS LOCAIS" />
           <StackPanel Spacing="{DynamicResource OrzioSpaceXs}">
-            <TextBlock Classes="secondary" Text="Esta aplicação guarda definições, registos e estado de trabalhos em:" />
+            <TextBlock Text="{Binding LanguageLabel}" />
+            <ComboBox ItemsSource="{Binding Languages}"
+                      SelectedItem="{Binding SelectedLanguage}"
+                      HorizontalAlignment="Left"
+                      MinWidth="{DynamicResource OrzioSidebarWidth}">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:LanguageOptionViewModel">
+                  <TextBlock Text="{Binding Label}" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="{DynamicResource OrzioSpaceMd}">
+          <TextBlock Classes="caption" Text="{Binding WarningsCaption}" />
+          <CheckBox IsChecked="{Binding ShowExperimentalWarnings}"
+                    Content="{Binding ShowExperimentalLabel}" />
+          <TextBlock Classes="tertiary"
+                     Text="{Binding ExperimentalNote}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="{DynamicResource OrzioSpaceMd}">
+          <TextBlock Classes="caption" Text="{Binding LocalDataCaption}" />
+          <StackPanel Spacing="{DynamicResource OrzioSpaceXs}">
+            <TextBlock Classes="secondary" Text="{Binding LocalDataIntro}" />
             <TextBlock Classes="mono" Text="{Binding LocalDataDirectory}" />
             <TextBlock Classes="tertiary"
-                       Text="Os seus projetos, snapshots e relatórios nunca são guardados aqui e não são removidos ao desinstalar." />
+                       Text="{Binding LocalDataNote}" />
           </StackPanel>
           <StackPanel Spacing="{DynamicResource OrzioSpaceXs}">
-            <TextBlock Classes="secondary" Text="Versão da aplicação" />
+            <TextBlock Classes="secondary" Text="{Binding VersionLabel}" />
             <TextBlock Classes="mono" Text="{Binding LauncherVersion}" />
           </StackPanel>
           <TextBlock Classes="tertiary"
-                     Text="Sem telemetria, sem envio de dados e sem conta. Tudo permanece nesta máquina." />
+                     Text="{Binding PrivacyNote}" />
         </StackPanel>
       </Border>
 
       <Border Classes="card">
         <StackPanel Spacing="{DynamicResource OrzioSpaceMd}">
-          <TextBlock Classes="caption" Text="DIAGNÓSTICO" />
+          <TextBlock Classes="caption" Text="{Binding Diagnostics.Caption}" />
           <TextBlock Classes="secondary" Text="{Binding Diagnostics.Explanation}" />
 
-          <Button Content="Ver o que seria incluído"
+          <Button Content="{Binding Diagnostics.ShowPreviewLabel}"
                   HorizontalAlignment="Left"
                   Command="{Binding Diagnostics.ShowPreviewCommand}" />
 
           <StackPanel Spacing="{DynamicResource OrzioSpaceSm}"
                       IsVisible="{Binding Diagnostics.IsPreviewVisible}">
-            <TextBlock Classes="caption" Text="FICHEIROS INCLUÍDOS" />
+            <TextBlock Classes="caption" Text="{Binding Diagnostics.FilesCaption}" />
             <ItemsControl ItemsSource="{Binding Diagnostics.IncludedFiles}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="x:String">
@@ -76,10 +89,10 @@
               </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <TextBlock Classes="caption" Text="PRÉ-VISUALIZAÇÃO DO REGISTO REDIGIDO" />
+            <TextBlock Classes="caption" Text="{Binding Diagnostics.LogCaption}" />
             <TextBlock Classes="tertiary"
                        IsVisible="{Binding !Diagnostics.HasLogPreview}"
-                       Text="Ainda não há registos nesta máquina." />
+                       Text="{Binding Diagnostics.NoLogNote}" />
             <Border Classes="sunken"
                     Padding="{DynamicResource OrzioCardPadding}"
                     IsVisible="{Binding Diagnostics.HasLogPreview}">
@@ -95,10 +108,10 @@
             </Border>
 
             <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
-              <Button Content="Gerar pacote de diagnóstico"
+              <Button Content="{Binding Diagnostics.CreateLabel}"
                       Command="{Binding Diagnostics.CreateBundleCommand}" />
               <Button Classes="link"
-                      Content="Mostrar na pasta"
+                      Content="{Binding Diagnostics.RevealLabel}"
                       Command="{Binding Diagnostics.RevealBundleCommand}"
                       IsVisible="{Binding Diagnostics.HasBundle}" />
               <TextBlock VerticalAlignment="Center"

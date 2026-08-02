@@ -178,6 +178,29 @@ public sealed class InstallerContractTests
     }
 
     [Fact]
+    public void TheInstallerSpeaksBothLanguages()
+    {
+        string installer = InstallerScript;
+
+        Assert.Contains("Name: \"portuguese\"", installer, StringComparison.Ordinal);
+        Assert.Contains("Name: \"english\"", installer, StringComparison.Ordinal);
+
+        // Every custom message the wizard shows exists in both languages.
+        foreach (string message in new[]
+                 {
+                     "LocalDataPageCaption",
+                     "LocalDataPageDescription",
+                     "LocalDataPageText",
+                     "RemoveLocalData",
+                 })
+        {
+            Assert.Contains($"portuguese.{message}=", installer, StringComparison.Ordinal);
+            Assert.Contains($"english.{message}=", installer, StringComparison.Ordinal);
+            Assert.Contains($"{{cm:{message}}}", installer, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
     public void ThePilotGuideStatesTheHonestStatus()
     {
         string guide = Read("docs", "operations", "launcher-pilot.md");

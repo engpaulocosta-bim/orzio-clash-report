@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OrzioClashReport.Launcher.Contracts.Engine;
 using OrzioClashReport.Launcher.Contracts.Ports;
+using OrzioClashReport.Launcher.Desktop.Localization;
 
 namespace OrzioClashReport.Launcher.Desktop.ViewModels
 {
@@ -24,7 +25,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         private string? _version;
 
         [ObservableProperty]
-        private string? _detail;
+        private string? _expectedVersion;
 
         public EngineStatusViewModel(IEngineProbe probe)
         {
@@ -35,7 +36,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public string Label => LabelFor(Status);
 
-        public string Description => DescriptionFor(Status, Version, Detail);
+        public string Description => DescriptionFor(Status, Version, ExpectedVersion);
 
         public StatusSeverity Severity => SeverityFor(Status);
 
@@ -55,14 +56,12 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         {
             Status = EngineStatus.Checking;
             Version = null;
-            Detail = null;
+            ExpectedVersion = null;
 
             EngineProbeResult result = await _probe.ProbeAsync(cancellationToken).ConfigureAwait(true);
 
             Version = result.Version;
-            Detail = result.Status == EngineStatus.VersionMismatch
-                ? BuildMismatchDetail(result)
-                : result.Detail;
+            ExpectedVersion = result.ExpectedVersion;
             Status = result.Status;
         }
 
@@ -78,7 +77,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             OnPropertyChanged(nameof(Description));
         }
 
-        partial void OnDetailChanged(string? value)
+        partial void OnExpectedVersionChanged(string? value)
         {
             _ = value;
             OnPropertyChanged(nameof(Description));
@@ -95,11 +94,6 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             OnPropertyChanged(nameof(IsCaution));
             OnPropertyChanged(nameof(IsCritical));
             OnPropertyChanged(nameof(CanRunOperations));
-        }
-
-        private static string BuildMismatchDetail(EngineProbeResult result)
-        {
-            return $"O motor instalado reporta {result.Version} e esta aplicação espera {result.ExpectedVersion}.";
         }
 
         internal static string GlyphFor(EngineStatus status)
@@ -123,26 +117,28 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             }
         }
 
-        internal static string LabelFor(EngineStatus status)
+        internal static string LabelKeyFor(EngineStatus status)
         {
             switch (status)
             {
                 case EngineStatus.Checking:
-                    return "A verificar";
+                    return "Engine.Label.Checking";
                 case EngineStatus.Ready:
-                    return "Motor pronto";
+                    return "Engine.Label.Ready";
                 case EngineStatus.VersionMismatch:
-                    return "Versão diferente";
+                    return "Engine.Label.VersionMismatch";
                 case EngineStatus.IntegrityFailure:
-                    return "Integridade falhou";
+                    return "Engine.Label.IntegrityFailure";
                 case EngineStatus.Missing:
-                    return "Motor em falta";
+                    return "Engine.Label.Missing";
                 case EngineStatus.Unsupported:
-                    return "Motor não suportado";
+                    return "Engine.Label.Unsupported";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(status), status, "Unknown engine status.");
             }
         }
+
+        internal static string LabelFor(EngineStatus status) => Text(LabelKeyFor(status));
 
         internal static StatusSeverity SeverityFor(EngineStatus status)
         {
@@ -163,29 +159,26 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             }
         }
 
-        internal static string DescriptionFor(EngineStatus status, string? version, string? detail)
+        internal static string DescriptionFor(EngineStatus status, string? version, string? expectedVersion)
         {
-            if (!string.IsNullOrWhiteSpace(detail))
-            {
-                return detail!;
-            }
-
             switch (status)
             {
                 case EngineStatus.Checking:
-                    return "A verificar o motor instalado.";
+                    return Text("Engine.Description.Checking");
                 case EngineStatus.Ready:
                     return version == null
-                        ? "O motor está pronto."
-                        : $"O motor {version} está pronto e verificado.";
+                        ? Text("Engine.Description.Ready")
+                        : Text("Engine.Description.ReadyWithVersion", version);
                 case EngineStatus.VersionMismatch:
-                    return "O motor instalado não é a versão que esta aplicação espera.";
+                    return version != null && expectedVersion != null
+                        ? Text("Engine.Description.VersionMismatchDetail", version, expectedVersion)
+                        : Text("Engine.Description.VersionMismatch");
                 case EngineStatus.IntegrityFailure:
-                    return "O motor instalado não corresponde à assinatura registada no empacotamento.";
+                    return Text("Engine.Description.IntegrityFailure");
                 case EngineStatus.Missing:
-                    return "Não foi encontrado nenhum motor nesta instalação.";
+                    return Text("Engine.Description.Missing");
                 case EngineStatus.Unsupported:
-                    return "O motor não respondeu à verificação de versão de forma reconhecível.";
+                    return Text("Engine.Description.Unsupported");
                 default:
                     throw new ArgumentOutOfRangeException(nameof(status), status, "Unknown engine status.");
             }

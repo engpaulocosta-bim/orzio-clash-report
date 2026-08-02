@@ -9,8 +9,17 @@ using OrzioClashReport.Launcher.Contracts.Operations;
 
 namespace OrzioClashReport.Launcher.Desktop.ViewModels
 {
+    /// <summary>
+    /// A field a typed form is built from. The form listens for changes so its run command always
+    /// reflects what has actually been supplied.
+    /// </summary>
+    public interface IFormField
+    {
+        event Action? Changed;
+    }
+
     /// <summary>One free-text field in a typed form.</summary>
-    public sealed partial class TextFieldViewModel : ViewModelBase
+    public sealed partial class TextFieldViewModel : ViewModelBase, IFormField
     {
         [ObservableProperty]
         private string? _value;
@@ -28,6 +37,10 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         public bool HasValue => !string.IsNullOrWhiteSpace(Value);
 
         public string Trimmed => Value?.Trim() ?? string.Empty;
+
+        /// <summary>Some fields exist only for one shape of a decision.</summary>
+        [ObservableProperty]
+        private bool _isShown = true;
 
         partial void OnValueChanged(string? value)
         {
@@ -136,17 +149,9 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         protected TField Add<TField>(TField field)
             where TField : ViewModelBase
         {
-            switch (field)
+            if (field is IFormField notifying)
             {
-                case FileFieldViewModel file:
-                    file.Changed += NotifyChanged;
-                    break;
-                case TextFieldViewModel text:
-                    text.Changed += NotifyChanged;
-                    break;
-                case OrderedFileListViewModel list:
-                    list.Changed += NotifyChanged;
-                    break;
+                notifying.Changed += NotifyChanged;
             }
 
             Fields.Add(field);

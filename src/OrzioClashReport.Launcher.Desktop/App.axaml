@@ -66,12 +66,57 @@
     </DataTemplate>
 
     <DataTemplate DataType="vm:TextFieldViewModel">
-      <StackPanel Spacing="{DynamicResource OrzioSpaceXs}" Margin="{DynamicResource OrzioStackGapMd}">
+      <StackPanel Spacing="{DynamicResource OrzioSpaceXs}"
+                  Margin="{DynamicResource OrzioStackGapMd}"
+                  IsVisible="{Binding IsShown}">
         <TextBlock Classes="caption" Text="{Binding Label}" />
         <TextBlock Classes="tertiary" Text="{Binding Hint}" />
         <TextBox Text="{Binding Value}"
                  HorizontalAlignment="Left"
                  MinWidth="{DynamicResource OrzioDialogMaxWidth}" />
+      </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="vm:OccurrenceIndexFieldViewModel">
+      <StackPanel Spacing="{DynamicResource OrzioSpaceXs}" Margin="{DynamicResource OrzioStackGapMd}">
+        <TextBlock Classes="caption" Text="{Binding Label}" />
+        <TextBlock Classes="tertiary" Text="{Binding Hint}" />
+        <TextBox Text="{Binding Value}" HorizontalAlignment="Left" MinWidth="{DynamicResource OrzioSidebarWidth}" />
+        <StackPanel Orientation="Horizontal"
+                    Spacing="{DynamicResource OrzioSpaceXs}"
+                    IsVisible="{Binding HasFormatError}">
+          <TextBlock Text="!" />
+          <TextBlock Classes="secondary" Text="{Binding FormatError}" />
+        </StackPanel>
+      </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="vm:DecisionKindFieldViewModel">
+      <StackPanel Spacing="{DynamicResource OrzioSpaceSm}" Margin="{DynamicResource OrzioStackGapMd}">
+        <TextBlock Classes="caption" Text="{Binding Label}" />
+        <ListBox Classes="nav"
+                 ItemsSource="{Binding Options}"
+                 SelectedItem="{Binding Selected}"
+                 Background="Transparent"
+                 BorderThickness="{DynamicResource OrzioBorderNone}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:DecisionKindOptionViewModel">
+              <!-- Glyph, words, and colour together: never colour on its own. -->
+              <StackPanel Spacing="{DynamicResource OrzioSpaceXs}">
+                <Border Classes="badge"
+                        Classes.positive="{Binding IsConfirmation}"
+                        Classes.critical="{Binding !IsConfirmation}"
+                        HorizontalAlignment="Left">
+                  <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+                    <TextBlock Text="{Binding Glyph}" />
+                    <TextBlock Text="{Binding Label}" />
+                  </StackPanel>
+                </Border>
+                <TextBlock Classes="tertiary" Text="{Binding Explanation}" />
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
       </StackPanel>
     </DataTemplate>
 

@@ -55,7 +55,41 @@
 
       <!-- Page content -->
       <Border Grid.Column="1" Padding="{DynamicResource OrzioContentPadding}">
-        <ContentControl Content="{Binding CurrentPage}" />
+        <DockPanel>
+
+          <!-- What a previous session left running. Reported, never resumed. -->
+          <Border DockPanel.Dock="Top"
+                  Classes="card"
+                  Margin="{DynamicResource OrzioStackGapLg}"
+                  IsVisible="{Binding InterruptedJobs.HasJobs}">
+            <StackPanel Spacing="{DynamicResource OrzioSpaceSm}">
+              <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+                <Border Classes="badge caution">
+                  <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceXs}">
+                    <TextBlock Text="!" />
+                    <TextBlock Text="{Binding InterruptedJobs.Title}" />
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+              <TextBlock Classes="secondary" Text="{Binding InterruptedJobs.Explanation}" />
+              <ItemsControl ItemsSource="{Binding InterruptedJobs.Jobs}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:InterruptedJobViewModel">
+                    <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+                      <TextBlock Text="{Binding OperationLabel}" />
+                      <TextBlock Classes="tertiary" Text="{Binding StartedAtDisplay}" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <Button Content="Compreendi"
+                      HorizontalAlignment="Left"
+                      Command="{Binding InterruptedJobs.DismissCommand}" />
+            </StackPanel>
+          </Border>
+
+          <ContentControl Content="{Binding CurrentPage}" />
+        </DockPanel>
       </Border>
 
     </Grid>

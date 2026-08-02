@@ -19,5 +19,15 @@ namespace OrzioClashReport.Launcher.Contracts.Operations
         /// operation has no <c>-o</c> and the engine owns its own destination.
         /// </summary>
         public virtual string? OutputPath => null;
+
+        /// <summary>
+        /// Returns the same request aimed at a different absolute destination. Used when a human
+        /// resolves an output collision by choosing another file rather than replacing one.
+        /// </summary>
+        public virtual LauncherOperationRequest WithOutputPath(string outputPath)
+        {
+            throw new System.NotSupportedException(
+                "This operation has no output option; its destination belongs to the engine.");
+        }
     }
 }

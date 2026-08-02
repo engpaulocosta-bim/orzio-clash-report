@@ -51,6 +51,9 @@ namespace OrzioClashReport.Launcher.Contracts.Operations
         public override LauncherOperationKind Kind => LauncherOperationKind.CreateIdentityGovernance;
 
         public override string? OutputPath => OutputGovernancePath;
+
+        public override LauncherOperationRequest WithOutputPath(string outputPath) =>
+            new CreateIdentityGovernanceRequest(ProjectId, outputPath);
     }
 
     /// <summary>
@@ -187,5 +190,8 @@ namespace OrzioClashReport.Launcher.Contracts.Operations
         public override LauncherOperationKind Kind => LauncherOperationKind.RenderIdentityGovernanceReport;
 
         public override string? OutputPath => OutputHtmlPath;
+
+        public override LauncherOperationRequest WithOutputPath(string outputPath) =>
+            new RenderIdentityGovernanceReportRequest(ProjectPath, GovernancePath, outputPath);
     }
 }

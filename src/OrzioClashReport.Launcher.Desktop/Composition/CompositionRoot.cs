@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Styling;
+using OrzioClashReport.Launcher.Application;
 using OrzioClashReport.Launcher.Contracts.Ports;
 using OrzioClashReport.Launcher.Contracts.Settings;
+using OrzioClashReport.Launcher.Desktop.Dialogs;
 using OrzioClashReport.Launcher.Desktop.Platform;
 using OrzioClashReport.Launcher.Desktop.ViewModels;
 using OrzioClashReport.Launcher.Infrastructure;
@@ -26,27 +27,38 @@ namespace OrzioClashReport.Launcher.Desktop.Composition
         private readonly IRecentItemsStore _recentItemsStore;
         private readonly IEngineProbe _engineProbe;
         private readonly IOutputRevealer _outputRevealer;
+        private readonly IFileDialogs _fileDialogs;
+        private readonly IOutputCollisionPrompt _collisionPrompt;
+        private readonly OperationJobService _jobs;
 
         private CompositionRoot(
             LauncherLocalPaths localPaths,
             ISettingsStore settingsStore,
             IRecentItemsStore recentItemsStore,
             IEngineProbe engineProbe,
-            IOutputRevealer outputRevealer)
+            IOutputRevealer outputRevealer,
+            IFileDialogs fileDialogs,
+            IOutputCollisionPrompt collisionPrompt,
+            OperationJobService jobs)
         {
             _localPaths = localPaths;
             _settingsStore = settingsStore;
             _recentItemsStore = recentItemsStore;
             _engineProbe = engineProbe;
             _outputRevealer = outputRevealer;
+            _fileDialogs = fileDialogs;
+            _collisionPrompt = collisionPrompt;
+            _jobs = jobs;
         }
 
-        public static CompositionRoot Create(Func<TopLevel?> topLevel)
+        public static CompositionRoot Create(Func<Window?> mainWindow)
         {
-            if (topLevel == null)
+            if (mainWindow == null)
             {
-                throw new ArgumentNullException(nameof(topLevel));
+                throw new ArgumentNullException(nameof(mainWindow));
             }
+
+            TopLevel? TopLevel() => mainWindow();
 
             LauncherLocalPaths localPaths = LauncherLocalPaths.ForCurrentUser();
             localPaths.EnsureCreated();
@@ -54,13 +66,27 @@ namespace OrzioClashReport.Launcher.Desktop.Composition
             EngineLayout engineLayout = EngineLayout.ForInstalledLauncher();
             var integrityVerifier = new EngineManifestIntegrityVerifier(engineLayout);
             var processRunner = new ProcessJobRunner();
+            var recentItemsStore = new JsonRecentItemsStore(localPaths.RecentItemsFilePath);
+            var fileDialogs = new StorageProviderFileDialogs(TopLevel);
+
+            var gateway = new CliEngineGateway(
+                engineLayout.ExecutablePath, new EngineArgumentBuilder(), processRunner);
+
+            var jobs = new OperationJobService(
+                gateway,
+                new FileJobJournal(localPaths.JobsDirectory),
+                recentItemsStore,
+                new PhysicalFileSystemProbe());
 
             return new CompositionRoot(
                 localPaths,
                 new JsonSettingsStore(localPaths.SettingsFilePath),
-                new JsonRecentItemsStore(localPaths.RecentItemsFilePath),
+                recentItemsStore,
                 new CliEngineProbe(engineLayout, integrityVerifier, processRunner),
-                new TopLevelOutputRevealer(topLevel));
+                new TopLevelOutputRevealer(TopLevel),
+                fileDialogs,
+                new DialogOutputCollisionPrompt(mainWindow, fileDialogs),
+                jobs);
         }
 
         public ShellViewModel CreateShell()
@@ -73,9 +99,7 @@ namespace OrzioClashReport.Launcher.Desktop.Composition
             var pages = new Dictionary<ShellSection, ViewModelBase>
             {
                 [ShellSection.Home] = new HomeViewModel(engine, _recentItemsStore, _outputRevealer, Navigate),
-                [ShellSection.QuickReport] = new SectionPlaceholderViewModel(
-                    "Relatório rápido",
-                    "Gere um relatório HTML agrupado a partir de um export XML do Clash Detective."),
+                [ShellSection.QuickReport] = new QuickReportViewModel(CreateRunner(), _fileDialogs, engine),
                 [ShellSection.Snapshots] = new SectionPlaceholderViewModel(
                     "Snapshots",
                     "Crie snapshots imutáveis de coordenação e compare dois snapshots persistidos."),
@@ -96,6 +120,9 @@ namespace OrzioClashReport.Launcher.Desktop.Composition
             ApplyTheme(_settingsStore.Load().Theme);
             return shell;
         }
+
+        private OperationRunnerViewModel CreateRunner() =>
+            new OperationRunnerViewModel(_jobs, _collisionPrompt, _outputRevealer);
 
         internal static string LauncherVersion
         {

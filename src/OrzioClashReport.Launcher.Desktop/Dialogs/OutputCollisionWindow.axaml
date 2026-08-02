@@ -1,0 +1,31 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="OrzioClashReport.Launcher.Desktop.Dialogs.OutputCollisionWindow"
+        Title="O ficheiro já existe"
+        SizeToContent="WidthAndHeight"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="{DynamicResource OrzioCanvasBrush}">
+
+  <Border Padding="{DynamicResource OrzioContentPadding}" MaxWidth="{DynamicResource OrzioDialogMaxWidth}">
+    <StackPanel Spacing="{DynamicResource OrzioSpaceLg}">
+
+      <StackPanel Spacing="{DynamicResource OrzioSpaceSm}">
+        <TextBlock Classes="subtitle" Text="Já existe um relatório com este nome" />
+        <TextBlock Classes="secondary" x:Name="ExistingFileText" />
+        <TextBlock Classes="tertiary"
+                   Text="Substituir apaga o relatório anterior. Escolher outro nome mantém os dois." />
+      </StackPanel>
+
+      <StackPanel Orientation="Horizontal"
+                  Spacing="{DynamicResource OrzioSpaceSm}"
+                  HorizontalAlignment="Right">
+        <Button Content="Cancelar" Click="OnCancel" />
+        <Button Content="Substituir relatório existente" Click="OnReplace" />
+        <Button Classes="primary" Content="Escolher outro nome" Click="OnChooseAnother" IsDefault="True" />
+      </StackPanel>
+
+    </StackPanel>
+  </Border>
+
+</Window>

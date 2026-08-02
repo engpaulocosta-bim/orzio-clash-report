@@ -1,0 +1,76 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OrzioClashReport.Launcher.Desktop.ViewModels"
+             x:Class="OrzioClashReport.Launcher.Desktop.Views.QuickReportView"
+             x:DataType="vm:QuickReportViewModel"
+             DragDrop.AllowDrop="True">
+
+  <ScrollViewer>
+    <StackPanel Spacing="{DynamicResource OrzioSpaceLg}">
+
+      <StackPanel Spacing="{DynamicResource OrzioSpaceXs}">
+        <TextBlock Classes="title" Text="Relatório rápido" />
+        <TextBlock Classes="secondary"
+                   Text="Um export XML do Clash Detective, agrupado num relatório HTML autónomo." />
+      </StackPanel>
+
+      <Border Classes="card" IsVisible="{Binding IsBlocked}">
+        <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+          <TextBlock Text="!" />
+          <TextBlock Classes="secondary" Text="{Binding BlockedReason}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="{DynamicResource OrzioSpaceLg}">
+
+          <StackPanel Spacing="{DynamicResource OrzioSpaceSm}">
+            <TextBlock Classes="caption" Text="1. EXPORT XML" />
+            <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+              <Button Content="Escolher ficheiro…" Command="{Binding PickInputCommand}" />
+              <TextBlock VerticalAlignment="Center"
+                         Text="{Binding InputFileName}"
+                         IsVisible="{Binding HasInput}" />
+              <TextBlock Classes="tertiary"
+                         VerticalAlignment="Center"
+                         Text="Ou arraste o ficheiro para esta janela."
+                         IsVisible="{Binding !HasInput}" />
+            </StackPanel>
+          </StackPanel>
+
+          <StackPanel Spacing="{DynamicResource OrzioSpaceSm}">
+            <TextBlock Classes="caption" Text="2. DESTINO DO RELATÓRIO" />
+            <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+              <Button Content="Escolher destino…" Command="{Binding PickOutputCommand}" />
+              <TextBlock VerticalAlignment="Center"
+                         Text="{Binding OutputFileName}"
+                         IsVisible="{Binding HasOutput}" />
+              <TextBlock Classes="tertiary"
+                         VerticalAlignment="Center"
+                         Text="Ainda não escolhido."
+                         IsVisible="{Binding !HasOutput}" />
+            </StackPanel>
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+            <Button Classes="primary"
+                    Content="Gerar relatório"
+                    Command="{Binding GenerateCommand}"
+                    IsVisible="{Binding !Runner.IsRunning}" />
+            <Button Content="Cancelar"
+                    Command="{Binding Runner.CancelCommand}"
+                    IsVisible="{Binding Runner.IsRunning}" />
+            <TextBlock VerticalAlignment="Center"
+                       Classes="secondary"
+                       Text="{Binding Runner.StatusText}" />
+          </StackPanel>
+
+        </StackPanel>
+      </Border>
+
+      <ContentControl Content="{Binding Runner}" IsVisible="{Binding Runner.HasRun}" />
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

@@ -22,6 +22,12 @@
     <DataTemplate DataType="vm:HomeViewModel">
       <views:HomeView />
     </DataTemplate>
+    <DataTemplate DataType="vm:QuickReportViewModel">
+      <views:QuickReportView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:OperationRunnerViewModel">
+      <views:OperationRunnerView />
+    </DataTemplate>
     <DataTemplate DataType="vm:SettingsViewModel">
       <views:SettingsView />
     </DataTemplate>

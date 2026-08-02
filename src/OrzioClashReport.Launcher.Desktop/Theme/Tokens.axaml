@@ -86,6 +86,8 @@
   <x:Double x:Key="OrzioRailWidth">56</x:Double>
   <x:Double x:Key="OrzioRailBreakpoint">900</x:Double>
   <x:Double x:Key="OrzioStatusBarHeight">40</x:Double>
+  <x:Double x:Key="OrzioDialogMaxWidth">520</x:Double>
+  <x:Double x:Key="OrzioOutputLogHeight">180</x:Double>
   <Thickness x:Key="OrzioContentPadding">32</Thickness>
 
   <!-- Spacing scale -->

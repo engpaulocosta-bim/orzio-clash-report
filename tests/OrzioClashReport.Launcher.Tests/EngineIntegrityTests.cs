@@ -129,15 +129,15 @@ public sealed class EngineIntegrityTests : IDisposable
     [Fact]
     public void TheVersionPattern_AcceptsOnlyThePublishedVersionLine()
     {
-        Assert.True(CliEngineProbe.VersionPattern.IsMatch("orzioclash 0.1.0-preview.3"));
-        Assert.True(CliEngineProbe.VersionPattern.IsMatch("orzioclash 12.4.9-launcher.preview.1"));
+        Assert.Matches(CliEngineProbe.VersionPattern, MatchTarget("orzioclash 0.1.0-preview.3"));
+        Assert.Matches(CliEngineProbe.VersionPattern, MatchTarget("orzioclash 12.4.9-launcher.preview.1"));
 
-        Assert.False(CliEngineProbe.VersionPattern.IsMatch("orzioclash 0.1.0"));
-        Assert.False(CliEngineProbe.VersionPattern.IsMatch("orzioclash  0.1.0-preview.3"));
-        Assert.False(CliEngineProbe.VersionPattern.IsMatch("Orzioclash 0.1.0-preview.3"));
-        Assert.False(CliEngineProbe.VersionPattern.IsMatch("something orzioclash 0.1.0-preview.3"));
-        Assert.False(CliEngineProbe.VersionPattern.IsMatch("orzioclash 0.1.0-preview.3 extra"));
-        Assert.False(CliEngineProbe.VersionPattern.IsMatch(string.Empty));
+        Assert.DoesNotMatch(CliEngineProbe.VersionPattern, MatchTarget("orzioclash 0.1.0"));
+        Assert.DoesNotMatch(CliEngineProbe.VersionPattern, MatchTarget("orzioclash  0.1.0-preview.3"));
+        Assert.DoesNotMatch(CliEngineProbe.VersionPattern, MatchTarget("Orzioclash 0.1.0-preview.3"));
+        Assert.DoesNotMatch(CliEngineProbe.VersionPattern, MatchTarget("something orzioclash 0.1.0-preview.3"));
+        Assert.DoesNotMatch(CliEngineProbe.VersionPattern, MatchTarget("orzioclash 0.1.0-preview.3 extra"));
+        Assert.DoesNotMatch(CliEngineProbe.VersionPattern, MatchTarget(string.Empty));
     }
 
     [Fact]
@@ -161,6 +161,8 @@ public sealed class EngineIntegrityTests : IDisposable
     {
         Assert.Equal(TimeSpan.FromSeconds(5), CliEngineProbe.ProbeTimeout);
     }
+
+    private static string MatchTarget(string value) => value;
 
     private void WriteEngine(string content)
     {

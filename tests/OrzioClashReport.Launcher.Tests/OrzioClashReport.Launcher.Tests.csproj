@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\src\OrzioClashReport.Launcher.Contracts\OrzioClashReport.Launcher.Contracts.csproj" />
     <ProjectReference Include="..\..\src\OrzioClashReport.Launcher.Desktop\OrzioClashReport.Launcher.Desktop.csproj" />
     <ProjectReference Include="..\..\src\OrzioClashReport.Launcher.Infrastructure\OrzioClashReport.Launcher.Infrastructure.csproj" />
+    <ProjectReference Include="..\OrzioClashReport.Launcher.FakeEngine\OrzioClashReport.Launcher.FakeEngine.csproj" />
   </ItemGroup>
 
 </Project>

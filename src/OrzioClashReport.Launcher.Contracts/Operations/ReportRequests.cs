@@ -21,6 +21,9 @@ namespace OrzioClashReport.Launcher.Contracts.Operations
         public override LauncherOperationKind Kind => LauncherOperationKind.QuickReport;
 
         public override string? OutputPath => OutputHtmlPath;
+
+        public override LauncherOperationRequest WithOutputPath(string outputPath) =>
+            new QuickReportRequest(InputXmlPath, outputPath);
     }
 
     /// <summary>One immutable coordination-run snapshot from an XML export plus its declared manifest.</summary>
@@ -42,6 +45,9 @@ namespace OrzioClashReport.Launcher.Contracts.Operations
         public override LauncherOperationKind Kind => LauncherOperationKind.CreateSnapshot;
 
         public override string? OutputPath => OutputSnapshotPath;
+
+        public override LauncherOperationRequest WithOutputPath(string outputPath) =>
+            new CreateSnapshotRequest(XmlPath, ManifestPath, outputPath);
     }
 
     /// <summary>
@@ -77,6 +83,10 @@ namespace OrzioClashReport.Launcher.Contracts.Operations
         public override LauncherOperationKind Kind => LauncherOperationKind.CompareRuns;
 
         public override string? OutputPath => OutputHtmlPath;
+
+        public override LauncherOperationRequest WithOutputPath(string outputPath) =>
+            new CompareRunsRequest(
+                PreviousXmlPath, PreviousManifestPath, CurrentXmlPath, CurrentManifestPath, outputPath);
     }
 
     /// <summary>Comparison of two already persisted snapshots in explicit previous/current roles.</summary>
@@ -99,6 +109,9 @@ namespace OrzioClashReport.Launcher.Contracts.Operations
         public override LauncherOperationKind Kind => LauncherOperationKind.CompareSnapshots;
 
         public override string? OutputPath => OutputHtmlPath;
+
+        public override LauncherOperationRequest WithOutputPath(string outputPath) =>
+            new CompareSnapshotsRequest(PreviousSnapshotPath, CurrentSnapshotPath, outputPath);
     }
 
     /// <summary>
@@ -121,6 +134,9 @@ namespace OrzioClashReport.Launcher.Contracts.Operations
         public override LauncherOperationKind Kind => LauncherOperationKind.IndexSnapshots;
 
         public override string? OutputPath => OutputIndexPath;
+
+        public override LauncherOperationRequest WithOutputPath(string outputPath) =>
+            new IndexSnapshotsRequest(SnapshotPaths, outputPath);
     }
 
     /// <summary>Adjacent-pair longitudinal comparison driven by an explicit run index.</summary>
@@ -139,5 +155,8 @@ namespace OrzioClashReport.Launcher.Contracts.Operations
         public override LauncherOperationKind Kind => LauncherOperationKind.CompareIndex;
 
         public override string? OutputPath => OutputHtmlPath;
+
+        public override LauncherOperationRequest WithOutputPath(string outputPath) =>
+            new CompareIndexRequest(IndexPath, outputPath);
     }
 }

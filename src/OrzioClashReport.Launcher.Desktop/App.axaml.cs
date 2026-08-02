@@ -1,4 +1,3 @@
-using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using OrzioClashReport.Launcher.Desktop.Composition;
@@ -22,7 +21,7 @@ namespace OrzioClashReport.Launcher.Desktop
             {
                 _mainWindow = new MainWindow();
 
-                CompositionRoot root = CompositionRoot.Create(() => (TopLevel?)_mainWindow);
+                CompositionRoot root = CompositionRoot.Create(() => _mainWindow);
                 _mainWindow.DataContext = root.CreateShell();
 
                 desktop.MainWindow = _mainWindow;

@@ -27,6 +27,9 @@ namespace OrzioClashReport.Launcher.Contracts.Operations
         public override LauncherOperationKind Kind => LauncherOperationKind.CreateProject;
 
         public override string? OutputPath => OutputProjectPath;
+
+        public override LauncherOperationRequest WithOutputPath(string outputPath) =>
+            new CreateProjectRequest(ProjectId, DisplayName, IndexPath, ReportPath, outputPath);
     }
 
     /// <summary>

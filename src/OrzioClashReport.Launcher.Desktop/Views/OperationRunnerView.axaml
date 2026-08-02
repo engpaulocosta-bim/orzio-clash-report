@@ -1,0 +1,79 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OrzioClashReport.Launcher.Desktop.ViewModels"
+             x:Class="OrzioClashReport.Launcher.Desktop.Views.OperationRunnerView"
+             x:DataType="vm:OperationRunnerViewModel">
+
+  <StackPanel Spacing="{DynamicResource OrzioSpaceMd}">
+
+    <!-- Result: what happened, stated in words and reinforced by a glyph. -->
+    <Border Classes="card">
+      <StackPanel Spacing="{DynamicResource OrzioSpaceMd}">
+
+        <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+          <Border Classes="badge"
+                  Classes.neutral="{Binding IsNeutral}"
+                  Classes.positive="{Binding IsPositive}"
+                  Classes.caution="{Binding IsCaution}"
+                  Classes.critical="{Binding IsCritical}">
+            <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+              <TextBlock Text="✓" IsVisible="{Binding Succeeded}" />
+              <TextBlock Text="✕" IsVisible="{Binding Failed}" />
+              <TextBlock Text="⊘" IsVisible="{Binding WasCanceled}" />
+              <TextBlock Text="◌" IsVisible="{Binding IsRunning}" />
+              <TextBlock Text="{Binding StatusText}" />
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <StackPanel Spacing="{DynamicResource OrzioSpaceSm}" IsVisible="{Binding HasProducedFile}">
+          <TextBlock Classes="caption" Text="FICHEIRO PRODUZIDO" />
+          <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+            <TextBlock VerticalAlignment="Center" Text="{Binding ProducedFileName}" />
+            <Button Classes="link" Content="Abrir" Command="{Binding OpenResultCommand}" />
+            <Button Classes="link" Content="Mostrar na pasta" Command="{Binding RevealResultCommand}" />
+          </StackPanel>
+        </StackPanel>
+
+        <StackPanel Spacing="{DynamicResource OrzioSpaceXs}" IsVisible="{Binding Failed}">
+          <TextBlock Classes="caption" Text="DETALHE DO MOTOR" />
+          <TextBlock Classes="mono" Text="{Binding ErrorDetail}" />
+        </StackPanel>
+
+        <ItemsControl ItemsSource="{Binding Warnings}" IsVisible="{Binding HasWarnings}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <StackPanel Orientation="Horizontal"
+                          Spacing="{DynamicResource OrzioSpaceSm}"
+                          Margin="{DynamicResource OrzioStackGapSm}">
+                <TextBlock Text="!" />
+                <TextBlock Classes="secondary" Text="{Binding}" />
+              </StackPanel>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+      </StackPanel>
+    </Border>
+
+    <!-- Job output: what the engine printed, unmodified and unparsed. -->
+    <Border Classes="sunken"
+            Padding="{DynamicResource OrzioCardPadding}"
+            IsVisible="{Binding HasOutputLines}">
+      <StackPanel Spacing="{DynamicResource OrzioSpaceSm}">
+        <TextBlock Classes="caption" Text="SAÍDA DO MOTOR" />
+        <ScrollViewer Height="{DynamicResource OrzioOutputLogHeight}">
+          <ItemsControl ItemsSource="{Binding OutputLines}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="x:String">
+                <TextBlock Classes="mono" Text="{Binding}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </StackPanel>
+    </Border>
+
+  </StackPanel>
+
+</UserControl>

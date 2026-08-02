@@ -64,6 +64,15 @@ namespace OrzioClashReport.Launcher.Contracts.Ports
         Task<string> BuildAsync(string destinationPath, CancellationToken cancellationToken);
     }
 
+    /// <summary>
+    /// The narrow filesystem question the launcher asks before running: does this destination already
+    /// hold a file? Everything else about the filesystem belongs to the engine.
+    /// </summary>
+    public interface IFileSystemProbe
+    {
+        bool FileExists(string path);
+    }
+
     /// <summary>Opens a produced file, or shows it in the platform's file manager.</summary>
     public interface IOutputRevealer
     {

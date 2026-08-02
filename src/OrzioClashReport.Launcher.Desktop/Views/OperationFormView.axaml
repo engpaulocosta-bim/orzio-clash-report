@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OrzioClashReport.Launcher.Desktop.ViewModels"
+             x:Class="OrzioClashReport.Launcher.Desktop.Views.OperationFormView"
+             x:DataType="vm:OperationFormViewModel">
+
+  <StackPanel Spacing="{DynamicResource OrzioSpaceLg}">
+
+    <StackPanel Spacing="{DynamicResource OrzioSpaceXs}">
+      <TextBlock Classes="subtitle" Text="{Binding Title}" />
+      <TextBlock Classes="secondary" Text="{Binding Description}" />
+    </StackPanel>
+
+    <!-- Experimental operations say so; nothing here implies more confidence than exists. -->
+    <Border Classes="sunken"
+            Padding="{DynamicResource OrzioCardPadding}"
+            IsVisible="{Binding IsExperimental}">
+      <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+        <TextBlock Text="!" />
+        <TextBlock Classes="secondary"
+                   Text="Experimental: a comparação entre revisões ainda não foi validada com três exports históricos reais." />
+      </StackPanel>
+    </Border>
+
+    <Border Classes="sunken"
+            Padding="{DynamicResource OrzioCardPadding}"
+            IsVisible="{Binding IsBlocked}">
+      <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+        <TextBlock Text="✕" />
+        <TextBlock Classes="secondary" Text="{Binding BlockedReason}" />
+      </StackPanel>
+    </Border>
+
+    <ItemsControl ItemsSource="{Binding Fields}" />
+
+    <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+      <Button Classes="primary"
+              Content="{Binding RunLabel}"
+              Command="{Binding RunCommand}"
+              IsVisible="{Binding !Runner.IsRunning}" />
+      <Button Content="Cancelar"
+              Command="{Binding Runner.CancelCommand}"
+              IsVisible="{Binding Runner.IsRunning}" />
+      <Button Content="{Binding FollowUpLabel}"
+              Command="{Binding FollowUpCommand}"
+              IsVisible="{Binding ShowsFollowUp}" />
+      <TextBlock VerticalAlignment="Center" Classes="secondary" Text="{Binding Runner.StatusText}" />
+    </StackPanel>
+
+    <ContentControl Content="{Binding Runner}" IsVisible="{Binding Runner.HasRun}" />
+
+  </StackPanel>
+
+</UserControl>

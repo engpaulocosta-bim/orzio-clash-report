@@ -13,4 +13,8 @@
     <ProjectReference Include="..\OrzioClashReport.Launcher.Contracts\OrzioClashReport.Launcher.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="OrzioClashReport.Launcher.Tests" />
+  </ItemGroup>
+
 </Project>

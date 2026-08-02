@@ -1,0 +1,62 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OrzioClashReport.Launcher.Desktop.ViewModels"
+             x:Class="OrzioClashReport.Launcher.Desktop.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+  <ScrollViewer>
+    <StackPanel Spacing="{DynamicResource OrzioSpaceLg}">
+
+      <TextBlock Classes="title" Text="Definições" />
+
+      <Border Classes="card">
+        <StackPanel Spacing="{DynamicResource OrzioSpaceMd}">
+          <TextBlock Classes="caption" Text="APARÊNCIA" />
+          <StackPanel Spacing="{DynamicResource OrzioSpaceXs}">
+            <TextBlock Text="Tema" />
+            <ComboBox ItemsSource="{Binding Themes}"
+                      SelectedItem="{Binding SelectedTheme}"
+                      HorizontalAlignment="Left"
+                      MinWidth="{DynamicResource OrzioSidebarWidth}">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:ThemeOptionViewModel">
+                  <TextBlock Text="{Binding Label}" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="{DynamicResource OrzioSpaceMd}">
+          <TextBlock Classes="caption" Text="AVISOS" />
+          <CheckBox IsChecked="{Binding ShowExperimentalWarnings}"
+                    Content="Mostrar aviso quando uma operação for experimental" />
+          <TextBlock Classes="tertiary"
+                     Text="A comparação entre revisões ainda não foi validada com três exports históricos reais." />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Spacing="{DynamicResource OrzioSpaceMd}">
+          <TextBlock Classes="caption" Text="DADOS LOCAIS" />
+          <StackPanel Spacing="{DynamicResource OrzioSpaceXs}">
+            <TextBlock Classes="secondary" Text="Esta aplicação guarda definições, registos e estado de trabalhos em:" />
+            <TextBlock Classes="mono" Text="{Binding LocalDataDirectory}" />
+            <TextBlock Classes="tertiary"
+                       Text="Os seus projetos, snapshots e relatórios nunca são guardados aqui e não são removidos ao desinstalar." />
+          </StackPanel>
+          <StackPanel Spacing="{DynamicResource OrzioSpaceXs}">
+            <TextBlock Classes="secondary" Text="Versão da aplicação" />
+            <TextBlock Classes="mono" Text="{Binding LauncherVersion}" />
+          </StackPanel>
+          <TextBlock Classes="tertiary"
+                     Text="Sem telemetria, sem envio de dados e sem conta. Tudo permanece nesta máquina." />
+        </StackPanel>
+      </Border>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

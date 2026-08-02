@@ -1,0 +1,198 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    Shared control styles. Every value here comes from Theme/Tokens.axaml; no literal colour,
+    radius, spacing, or font size appears in this file or in any view.
+  -->
+
+  <Style Selector="TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource OrzioTextPrimaryBrush}" />
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeBody}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+
+  <Style Selector="TextBlock.display">
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeDisplay}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="TextBlock.title">
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeTitle}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="TextBlock.subtitle">
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeSubtitle}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="TextBlock.secondary">
+    <Setter Property="Foreground" Value="{DynamicResource OrzioTextSecondaryBrush}" />
+  </Style>
+
+  <Style Selector="TextBlock.tertiary">
+    <Setter Property="Foreground" Value="{DynamicResource OrzioTextTertiaryBrush}" />
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeSmall}" />
+  </Style>
+
+  <Style Selector="TextBlock.caption">
+    <Setter Property="Foreground" Value="{DynamicResource OrzioTextSecondaryBrush}" />
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeCaption}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="TextBlock.mono">
+    <Setter Property="FontFamily" Value="{DynamicResource OrzioMonospaceFont}" />
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeSmall}" />
+  </Style>
+
+  <!-- Surfaces -->
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{DynamicResource OrzioRaisedBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioBorderSubtleBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource OrzioBorderThin}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OrzioRadiusLg}" />
+    <Setter Property="Padding" Value="{DynamicResource OrzioCardPadding}" />
+  </Style>
+
+  <Style Selector="Border.sunken">
+    <Setter Property="Background" Value="{DynamicResource OrzioSunkenBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioBorderSubtleBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource OrzioBorderThin}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OrzioRadiusMd}" />
+  </Style>
+
+  <!-- Buttons -->
+  <Style Selector="Button">
+    <Setter Property="Background" Value="{DynamicResource OrzioCanvasBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioTextPrimaryBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioBorderStrongBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource OrzioBorderThin}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OrzioRadiusMd}" />
+    <Setter Property="Padding" Value="{DynamicResource OrzioFieldPadding}" />
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeBody}" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="Button:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource OrzioSunkenBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource OrzioTextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="Button.primary">
+    <Setter Property="Background" Value="{DynamicResource OrzioAccentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioOnAccentBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioAccentBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="Button.primary /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource OrzioAccentBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource OrzioOnAccentBrush}" />
+  </Style>
+
+  <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource OrzioAccentHoverBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource OrzioOnAccentBrush}" />
+  </Style>
+
+  <Style Selector="Button.primary:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource OrzioAccentPressedBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource OrzioOnAccentBrush}" />
+  </Style>
+
+  <Style Selector="Button.link">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="{DynamicResource OrzioBorderNone}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioAccentBrush}" />
+    <Setter Property="Padding" Value="{DynamicResource OrzioBadgePadding}" />
+  </Style>
+
+  <Style Selector="Button.link /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource OrzioAccentBrush}" />
+  </Style>
+
+  <!-- Inputs -->
+  <Style Selector="TextBox">
+    <Setter Property="Background" Value="{DynamicResource OrzioCanvasBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioTextPrimaryBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioBorderStrongBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource OrzioBorderThin}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OrzioRadiusMd}" />
+    <Setter Property="Padding" Value="{DynamicResource OrzioFieldPadding}" />
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeBody}" />
+  </Style>
+
+  <Style Selector="ComboBox">
+    <Setter Property="Background" Value="{DynamicResource OrzioCanvasBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioTextPrimaryBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioBorderStrongBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource OrzioBorderThin}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OrzioRadiusMd}" />
+    <Setter Property="Padding" Value="{DynamicResource OrzioFieldPadding}" />
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeBody}" />
+  </Style>
+
+  <!-- Status badges: always a glyph plus a word, never colour on its own. -->
+  <Style Selector="Border.badge">
+    <Setter Property="BorderThickness" Value="{DynamicResource OrzioBorderThin}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OrzioRadiusPill}" />
+    <Setter Property="Padding" Value="{DynamicResource OrzioBadgePadding}" />
+    <Setter Property="Background" Value="{DynamicResource OrzioSunkenBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioBorderSubtleBrush}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="Border.badge TextBlock">
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeSmall}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioTextSecondaryBrush}" />
+    <Setter Property="TextWrapping" Value="NoWrap" />
+  </Style>
+
+  <Style Selector="Border.badge.positive">
+    <Setter Property="Background" Value="{DynamicResource OrzioPositiveTintBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioPositiveBrush}" />
+  </Style>
+
+  <Style Selector="Border.badge.positive TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource OrzioPositiveBrush}" />
+  </Style>
+
+  <Style Selector="Border.badge.caution">
+    <Setter Property="Background" Value="{DynamicResource OrzioCautionTintBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioCautionBrush}" />
+  </Style>
+
+  <Style Selector="Border.badge.caution TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource OrzioCautionBrush}" />
+  </Style>
+
+  <Style Selector="Border.badge.critical">
+    <Setter Property="Background" Value="{DynamicResource OrzioCriticalTintBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioCriticalBrush}" />
+  </Style>
+
+  <Style Selector="Border.badge.critical TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource OrzioCriticalBrush}" />
+  </Style>
+
+  <!-- Navigation -->
+  <Style Selector="ListBox.nav > ListBoxItem">
+    <Setter Property="Padding" Value="{DynamicResource OrzioNavItemPadding}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OrzioRadiusMd}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioTextSecondaryBrush}" />
+  </Style>
+
+  <Style Selector="ListBox.nav > ListBoxItem:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource OrzioAccentTintBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource OrzioAccentBrush}" />
+  </Style>
+
+  <Style Selector="ListBox.nav > ListBoxItem:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource OrzioSunkenBrush}" />
+  </Style>
+
+</Styles>

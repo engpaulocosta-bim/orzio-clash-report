@@ -1,0 +1,16 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OrzioClashReport.Launcher.Desktop.ViewModels"
+             x:Class="OrzioClashReport.Launcher.Desktop.Views.SectionPlaceholderView"
+             x:DataType="vm:SectionPlaceholderViewModel">
+
+  <StackPanel Spacing="{DynamicResource OrzioSpaceMd}">
+    <TextBlock Classes="title" Text="{Binding Title}" />
+    <TextBlock Classes="secondary" Text="{Binding Description}" />
+    <Border Classes="sunken" Padding="{DynamicResource OrzioCardPadding}">
+      <TextBlock Classes="tertiary"
+                 Text="Esta secção ainda não está ligada ao motor nesta versão da aplicação." />
+    </Border>
+  </StackPanel>
+
+</UserControl>

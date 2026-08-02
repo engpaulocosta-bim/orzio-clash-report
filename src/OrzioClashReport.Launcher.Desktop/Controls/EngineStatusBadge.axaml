@@ -1,0 +1,24 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OrzioClashReport.Launcher.Desktop.ViewModels"
+             x:Class="OrzioClashReport.Launcher.Desktop.Controls.EngineStatusBadge"
+             x:DataType="vm:EngineStatusViewModel">
+
+  <!--
+    The engine state always reads as a glyph plus a word, with the full sentence in the tooltip.
+    Colour only reinforces what the text already says.
+  -->
+  <Border Classes="badge"
+          Classes.neutral="{Binding IsNeutral}"
+          Classes.positive="{Binding IsPositive}"
+          Classes.caution="{Binding IsCaution}"
+          Classes.critical="{Binding IsCritical}"
+          ToolTip.Tip="{Binding Description}"
+          AutomationProperties.Name="{Binding Description}">
+    <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+      <TextBlock Text="{Binding Glyph}" />
+      <TextBlock Text="{Binding Label}" />
+    </StackPanel>
+  </Border>
+
+</UserControl>

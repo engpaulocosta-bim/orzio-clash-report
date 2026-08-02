@@ -56,6 +56,66 @@
         </StackPanel>
       </Border>
 
+      <Border Classes="card">
+        <StackPanel Spacing="{DynamicResource OrzioSpaceMd}">
+          <TextBlock Classes="caption" Text="DIAGNÓSTICO" />
+          <TextBlock Classes="secondary" Text="{Binding Diagnostics.Explanation}" />
+
+          <Button Content="Ver o que seria incluído"
+                  HorizontalAlignment="Left"
+                  Command="{Binding Diagnostics.ShowPreviewCommand}" />
+
+          <StackPanel Spacing="{DynamicResource OrzioSpaceSm}"
+                      IsVisible="{Binding Diagnostics.IsPreviewVisible}">
+            <TextBlock Classes="caption" Text="FICHEIROS INCLUÍDOS" />
+            <ItemsControl ItemsSource="{Binding Diagnostics.IncludedFiles}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="x:String">
+                  <TextBlock Classes="mono" Text="{Binding}" />
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Classes="caption" Text="PRÉ-VISUALIZAÇÃO DO REGISTO REDIGIDO" />
+            <TextBlock Classes="tertiary"
+                       IsVisible="{Binding !Diagnostics.HasLogPreview}"
+                       Text="Ainda não há registos nesta máquina." />
+            <Border Classes="sunken"
+                    Padding="{DynamicResource OrzioCardPadding}"
+                    IsVisible="{Binding Diagnostics.HasLogPreview}">
+              <ScrollViewer Height="{DynamicResource OrzioOutputLogHeight}">
+                <ItemsControl ItemsSource="{Binding Diagnostics.LogPreviewLines}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="x:String">
+                      <TextBlock Classes="mono" Text="{Binding}" />
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </ScrollViewer>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+              <Button Content="Gerar pacote de diagnóstico"
+                      Command="{Binding Diagnostics.CreateBundleCommand}" />
+              <Button Classes="link"
+                      Content="Mostrar na pasta"
+                      Command="{Binding Diagnostics.RevealBundleCommand}"
+                      IsVisible="{Binding Diagnostics.HasBundle}" />
+              <TextBlock VerticalAlignment="Center"
+                         Text="{Binding Diagnostics.LastBundleFileName}"
+                         IsVisible="{Binding Diagnostics.HasBundle}" />
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal"
+                        Spacing="{DynamicResource OrzioSpaceXs}"
+                        IsVisible="{Binding Diagnostics.HasFailure}">
+              <TextBlock Text="✕" />
+              <TextBlock Classes="secondary" Text="{Binding Diagnostics.FailureMessage}" />
+            </StackPanel>
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
     </StackPanel>
   </ScrollViewer>
 

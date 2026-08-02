@@ -16,7 +16,7 @@ public sealed class ShellNavigationTests
             pages[section] = new SectionPlaceholderViewModel(section.ToString(), "test page");
         }
 
-        return new ShellViewModel(engine, pages);
+        return new ShellViewModel(engine, pages, new InterruptedJobsViewModel(new RecordingJournal()));
     }
 
     [Fact]
@@ -83,7 +83,8 @@ public sealed class ShellNavigationTests
             [ShellSection.Home] = new SectionPlaceholderViewModel("Home", "test"),
         };
 
-        Assert.Throws<ArgumentException>(() => new ShellViewModel(engine, pages));
+        Assert.Throws<ArgumentException>(
+            () => new ShellViewModel(engine, pages, new InterruptedJobsViewModel(new RecordingJournal())));
     }
 
     [Theory]
@@ -115,7 +116,7 @@ public sealed class ShellNavigationTests
             pages[section] = new SectionPlaceholderViewModel(section.ToString(), "test page");
         }
 
-        var shell = new ShellViewModel(engine, pages);
+        var shell = new ShellViewModel(engine, pages, new InterruptedJobsViewModel(new RecordingJournal()));
         await shell.InitializeAsync(CancellationToken.None);
 
         Assert.Equal(1, probe.ProbeCount);

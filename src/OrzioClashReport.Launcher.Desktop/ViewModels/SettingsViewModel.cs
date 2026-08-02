@@ -40,10 +40,12 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             ISettingsStore store,
             string localDataDirectory,
             string launcherVersion,
-            Action<ThemePreference> applyTheme)
+            Action<ThemePreference> applyTheme,
+            DiagnosticsViewModel diagnostics)
         {
             _store = store ?? throw new ArgumentNullException(nameof(store));
             _applyTheme = applyTheme ?? throw new ArgumentNullException(nameof(applyTheme));
+            Diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
 
             LocalDataDirectory = localDataDirectory ?? throw new ArgumentNullException(nameof(localDataDirectory));
             LauncherVersion = launcherVersion ?? throw new ArgumentNullException(nameof(launcherVersion));
@@ -69,6 +71,8 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         public string LocalDataDirectory { get; }
 
         public string LauncherVersion { get; }
+
+        public DiagnosticsViewModel Diagnostics { get; }
 
         partial void OnSelectedThemeChanged(ThemeOptionViewModel value)
         {

@@ -9,7 +9,10 @@ using OrzioClashReport.Launcher.Contracts.Settings;
 using OrzioClashReport.Launcher.Desktop.Dialogs;
 using OrzioClashReport.Launcher.Desktop.Platform;
 using OrzioClashReport.Launcher.Desktop.ViewModels;
+using OrzioClashReport.Launcher.Contracts.Diagnostics;
+using OrzioClashReport.Launcher.Contracts.Engine;
 using OrzioClashReport.Launcher.Infrastructure;
+using OrzioClashReport.Launcher.Infrastructure.Diagnostics;
 using OrzioClashReport.Launcher.Infrastructure.Engine;
 using OrzioClashReport.Launcher.Infrastructure.Processes;
 using OrzioClashReport.Launcher.Infrastructure.Storage;
@@ -30,6 +33,9 @@ namespace OrzioClashReport.Launcher.Desktop.Composition
         private readonly IFileDialogs _fileDialogs;
         private readonly IOutputCollisionPrompt _collisionPrompt;
         private readonly OperationJobService _jobs;
+        private readonly IJobJournal _journal;
+        private readonly IDiagnosticBundleBuilder _diagnostics;
+        private EngineProbeResult? _lastEngineState;
 
         private CompositionRoot(
             LauncherLocalPaths localPaths,
@@ -39,7 +45,9 @@ namespace OrzioClashReport.Launcher.Desktop.Composition
             IOutputRevealer outputRevealer,
             IFileDialogs fileDialogs,
             IOutputCollisionPrompt collisionPrompt,
-            OperationJobService jobs)
+            OperationJobService jobs,
+            IJobJournal journal,
+            Func<CompositionRoot, IDiagnosticBundleBuilder> diagnostics)
         {
             _localPaths = localPaths;
             _settingsStore = settingsStore;
@@ -49,6 +57,8 @@ namespace OrzioClashReport.Launcher.Desktop.Composition
             _fileDialogs = fileDialogs;
             _collisionPrompt = collisionPrompt;
             _jobs = jobs;
+            _journal = journal;
+            _diagnostics = diagnostics(this);
         }
 
         public static CompositionRoot Create(Func<Window?> mainWindow)
@@ -69,14 +79,21 @@ namespace OrzioClashReport.Launcher.Desktop.Composition
             var recentItemsStore = new JsonRecentItemsStore(localPaths.RecentItemsFilePath);
             var fileDialogs = new StorageProviderFileDialogs(TopLevel);
 
+            var log = new JsonLinesLauncherLog(localPaths.LogsDirectory);
+            log.ApplyRetention();
+
             var gateway = new CliEngineGateway(
                 engineLayout.ExecutablePath, new EngineArgumentBuilder(), processRunner);
 
+            var journal = new FileJobJournal(localPaths.JobsDirectory);
+
             var jobs = new OperationJobService(
                 gateway,
-                new FileJobJournal(localPaths.JobsDirectory),
+                journal,
                 recentItemsStore,
-                new PhysicalFileSystemProbe());
+                new PhysicalFileSystemProbe(),
+                log,
+                new Sha256PathRedactor());
 
             return new CompositionRoot(
                 localPaths,
@@ -86,12 +103,24 @@ namespace OrzioClashReport.Launcher.Desktop.Composition
                 new TopLevelOutputRevealer(TopLevel),
                 fileDialogs,
                 new DialogOutputCollisionPrompt(mainWindow, fileDialogs),
-                jobs);
+                jobs,
+                journal,
+                root => new DiagnosticBundleBuilder(
+                    new DiagnosticContext(
+                        LauncherVersion,
+                        () => root._lastEngineState,
+                        integrityVerifier.Verify,
+                        () => jobs.History),
+                    new JsonLinesLauncherLogReader(log.ReadAll)));
         }
 
         public ShellViewModel CreateShell()
         {
             var engine = new EngineStatusViewModel(_engineProbe);
+            engine.PropertyChanged += (_, _) => _lastEngineState = engine.Status == EngineStatus.Checking
+                ? null
+                : Snapshot(engine);
+
             ShellViewModel? shell = null;
 
             void Navigate(ShellSection section) => shell?.Navigate(section);
@@ -138,12 +167,34 @@ namespace OrzioClashReport.Launcher.Desktop.Composition
                         new RenderIdentityGovernanceReportFormViewModel(CreateRunner(), engine, _fileDialogs),
                     }),
                 [ShellSection.Settings] = new SettingsViewModel(
-                    _settingsStore, _localPaths.RootDirectory, LauncherVersion, ApplyTheme),
+                    _settingsStore,
+                    _localPaths.RootDirectory,
+                    LauncherVersion,
+                    ApplyTheme,
+                    new DiagnosticsViewModel(_diagnostics, _fileDialogs, _outputRevealer)),
             };
 
-            shell = new ShellViewModel(engine, pages);
+            shell = new ShellViewModel(engine, pages, new InterruptedJobsViewModel(_journal));
             ApplyTheme(_settingsStore.Load().Theme);
             return shell;
+        }
+
+        /// <summary>The engine state as the diagnostic bundle should see it: status and versions only.</summary>
+        private static EngineProbeResult Snapshot(EngineStatusViewModel engine)
+        {
+            switch (engine.Status)
+            {
+                case EngineStatus.Ready:
+                    return EngineProbeResult.Ready(engine.Version ?? "unknown");
+                case EngineStatus.VersionMismatch:
+                    return EngineProbeResult.VersionMismatch(engine.Version ?? "unknown", "unknown");
+                case EngineStatus.IntegrityFailure:
+                    return EngineProbeResult.IntegrityFailure(engine.Description);
+                case EngineStatus.Missing:
+                    return EngineProbeResult.Missing(engine.Description);
+                default:
+                    return EngineProbeResult.Unsupported(engine.Description);
+            }
         }
 
         private OperationRunnerViewModel CreateRunner() =>

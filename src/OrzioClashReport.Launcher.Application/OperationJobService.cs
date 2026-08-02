@@ -1,7 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using OrzioClashReport.Launcher.Contracts.Diagnostics;
 using OrzioClashReport.Launcher.Contracts.Jobs;
 using OrzioClashReport.Launcher.Contracts.Operations;
 using OrzioClashReport.Launcher.Contracts.Ports;
@@ -20,7 +23,11 @@ namespace OrzioClashReport.Launcher.Application
         private readonly IJobJournal _journal;
         private readonly IRecentItemsStore _recentItems;
         private readonly IFileSystemProbe _fileSystem;
+        private readonly ILauncherLog? _log;
+        private readonly IPathRedactor? _redactor;
         private readonly TimeProvider _time;
+        private readonly List<JobSnapshot> _history = new List<JobSnapshot>();
+        private readonly object _historyGate = new object();
         private int _busy;
 
         public OperationJobService(
@@ -28,17 +35,38 @@ namespace OrzioClashReport.Launcher.Application
             IJobJournal journal,
             IRecentItemsStore recentItems,
             IFileSystemProbe fileSystem,
+            ILauncherLog? log = null,
+            IPathRedactor? redactor = null,
             TimeProvider? time = null)
         {
             _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
             _journal = journal ?? throw new ArgumentNullException(nameof(journal));
             _recentItems = recentItems ?? throw new ArgumentNullException(nameof(recentItems));
             _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+            _log = log;
+            _redactor = redactor;
             _time = time ?? TimeProvider.System;
         }
 
+        internal const int HistoryLimit = 20;
+
         /// <summary>One job is active per window; a second request is refused rather than queued.</summary>
         public bool IsBusy => Volatile.Read(ref _busy) != 0;
+
+        /// <summary>
+        /// What ran in this session, newest first, bounded. Held in memory only and never written
+        /// to disk by itself; the diagnostic bundle projects it without any path.
+        /// </summary>
+        public IReadOnlyList<JobSnapshot> History
+        {
+            get
+            {
+                lock (_historyGate)
+                {
+                    return _history.ToArray();
+                }
+            }
+        }
 
         public async Task<JobSnapshot> RunAsync(
             LauncherOperationRequest request,
@@ -71,7 +99,7 @@ namespace OrzioClashReport.Launcher.Application
 
                 if (resolved == null)
                 {
-                    return new JobSnapshot(
+                    return Record(new JobSnapshot(
                         jobId,
                         request.Kind,
                         JobState.Canceled,
@@ -85,10 +113,11 @@ namespace OrzioClashReport.Launcher.Application
                             warnings: null,
                             standardOutput: string.Empty,
                             standardError: string.Empty,
-                            duration: TimeSpan.Zero));
+                            duration: TimeSpan.Zero)));
                 }
 
                 _journal.MarkRunning(new JobJournalEntry(jobId, resolved.Kind, startedAt));
+                Log(LauncherLogLevel.Information, "job.started", jobId, resolved, state: null, result: null);
 
                 OperationResult result;
                 try
@@ -110,7 +139,9 @@ namespace OrzioClashReport.Launcher.Application
                     ? JobState.Succeeded
                     : result.Error?.Code == LauncherErrorCode.Canceled ? JobState.Canceled : JobState.Failed;
 
-                return new JobSnapshot(jobId, resolved.Kind, state, startedAt, _time.GetUtcNow(), result);
+                Log(LauncherLogLevel.Information, "job.finished", jobId, resolved, state, result);
+
+                return Record(new JobSnapshot(jobId, resolved.Kind, state, startedAt, _time.GetUtcNow(), result));
             }
             finally
             {
@@ -151,6 +182,71 @@ namespace OrzioClashReport.Launcher.Application
                 default:
                     return null;
             }
+        }
+
+        /// <summary>
+        /// Writes one structured record, field by field. An absolute path is never a field: a
+        /// destination is reduced to its file name, extension, hash, and root kind, and the engine's
+        /// own output and the argument vector are never logged at all.
+        /// </summary>
+        private void Log(
+            LauncherLogLevel level,
+            string eventName,
+            JobId jobId,
+            LauncherOperationRequest request,
+            JobState? state,
+            OperationResult? result)
+        {
+            if (_log == null)
+            {
+                return;
+            }
+
+            var fields = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["jobId"] = jobId.Value,
+                ["operation"] = request.Kind.ToString(),
+            };
+
+            if (state.HasValue)
+            {
+                fields["state"] = state.Value.ToString();
+            }
+
+            if (result?.ExitCode != null)
+            {
+                fields["exitCode"] = result.ExitCode.Value.ToString(
+                    System.Globalization.CultureInfo.InvariantCulture);
+            }
+
+            if (result?.Error != null)
+            {
+                fields["errorCode"] = result.Error.Code.ToString();
+            }
+
+            if (_redactor != null && request.OutputPath != null)
+            {
+                RedactedPath redacted = _redactor.Redact(request.OutputPath);
+                fields["outputExtension"] = redacted.Extension;
+                fields["outputPathHash"] = redacted.PathHash;
+                fields["outputRootKind"] = redacted.PathRootKind.ToString();
+            }
+
+            _log.Write(new LauncherLogEntry(_time.GetUtcNow(), level, eventName, fields));
+        }
+
+        private JobSnapshot Record(JobSnapshot snapshot)
+        {
+            lock (_historyGate)
+            {
+                _history.Insert(0, snapshot);
+                if (_history.Count > HistoryLimit)
+                {
+                    _history.RemoveRange(HistoryLimit, _history.Count - HistoryLimit);
+                }
+            }
+
+            return snapshot;
         }
 
         private void RecordArtifacts(OperationResult result)

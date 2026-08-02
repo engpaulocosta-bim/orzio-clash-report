@@ -61,9 +61,13 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         [ObservableProperty]
         private string _statusMessage = "Pronto.";
 
-        public ShellViewModel(EngineStatusViewModel engine, IReadOnlyDictionary<ShellSection, ViewModelBase> pages)
+        public ShellViewModel(
+            EngineStatusViewModel engine,
+            IReadOnlyDictionary<ShellSection, ViewModelBase> pages,
+            InterruptedJobsViewModel interruptedJobs)
         {
             Engine = engine ?? throw new ArgumentNullException(nameof(engine));
+            InterruptedJobs = interruptedJobs ?? throw new ArgumentNullException(nameof(interruptedJobs));
             _pages = pages ?? throw new ArgumentNullException(nameof(pages));
 
             Sections = new ReadOnlyCollection<NavigationItemViewModel>(new[]
@@ -91,6 +95,9 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public EngineStatusViewModel Engine { get; }
 
+        /// <summary>What a previous session left running. Reported, never resumed.</summary>
+        public InterruptedJobsViewModel InterruptedJobs { get; }
+
         public IReadOnlyList<NavigationItemViewModel> Sections { get; }
 
         /// <summary>Below the rail breakpoint the sidebar collapses to icons with tooltips.</summary>
@@ -117,6 +124,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public async Task InitializeAsync(CancellationToken cancellationToken)
         {
+            InterruptedJobs.Load();
             await Engine.RefreshAsync(cancellationToken).ConfigureAwait(true);
             StatusMessage = Engine.Description;
         }

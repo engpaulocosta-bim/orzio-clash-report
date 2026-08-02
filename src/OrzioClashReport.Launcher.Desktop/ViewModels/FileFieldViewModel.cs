@@ -12,7 +12,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
     /// One labelled file field in a typed form. The form holds paths, never fragments of a command
     /// line, and the human always picks through the platform's own dialog.
     /// </summary>
-    public sealed partial class FileFieldViewModel : ViewModelBase
+    public sealed partial class FileFieldViewModel : ViewModelBase, IFormField
     {
         private readonly IFileDialogs _dialogs;
         private readonly PickedFileKind _kind;
@@ -116,7 +116,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
     /// list never sorts by date, name, or revision, and a duplicate is warned about but kept,
     /// because declaring the same run twice is a legitimate thing for a human to mean.
     /// </summary>
-    public sealed partial class OrderedFileListViewModel : ViewModelBase
+    public sealed partial class OrderedFileListViewModel : ViewModelBase, IFormField
     {
         private readonly IFileDialogs _dialogs;
         private readonly PickedFileKind _kind;

@@ -126,9 +126,17 @@ namespace OrzioClashReport.Launcher.Desktop.Composition
                         new AppendProjectSnapshotFormViewModel(CreateRunner(), engine, _fileDialogs),
                         new RenderProjectFormViewModel(CreateRunner(), engine, _fileDialogs),
                     }),
-                [ShellSection.Governance] = new SectionPlaceholderViewModel(
+                [ShellSection.Governance] = new OperationSectionViewModel(
                     "Governança",
-                    "Registe confirmações e rejeições humanas de identidade, valide-as e gere a revisão."),
+                    "A identidade persistente de um clash só existe quando um humano a confirma. "
+                        + "Uma sugestão do algoritmo nunca é uma decisão.",
+                    new OperationFormViewModel[]
+                    {
+                        new CreateIdentityGovernanceFormViewModel(CreateRunner(), engine, _fileDialogs),
+                        new AppendIdentityDecisionFormViewModel(CreateRunner(), engine, _fileDialogs),
+                        new ValidateIdentityGovernanceFormViewModel(CreateRunner(), engine, _fileDialogs),
+                        new RenderIdentityGovernanceReportFormViewModel(CreateRunner(), engine, _fileDialogs),
+                    }),
                 [ShellSection.Settings] = new SettingsViewModel(
                     _settingsStore, _localPaths.RootDirectory, LauncherVersion, ApplyTheme),
             };

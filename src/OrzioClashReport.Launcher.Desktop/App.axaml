@@ -19,14 +19,16 @@
   </Application.Styles>
 
   <Application.DataTemplates>
+
+    <!-- Pages -->
     <DataTemplate DataType="vm:HomeViewModel">
       <views:HomeView />
     </DataTemplate>
     <DataTemplate DataType="vm:QuickReportViewModel">
       <views:QuickReportView />
     </DataTemplate>
-    <DataTemplate DataType="vm:OperationRunnerViewModel">
-      <views:OperationRunnerView />
+    <DataTemplate DataType="vm:OperationSectionViewModel">
+      <views:OperationSectionView />
     </DataTemplate>
     <DataTemplate DataType="vm:SettingsViewModel">
       <views:SettingsView />
@@ -34,6 +36,84 @@
     <DataTemplate DataType="vm:SectionPlaceholderViewModel">
       <views:SectionPlaceholderView />
     </DataTemplate>
+
+    <!-- Shared parts -->
+    <DataTemplate DataType="vm:OperationRunnerViewModel">
+      <views:OperationRunnerView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:OperationFormViewModel">
+      <views:OperationFormView />
+    </DataTemplate>
+
+    <!-- Typed form fields -->
+    <DataTemplate DataType="vm:FileFieldViewModel">
+      <StackPanel Spacing="{DynamicResource OrzioSpaceXs}" Margin="{DynamicResource OrzioStackGapMd}">
+        <TextBlock Classes="caption" Text="{Binding Label}" />
+        <TextBlock Classes="tertiary" Text="{Binding Hint}" />
+        <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+          <Button Content="{Binding ButtonText}" Command="{Binding PickCommand}" />
+          <TextBlock VerticalAlignment="Center" Text="{Binding FileName}" IsVisible="{Binding HasValue}" />
+          <TextBlock Classes="tertiary"
+                     VerticalAlignment="Center"
+                     Text="Ainda não escolhido."
+                     IsVisible="{Binding !HasValue}" />
+          <Button Classes="link"
+                  Content="Limpar"
+                  Command="{Binding ClearCommand}"
+                  IsVisible="{Binding HasValue}" />
+        </StackPanel>
+      </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="vm:TextFieldViewModel">
+      <StackPanel Spacing="{DynamicResource OrzioSpaceXs}" Margin="{DynamicResource OrzioStackGapMd}">
+        <TextBlock Classes="caption" Text="{Binding Label}" />
+        <TextBlock Classes="tertiary" Text="{Binding Hint}" />
+        <TextBox Text="{Binding Value}"
+                 HorizontalAlignment="Left"
+                 MinWidth="{DynamicResource OrzioDialogMaxWidth}" />
+      </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="vm:OrderedFileListViewModel">
+      <StackPanel Spacing="{DynamicResource OrzioSpaceSm}" Margin="{DynamicResource OrzioStackGapMd}">
+        <TextBlock Classes="caption" Text="{Binding Label}" />
+
+        <ListBox ItemsSource="{Binding Files}"
+                 SelectedItem="{Binding Selected}"
+                 Background="Transparent"
+                 MaxHeight="{DynamicResource OrzioOutputLogHeight}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:OrderedFileViewModel">
+              <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+                <TextBlock Classes="tertiary" Text="{Binding Position}" />
+                <TextBlock Text="{Binding FileName}" />
+                <Border Classes="badge caution" IsVisible="{Binding IsDuplicate}">
+                  <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceXs}">
+                    <TextBlock Text="!" />
+                    <TextBlock Text="repetido" />
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+
+        <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+          <Button Content="Adicionar…" Command="{Binding AddCommand}" />
+          <Button Content="Remover" Command="{Binding RemoveCommand}" />
+          <Button Content="Subir" Command="{Binding MoveUpCommand}" />
+          <Button Content="Descer" Command="{Binding MoveDownCommand}" />
+        </StackPanel>
+
+        <TextBlock Classes="tertiary"
+                   IsVisible="{Binding HasDuplicates}"
+                   Text="Há snapshots repetidos. São mantidos exatamente como os declarou; nada é removido." />
+        <TextBlock Classes="tertiary"
+                   Text="A ordem desta lista é a ordem do índice. Nada é ordenado automaticamente." />
+      </StackPanel>
+    </DataTemplate>
+
   </Application.DataTemplates>
 
 </Application>

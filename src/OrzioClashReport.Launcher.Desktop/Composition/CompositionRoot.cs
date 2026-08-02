@@ -100,15 +100,32 @@ namespace OrzioClashReport.Launcher.Desktop.Composition
             {
                 [ShellSection.Home] = new HomeViewModel(engine, _recentItemsStore, _outputRevealer, Navigate),
                 [ShellSection.QuickReport] = new QuickReportViewModel(CreateRunner(), _fileDialogs, engine),
-                [ShellSection.Snapshots] = new SectionPlaceholderViewModel(
+                [ShellSection.Snapshots] = new OperationSectionViewModel(
                     "Snapshots",
-                    "Crie snapshots imutáveis de coordenação e compare dois snapshots persistidos."),
-                [ShellSection.Longitudinal] = new SectionPlaceholderViewModel(
+                    "Um snapshot é evidência imutável de um run. O motor nunca substitui um snapshot existente.",
+                    new OperationFormViewModel[]
+                    {
+                        new CreateSnapshotFormViewModel(CreateRunner(), engine, _fileDialogs),
+                        new CompareSnapshotsFormViewModel(CreateRunner(), engine, _fileDialogs),
+                    }),
+                [ShellSection.Longitudinal] = new OperationSectionViewModel(
                     "Longitudinal",
-                    "Declare a ordem explícita dos runs e compare transições adjacentes."),
-                [ShellSection.Projects] = new SectionPlaceholderViewModel(
+                    "A ordem dos runs é sempre declarada por si. Nada é ordenado por data, nome ou revisão.",
+                    new OperationFormViewModel[]
+                    {
+                        new CompareRunsFormViewModel(CreateRunner(), engine, _fileDialogs),
+                        new IndexSnapshotsFormViewModel(CreateRunner(), engine, _fileDialogs),
+                        new CompareIndexFormViewModel(CreateRunner(), engine, _fileDialogs),
+                    }),
+                [ShellSection.Projects] = new OperationSectionViewModel(
                     "Projetos",
-                    "Crie o catálogo operacional do projeto, acrescente snapshots e regenere o relatório."),
+                    "O catálogo guarda referências operacionais. Os snapshots continuam a ser a única evidência.",
+                    new OperationFormViewModel[]
+                    {
+                        new CreateProjectFormViewModel(CreateRunner(), engine, _fileDialogs),
+                        new AppendProjectSnapshotFormViewModel(CreateRunner(), engine, _fileDialogs),
+                        new RenderProjectFormViewModel(CreateRunner(), engine, _fileDialogs),
+                    }),
                 [ShellSection.Governance] = new SectionPlaceholderViewModel(
                     "Governança",
                     "Registe confirmações e rejeições humanas de identidade, valide-as e gere a revisão."),

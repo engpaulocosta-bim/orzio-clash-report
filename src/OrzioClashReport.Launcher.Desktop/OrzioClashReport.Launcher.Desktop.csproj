@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <RootNamespace>OrzioClashReport.Launcher.Desktop</RootNamespace>
+    <AssemblyName>OrzioClashReport.Launcher.Desktop</AssemblyName>
+    <ApplicationIcon />
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <VersionPrefix>0.2.0</VersionPrefix>
+    <VersionSuffix>launcher-preview.1</VersionSuffix>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.3" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.2.3" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OrzioClashReport.Launcher.Application\OrzioClashReport.Launcher.Application.csproj" />
+    <ProjectReference Include="..\OrzioClashReport.Launcher.Contracts\OrzioClashReport.Launcher.Contracts.csproj" />
+    <ProjectReference Include="..\OrzioClashReport.Launcher.Infrastructure\OrzioClashReport.Launcher.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -61,7 +61,12 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public bool HasOutputLines => OutputLines.Count > 0;
 
-        public string? ErrorMessage => Result?.Error?.Message;
+        /// <summary>
+        /// The failure in the reader's language, resolved from the error code rather than from
+        /// whatever text the layer below happened to produce.
+        /// </summary>
+        public string? ErrorMessage =>
+            Result?.Error == null ? null : Text(MessageKeyFor(Result.Error.Code));
 
         public string? ErrorDetail => Result?.Error?.Detail;
 
@@ -73,11 +78,11 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public string StatusText => State switch
         {
-            JobState.Pending => "Pronto para gerar.",
-            JobState.Running => "A executar o motor…",
-            JobState.Succeeded => "Concluído.",
-            JobState.Failed => ErrorMessage ?? "A operação falhou.",
-            JobState.Canceled => "A operação foi cancelada.",
+            JobState.Pending => Text("Runner.Idle"),
+            JobState.Running => Text("Runner.Running"),
+            JobState.Succeeded => Text("Runner.Succeeded"),
+            JobState.Failed => ErrorMessage ?? Text("Runner.Failed"),
+            JobState.Canceled => Text("Runner.Canceled"),
             _ => string.Empty,
         };
 
@@ -130,7 +135,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             {
                 // Only one job runs per window; a second request says so rather than queueing.
                 Result = OperationResult.Failure(
-                    new LauncherError(LauncherErrorCode.InvalidRequest, ex.Message),
+                    new LauncherError(LauncherErrorCode.InvalidRequest, ex.Message, ex.Message),
                     exitCode: null,
                     warnings: null,
                     standardOutput: string.Empty,
@@ -151,7 +156,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             {
                 foreach (LauncherWarning warning in snapshot.Result.Warnings)
                 {
-                    Warnings.Add(warning.Message);
+                    Warnings.Add(Text(MessageKeyFor(warning.Code)));
                 }
             }
 
@@ -208,6 +213,70 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
                 OnPropertyChanged(property);
             }
         }
+
+        /// <summary>
+        /// The error code is the launcher's own classification, so the message shown comes from it.
+        /// A collision the human declined is reported as such rather than as a generic cancellation.
+        /// </summary>
+        internal static string MessageKeyFor(LauncherErrorCode code)
+        {
+            switch (code)
+            {
+                case LauncherErrorCode.EngineExecutionFailure:
+                    return "Error.EngineExecutionFailure";
+                case LauncherErrorCode.OutputMissing:
+                    return "Error.OutputMissing";
+                case LauncherErrorCode.EngineMissing:
+                    return "Error.EngineMissing";
+                case LauncherErrorCode.EngineIntegrityFailure:
+                    return "Error.EngineIntegrityFailure";
+                case LauncherErrorCode.EngineVersionMismatch:
+                    return "Error.EngineVersionMismatch";
+                case LauncherErrorCode.EngineUnsupported:
+                    return "Error.EngineUnsupported";
+                case LauncherErrorCode.Canceled:
+                    return "Error.Canceled";
+                case LauncherErrorCode.TimedOut:
+                    return "Error.TimedOut";
+                case LauncherErrorCode.EngineStartFailure:
+                    return "Error.EngineStartFailure";
+                case LauncherErrorCode.InvalidRequest:
+                    return "Error.InvalidRequest";
+                case LauncherErrorCode.LocalIoFailure:
+                    return "Error.LocalIoFailure";
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(code), code, "Unknown launcher error code.");
+            }
+        }
+
+        internal static string MessageKeyFor(LauncherWarningCode code)
+        {
+            switch (code)
+            {
+                case LauncherWarningCode.DuplicateSnapshotReference:
+                    return "Warning.DuplicateSnapshotReference";
+                case LauncherWarningCode.EngineWroteToStandardError:
+                    return "Warning.EngineWroteToStandardError";
+                case LauncherWarningCode.OutputTruncated:
+                    return "Warning.OutputTruncated";
+                case LauncherWarningCode.ExperimentalOperation:
+                    return "Warning.ExperimentalOperation";
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(code), code, "Unknown launcher warning code.");
+            }
+        }
+
+        public string ProducedCaption => Text("Runner.ProducedCaption");
+
+        public string EngineDetailCaption => Text("Runner.EngineDetailCaption");
+
+        public string EngineOutputCaption => Text("Runner.EngineOutputCaption");
+
+        public string OpenLabel => Text("Action.Open");
+
+        public string RevealLabel => Text("Action.Reveal");
+
+        public string CancelLabel => Text("Action.Cancel");
 
         private static readonly IReadOnlyList<string> DerivedProperties = new ReadOnlyCollection<string>(new[]
         {

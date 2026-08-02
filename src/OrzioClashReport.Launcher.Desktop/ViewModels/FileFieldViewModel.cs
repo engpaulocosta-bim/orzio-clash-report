@@ -22,43 +22,49 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         [ObservableProperty]
         private string? _path;
 
+        private readonly string _labelKey;
+        private readonly string _hintKey;
+
         private FileFieldViewModel(
-            string label,
-            string hint,
+            string labelKey,
+            string hintKey,
             IFileDialogs dialogs,
             PickedFileKind kind,
             bool isDestination,
             Func<string>? suggestedFileName)
         {
-            Label = label ?? throw new ArgumentNullException(nameof(label));
-            Hint = hint ?? throw new ArgumentNullException(nameof(hint));
+            _labelKey = labelKey ?? throw new ArgumentNullException(nameof(labelKey));
+            _hintKey = hintKey ?? throw new ArgumentNullException(nameof(hintKey));
             _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
             _kind = kind;
             _isDestination = isDestination;
             _suggestedFileName = suggestedFileName;
         }
 
-        public string Label { get; }
+        public string Label => Text(_labelKey);
 
         /// <summary>What this file is, in the coordinator's terms rather than the engine's.</summary>
-        public string Hint { get; }
+        public string Hint => Text(_hintKey);
 
         public string? FileName => Path == null ? null : System.IO.Path.GetFileName(Path);
 
         public bool HasValue => Path != null;
 
-        public string ButtonText => _isDestination ? "Escolher destino…" : "Escolher ficheiro…";
+        public string ButtonText =>
+            Text(_isDestination ? "Action.PickDestination" : "Action.PickFile");
 
         public static FileFieldViewModel Input(
-            string label, string hint, IFileDialogs dialogs, PickedFileKind kind)
+            string labelKey, string hintKey, IFileDialogs dialogs, PickedFileKind kind)
         {
-            return new FileFieldViewModel(label, hint, dialogs, kind, isDestination: false, suggestedFileName: null);
+            return new FileFieldViewModel(
+                labelKey, hintKey, dialogs, kind, isDestination: false, suggestedFileName: null);
         }
 
         public static FileFieldViewModel Destination(
-            string label, string hint, IFileDialogs dialogs, PickedFileKind kind, Func<string> suggestedFileName)
+            string labelKey, string hintKey, IFileDialogs dialogs, PickedFileKind kind, Func<string> suggestedFileName)
         {
-            return new FileFieldViewModel(label, hint, dialogs, kind, isDestination: true, suggestedFileName);
+            return new FileFieldViewModel(
+                labelKey, hintKey, dialogs, kind, isDestination: true, suggestedFileName);
         }
 
         [RelayCommand]
@@ -69,6 +75,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
                     .PickSaveFileAsync(Label, _kind, _suggestedFileName?.Invoke() ?? string.Empty)
                     .ConfigureAwait(true)
                 : await _dialogs.PickOpenFileAsync(Label, _kind).ConfigureAwait(true);
+
 
             if (picked != null)
             {
@@ -124,15 +131,17 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         [ObservableProperty]
         private OrderedFileViewModel? _selected;
 
-        public OrderedFileListViewModel(string label, IFileDialogs dialogs, PickedFileKind kind)
+        private readonly string _labelKey;
+
+        public OrderedFileListViewModel(string labelKey, IFileDialogs dialogs, PickedFileKind kind)
         {
-            Label = label ?? throw new ArgumentNullException(nameof(label));
+            _labelKey = labelKey ?? throw new ArgumentNullException(nameof(labelKey));
             _dialogs = dialogs ?? throw new ArgumentNullException(nameof(dialogs));
             _kind = kind;
             Files = new ObservableCollection<OrderedFileViewModel>();
         }
 
-        public string Label { get; }
+        public string Label => Text(_labelKey);
 
         public ObservableCollection<OrderedFileViewModel> Files { get; }
 

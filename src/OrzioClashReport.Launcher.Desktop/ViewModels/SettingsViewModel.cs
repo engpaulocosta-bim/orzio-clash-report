@@ -4,25 +4,44 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OrzioClashReport.Launcher.Contracts.Ports;
 using OrzioClashReport.Launcher.Contracts.Settings;
+using OrzioClashReport.Launcher.Desktop.Localization;
 
 namespace OrzioClashReport.Launcher.Desktop.ViewModels
 {
-    public sealed class ThemeOptionViewModel
+    public sealed class ThemeOptionViewModel : ViewModelBase
     {
-        public ThemeOptionViewModel(ThemePreference preference, string label)
+        private readonly string _labelKey;
+
+        public ThemeOptionViewModel(ThemePreference preference, string labelKey)
         {
             Preference = preference;
-            Label = label;
+            _labelKey = labelKey;
         }
 
         public ThemePreference Preference { get; }
 
-        public string Label { get; }
+        public string Label => Text(_labelKey);
+    }
+
+    public sealed class LanguageOptionViewModel : ViewModelBase
+    {
+        private readonly string _labelKey;
+
+        public LanguageOptionViewModel(InterfaceLanguage language, string labelKey)
+        {
+            Language = language;
+            _labelKey = labelKey;
+        }
+
+        public InterfaceLanguage Language { get; }
+
+        public string Label => Text(_labelKey);
     }
 
     /// <summary>
     /// Local preferences and the facts a coordinator needs about where their data lives. Nothing here
-    /// changes a technical result.
+    /// changes a technical result: the language changes visible text only, and never a value the
+    /// engine receives.
     /// </summary>
     public sealed partial class SettingsViewModel : ViewModelBase
     {
@@ -32,6 +51,9 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         [ObservableProperty]
         private ThemeOptionViewModel _selectedTheme;
+
+        [ObservableProperty]
+        private LanguageOptionViewModel _selectedLanguage;
 
         [ObservableProperty]
         private bool _showExperimentalWarnings;
@@ -52,20 +74,30 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
             Themes = new ReadOnlyCollection<ThemeOptionViewModel>(new[]
             {
-                new ThemeOptionViewModel(ThemePreference.System, "Seguir o sistema"),
-                new ThemeOptionViewModel(ThemePreference.Light, "Claro"),
-                new ThemeOptionViewModel(ThemePreference.Dark, "Escuro"),
+                new ThemeOptionViewModel(ThemePreference.System, "Settings.Theme.System"),
+                new ThemeOptionViewModel(ThemePreference.Light, "Settings.Theme.Light"),
+                new ThemeOptionViewModel(ThemePreference.Dark, "Settings.Theme.Dark"),
+            });
+
+            Languages = new ReadOnlyCollection<LanguageOptionViewModel>(new[]
+            {
+                new LanguageOptionViewModel(InterfaceLanguage.System, "Settings.Language.System"),
+                new LanguageOptionViewModel(InterfaceLanguage.Portuguese, "Settings.Language.Portuguese"),
+                new LanguageOptionViewModel(InterfaceLanguage.English, "Settings.Language.English"),
             });
 
             LauncherSettings settings = _store.Load();
 
             _loading = true;
             _selectedTheme = FindTheme(settings.Theme);
+            _selectedLanguage = FindLanguage(settings.Language);
             _showExperimentalWarnings = settings.ShowExperimentalWarnings;
             _loading = false;
         }
 
         public IReadOnlyList<ThemeOptionViewModel> Themes { get; }
+
+        public IReadOnlyList<LanguageOptionViewModel> Languages { get; }
 
         /// <summary>Where the launcher keeps its own files. Project data never lives here.</summary>
         public string LocalDataDirectory { get; }
@@ -73,6 +105,30 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         public string LauncherVersion { get; }
 
         public DiagnosticsViewModel Diagnostics { get; }
+
+        public string Title => Text("Settings.Title");
+
+        public string AppearanceCaption => Text("Settings.AppearanceCaption");
+
+        public string ThemeLabel => Text("Settings.Theme");
+
+        public string LanguageLabel => Text("Settings.Language");
+
+        public string WarningsCaption => Text("Settings.WarningsCaption");
+
+        public string ShowExperimentalLabel => Text("Settings.ShowExperimental");
+
+        public string ExperimentalNote => Text("Settings.ExperimentalNote");
+
+        public string LocalDataCaption => Text("Settings.LocalDataCaption");
+
+        public string LocalDataIntro => Text("Settings.LocalDataIntro");
+
+        public string LocalDataNote => Text("Settings.LocalDataNote");
+
+        public string VersionLabel => Text("Settings.Version");
+
+        public string PrivacyNote => Text("Settings.PrivacyNote");
 
         partial void OnSelectedThemeChanged(ThemeOptionViewModel value)
         {
@@ -82,6 +138,18 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             }
 
             _applyTheme(value.Preference);
+            Persist();
+        }
+
+        partial void OnSelectedLanguageChanged(LanguageOptionViewModel value)
+        {
+            if (_loading || value == null)
+            {
+                return;
+            }
+
+            // Changing this re-reads every visible string; nothing reopens and nothing restarts.
+            Localizer.Instance.Language = value.Language;
             Persist();
         }
 
@@ -98,6 +166,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         {
             LauncherSettings settings = _store.Load()
                 .WithTheme(SelectedTheme.Preference)
+                .WithLanguage(SelectedLanguage.Language)
                 .WithShowExperimentalWarnings(ShowExperimentalWarnings);
 
             _store.Save(settings);
@@ -114,6 +183,19 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             }
 
             return Themes[0];
+        }
+
+        private LanguageOptionViewModel FindLanguage(InterfaceLanguage language)
+        {
+            foreach (LanguageOptionViewModel option in Languages)
+            {
+                if (option.Language == language)
+                {
+                    return option;
+                }
+            }
+
+            return Languages[0];
         }
     }
 }

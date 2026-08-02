@@ -9,9 +9,8 @@
     <StackPanel Spacing="{DynamicResource OrzioSpaceLg}">
 
       <StackPanel Spacing="{DynamicResource OrzioSpaceXs}">
-        <TextBlock Classes="title" Text="Relatório rápido" />
-        <TextBlock Classes="secondary"
-                   Text="Um export XML do Clash Detective, agrupado num relatório HTML autónomo." />
+        <TextBlock Classes="title" Text="{Binding Title}" />
+        <TextBlock Classes="secondary" Text="{Binding Description}" />
       </StackPanel>
 
       <Border Classes="card" IsVisible="{Binding IsBlocked}">
@@ -25,39 +24,39 @@
         <StackPanel Spacing="{DynamicResource OrzioSpaceLg}">
 
           <StackPanel Spacing="{DynamicResource OrzioSpaceSm}">
-            <TextBlock Classes="caption" Text="1. EXPORT XML" />
+            <TextBlock Classes="caption" Text="{Binding Step1Caption}" />
             <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
-              <Button Content="Escolher ficheiro…" Command="{Binding PickInputCommand}" />
+              <Button Content="{Binding PickFileLabel}" Command="{Binding PickInputCommand}" />
               <TextBlock VerticalAlignment="Center"
                          Text="{Binding InputFileName}"
                          IsVisible="{Binding HasInput}" />
               <TextBlock Classes="tertiary"
                          VerticalAlignment="Center"
-                         Text="Ou arraste o ficheiro para esta janela."
+                         Text="{Binding DropHint}"
                          IsVisible="{Binding !HasInput}" />
             </StackPanel>
           </StackPanel>
 
           <StackPanel Spacing="{DynamicResource OrzioSpaceSm}">
-            <TextBlock Classes="caption" Text="2. DESTINO DO RELATÓRIO" />
+            <TextBlock Classes="caption" Text="{Binding Step2Caption}" />
             <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
-              <Button Content="Escolher destino…" Command="{Binding PickOutputCommand}" />
+              <Button Content="{Binding PickDestinationLabel}" Command="{Binding PickOutputCommand}" />
               <TextBlock VerticalAlignment="Center"
                          Text="{Binding OutputFileName}"
                          IsVisible="{Binding HasOutput}" />
               <TextBlock Classes="tertiary"
                          VerticalAlignment="Center"
-                         Text="Ainda não escolhido."
+                         Text="{Binding NotChosen}"
                          IsVisible="{Binding !HasOutput}" />
             </StackPanel>
           </StackPanel>
 
           <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
             <Button Classes="primary"
-                    Content="Gerar relatório"
+                    Content="{Binding GenerateLabel}"
                     Command="{Binding GenerateCommand}"
                     IsVisible="{Binding !Runner.IsRunning}" />
-            <Button Content="Cancelar"
+            <Button Content="{Binding CancelLabel}"
                     Command="{Binding Runner.CancelCommand}"
                     IsVisible="{Binding Runner.IsRunning}" />
             <TextBlock VerticalAlignment="Center"

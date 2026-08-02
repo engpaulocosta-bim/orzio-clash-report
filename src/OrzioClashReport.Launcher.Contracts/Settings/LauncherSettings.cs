@@ -2,6 +2,20 @@ using System;
 
 namespace OrzioClashReport.Launcher.Contracts.Settings
 {
+    /// <summary>
+    /// The language the interface is shown in. This changes visible text only: it never changes a
+    /// value the engine receives, a file name, or anything a technical result depends on.
+    /// </summary>
+    public enum InterfaceLanguage
+    {
+        /// <summary>Follow the operating system, falling back to English.</summary>
+        System = 0,
+
+        Portuguese = 1,
+
+        English = 2,
+    }
+
     public enum ThemePreference
     {
         System = 0,
@@ -15,9 +29,14 @@ namespace OrzioClashReport.Launcher.Contracts.Settings
     /// </summary>
     public sealed class LauncherSettings
     {
-        public LauncherSettings(ThemePreference theme, string? lastOutputDirectory, bool showExperimentalWarnings)
+        public LauncherSettings(
+            ThemePreference theme,
+            InterfaceLanguage language,
+            string? lastOutputDirectory,
+            bool showExperimentalWarnings)
         {
             Theme = theme;
+            Language = language;
             LastOutputDirectory = string.IsNullOrWhiteSpace(lastOutputDirectory)
                 ? null
                 : lastOutputDirectory!.Trim();
@@ -26,27 +45,37 @@ namespace OrzioClashReport.Launcher.Contracts.Settings
 
         public ThemePreference Theme { get; }
 
+        public InterfaceLanguage Language { get; }
+
         /// <summary>Where the last output was written, so the next picker opens somewhere useful.</summary>
         public string? LastOutputDirectory { get; }
 
         public bool ShowExperimentalWarnings { get; }
 
-        public static LauncherSettings Default { get; } =
-            new LauncherSettings(ThemePreference.System, lastOutputDirectory: null, showExperimentalWarnings: true);
+        public static LauncherSettings Default { get; } = new LauncherSettings(
+            ThemePreference.System,
+            InterfaceLanguage.System,
+            lastOutputDirectory: null,
+            showExperimentalWarnings: true);
 
         public LauncherSettings WithTheme(ThemePreference theme)
         {
-            return new LauncherSettings(theme, LastOutputDirectory, ShowExperimentalWarnings);
+            return new LauncherSettings(theme, Language, LastOutputDirectory, ShowExperimentalWarnings);
+        }
+
+        public LauncherSettings WithLanguage(InterfaceLanguage language)
+        {
+            return new LauncherSettings(Theme, language, LastOutputDirectory, ShowExperimentalWarnings);
         }
 
         public LauncherSettings WithLastOutputDirectory(string? directory)
         {
-            return new LauncherSettings(Theme, directory, ShowExperimentalWarnings);
+            return new LauncherSettings(Theme, Language, directory, ShowExperimentalWarnings);
         }
 
         public LauncherSettings WithShowExperimentalWarnings(bool show)
         {
-            return new LauncherSettings(Theme, LastOutputDirectory, show);
+            return new LauncherSettings(Theme, Language, LastOutputDirectory, show);
         }
     }
 

@@ -14,11 +14,14 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         [ObservableProperty]
         private OperationFormViewModel _selectedForm;
 
+        private readonly string _titleKey;
+        private readonly string _descriptionKey;
+
         public OperationSectionViewModel(
-            string title, string description, IReadOnlyList<OperationFormViewModel> forms)
+            string titleKey, string descriptionKey, IReadOnlyList<OperationFormViewModel> forms)
         {
-            Title = title ?? throw new ArgumentNullException(nameof(title));
-            Description = description ?? throw new ArgumentNullException(nameof(description));
+            _titleKey = titleKey ?? throw new ArgumentNullException(nameof(titleKey));
+            _descriptionKey = descriptionKey ?? throw new ArgumentNullException(nameof(descriptionKey));
 
             if (forms == null)
             {
@@ -34,9 +37,9 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             _selectedForm = Forms[0];
         }
 
-        public string Title { get; }
+        public string Title => Text(_titleKey);
 
-        public string Description { get; }
+        public string Description => Text(_descriptionKey);
 
         public IReadOnlyList<OperationFormViewModel> Forms { get; }
     }

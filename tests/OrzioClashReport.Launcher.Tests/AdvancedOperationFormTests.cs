@@ -3,6 +3,7 @@ using OrzioClashReport.Launcher.Contracts.Engine;
 using OrzioClashReport.Launcher.Contracts.Jobs;
 using OrzioClashReport.Launcher.Contracts.Operations;
 using OrzioClashReport.Launcher.Contracts.Ports;
+using OrzioClashReport.Launcher.Contracts.Settings;
 using OrzioClashReport.Launcher.Desktop.Platform;
 using OrzioClashReport.Launcher.Desktop.ViewModels;
 
@@ -149,7 +150,7 @@ public sealed class AdvancedOperationFormTests
     public void TheOrderedList_NeverSortsByNameDateOrRevision()
     {
         var harness = new Harness();
-        var list = new OrderedFileListViewModel("Snapshots", harness.Dialogs, PickedFileKind.SnapshotJson);
+        var list = new OrderedFileListViewModel("Field.OrderedSnapshots.Label", harness.Dialogs, PickedFileKind.SnapshotJson);
 
         list.Append(
             Absolute("run-2026-01-09.json"),
@@ -172,7 +173,7 @@ public sealed class AdvancedOperationFormTests
     public void TheOrderedList_WarnsAboutDuplicatesButKeepsThem()
     {
         var harness = new Harness();
-        var list = new OrderedFileListViewModel("Snapshots", harness.Dialogs, PickedFileKind.SnapshotJson);
+        var list = new OrderedFileListViewModel("Field.OrderedSnapshots.Label", harness.Dialogs, PickedFileKind.SnapshotJson);
 
         list.Append(Absolute("a.json"), Absolute("b.json"), Absolute("a.json"));
 
@@ -190,7 +191,7 @@ public sealed class AdvancedOperationFormTests
     public void TheOrderedList_ReordersOnlyWhenAHumanMovesAnEntry()
     {
         var harness = new Harness();
-        var list = new OrderedFileListViewModel("Snapshots", harness.Dialogs, PickedFileKind.SnapshotJson);
+        var list = new OrderedFileListViewModel("Field.OrderedSnapshots.Label", harness.Dialogs, PickedFileKind.SnapshotJson);
         list.Append(Absolute("a.json"), Absolute("b.json"), Absolute("c.json"));
 
         list.Selected = list.Files[2];
@@ -228,7 +229,16 @@ public sealed class AdvancedOperationFormTests
         var harness = new Harness();
         var form = new AppendProjectSnapshotFormViewModel(harness.Runner(), harness.Engine, harness.Dialogs);
 
-        Assert.Equal("Renderizar projeto agora", form.FollowUpLabel);
+        using (LanguageScope.Use(InterfaceLanguage.Portuguese))
+        {
+            Assert.Equal("Renderizar projeto agora", form.FollowUpLabel);
+        }
+
+        using (LanguageScope.Use(InterfaceLanguage.English))
+        {
+            Assert.Equal("Render project now", form.FollowUpLabel);
+        }
+
         Assert.False(form.ShowsFollowUp);
 
         Fill(form, "project.json", "run-004.json");
@@ -274,7 +284,9 @@ public sealed class AdvancedOperationFormTests
         var first = new CreateSnapshotFormViewModel(harness.Runner(), harness.Engine, harness.Dialogs);
         var second = new CompareSnapshotsFormViewModel(harness.Runner(), harness.Engine, harness.Dialogs);
 
-        var section = new OperationSectionViewModel("Snapshots", "…", new OperationFormViewModel[] { first, second });
+        var section = new OperationSectionViewModel(
+            "Section.Snapshots.Title", "Section.Snapshots.Description",
+            new OperationFormViewModel[] { first, second });
 
         Assert.Same(first, section.SelectedForm);
         Assert.Equal(2, section.Forms.Count);

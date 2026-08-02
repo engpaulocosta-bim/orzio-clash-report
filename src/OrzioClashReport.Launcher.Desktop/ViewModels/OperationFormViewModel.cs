@@ -24,15 +24,18 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         [ObservableProperty]
         private string? _value;
 
-        public TextFieldViewModel(string label, string hint)
+        private readonly string _labelKey;
+        private readonly string _hintKey;
+
+        public TextFieldViewModel(string labelKey, string hintKey)
         {
-            Label = label ?? throw new ArgumentNullException(nameof(label));
-            Hint = hint ?? throw new ArgumentNullException(nameof(hint));
+            _labelKey = labelKey ?? throw new ArgumentNullException(nameof(labelKey));
+            _hintKey = hintKey ?? throw new ArgumentNullException(nameof(hintKey));
         }
 
-        public string Label { get; }
+        public string Label => Text(_labelKey);
 
-        public string Hint { get; }
+        public string Hint => Text(_hintKey);
 
         public bool HasValue => !string.IsNullOrWhiteSpace(Value);
 
@@ -60,15 +63,18 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
     {
         private readonly EngineStatusViewModel _engine;
 
+        private readonly string _titleKey;
+        private readonly string _descriptionKey;
+
         protected OperationFormViewModel(
-            string title,
-            string description,
+            string titleKey,
+            string descriptionKey,
             LauncherOperationKind kind,
             OperationRunnerViewModel runner,
             EngineStatusViewModel engine)
         {
-            Title = title ?? throw new ArgumentNullException(nameof(title));
-            Description = description ?? throw new ArgumentNullException(nameof(description));
+            _titleKey = titleKey ?? throw new ArgumentNullException(nameof(titleKey));
+            _descriptionKey = descriptionKey ?? throw new ArgumentNullException(nameof(descriptionKey));
             Kind = kind;
             Runner = runner ?? throw new ArgumentNullException(nameof(runner));
             _engine = engine ?? throw new ArgumentNullException(nameof(engine));
@@ -89,9 +95,9 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             };
         }
 
-        public string Title { get; }
+        public string Title => Text(_titleKey);
 
-        public string Description { get; }
+        public string Description => Text(_descriptionKey);
 
         public LauncherOperationKind Kind { get; }
 
@@ -106,16 +112,20 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         /// </summary>
         public bool IsExperimental => LauncherOperationPolicy.IsExperimental(Kind);
 
-        public string RunLabel => "Executar";
+        public string RunLabel => Text("Action.Run");
+
+        public string ExperimentalNote => Text("Form.Experimental");
 
         public string? BlockedReason => _engine.CanRunOperations ? null : _engine.Description;
 
         public bool IsBlocked => BlockedReason != null;
 
         /// <summary>An explicit next step this operation may offer once it has succeeded.</summary>
-        public virtual string? FollowUpLabel => null;
+        protected virtual string? FollowUpLabelKey => null;
 
-        public bool ShowsFollowUp => FollowUpLabel != null && Runner.Succeeded;
+        public string? FollowUpLabel => FollowUpLabelKey == null ? null : Text(FollowUpLabelKey);
+
+        public bool ShowsFollowUp => FollowUpLabelKey != null && Runner.Succeeded;
 
         /// <summary>Whether every value the request needs is present, in operational terms only.</summary>
         public abstract bool CanBuild { get; }

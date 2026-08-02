@@ -116,6 +116,24 @@ public sealed class PilotReleaseContractTests
     }
 
     [Fact]
+    public void TheGuideAndTheReadmeSayTheInterfaceIsBilingual()
+    {
+        string guide = Read("docs", "operations", "launcher-pilot.md");
+        string readme = Read("README.md");
+
+        Assert.Contains("Portuguese and English", guide, StringComparison.Ordinal);
+        Assert.Contains("Portuguese and English", readme, StringComparison.Ordinal);
+
+        // And that switching it cannot change what the engine receives.
+        Assert.Contains("changes visible text only", guide, StringComparison.Ordinal);
+        Assert.Contains("changes visible text only", readme, StringComparison.Ordinal);
+        Assert.Contains("ConfirmSameIdentity", guide, StringComparison.Ordinal);
+
+        // The questionnaire asks about it.
+        Assert.Contains("Which language did you use", guide, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void ThePilotIsScopedToASmallNumberOfInvitedEvaluators()
     {
         string guide = Read("docs", "operations", "launcher-pilot.md");

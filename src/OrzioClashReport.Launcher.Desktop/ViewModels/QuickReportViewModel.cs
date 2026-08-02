@@ -55,11 +55,31 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public bool IsBlocked => BlockedReason != null;
 
+        public string Title => Text("QuickReport.Title");
+
+        public string Description => Text("QuickReport.Description");
+
+        public string Step1Caption => Text("QuickReport.Step1");
+
+        public string Step2Caption => Text("QuickReport.Step2");
+
+        public string DropHint => Text("QuickReport.DropHint");
+
+        public string NotChosen => Text("Field.NotChosen");
+
+        public string GenerateLabel => Text("QuickReport.Generate");
+
+        public string PickFileLabel => Text("Action.PickFile");
+
+        public string PickDestinationLabel => Text("Action.PickDestination");
+
+        public string CancelLabel => Text("Action.Cancel");
+
         [RelayCommand]
         private async Task PickInputAsync()
         {
             string? picked = await _fileDialogs
-                .PickOpenFileAsync("Escolher export XML do Clash Detective", PickedFileKind.ClashXml)
+                .PickOpenFileAsync(Text("QuickReport.PickInput"), PickedFileKind.ClashXml)
                 .ConfigureAwait(true);
 
             if (picked != null)
@@ -73,7 +93,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         private async Task PickOutputAsync()
         {
             string? picked = await _fileDialogs
-                .PickSaveFileAsync("Guardar relatório como", PickedFileKind.HtmlReport, SuggestedFileName())
+                .PickSaveFileAsync(Text("QuickReport.PickOutput"), PickedFileKind.HtmlReport, SuggestedFileName())
                 .ConfigureAwait(true);
 
             if (picked != null)

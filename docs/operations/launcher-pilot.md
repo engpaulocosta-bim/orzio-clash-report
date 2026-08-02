@@ -53,17 +53,27 @@ us if you needed it.
 - A diagnostic bundle is produced only when you ask for one, and only after you have seen the
   complete list of files it would contain and the exact log text that would go into it.
 
+## Language
+
+The interface is available in **Portuguese and English**. It follows your operating system by
+default, and you can switch it at any time under Definições / Settings. The change applies
+immediately, without reopening the application.
+
+The language changes visible text only. It never changes a value sent to the engine, a file name,
+or anything a technical result depends on: `ConfirmSameIdentity` and `RejectSameIdentity` are
+written to your governance documents exactly like that in both languages.
+
 ## The seven sections
 
-| Section | What it does |
-| --- | --- |
-| Início | Engine state, the three most common starting points, and your last five results. |
-| Relatório rápido | One XML export to one grouped HTML report. |
-| Snapshots | Create an immutable run snapshot; compare two persisted snapshots. |
-| Longitudinal | Compare two revisions; create an ordered run index; compare an index. |
-| Projetos | Create a project catalog; append a snapshot; regenerate the project's report. |
-| Governança | Create a governance document; record a human decision; validate; render the review. |
-| Definições | Theme, warnings, where local data lives, and the diagnostic bundle. |
+| Section (PT) | Section (EN) | What it does |
+| --- | --- | --- |
+| Início | Home | Engine state, the three most common starting points, and your last five results. |
+| Relatório rápido | Quick report | One XML export to one grouped HTML report. |
+| Snapshots | Snapshots | Create an immutable run snapshot; compare two persisted snapshots. |
+| Longitudinal | Longitudinal | Compare two revisions; create an ordered run index; compare an index. |
+| Projetos | Projects | Create a project catalog; append a snapshot; regenerate the project's report. |
+| Governança | Governance | Create a governance document; record a human decision; validate; render the review. |
+| Definições | Settings | Theme, language, warnings, where local data lives, and the diagnostic bundle. |
 
 ## Things worth knowing before you start
 
@@ -99,23 +109,24 @@ Please answer all of these, even where the answer is "no problem".
 6. Which of the other operations did you understand from the screen alone, and which did you not?
 7. Which sections did you actually use, and which did you never open?
 8. Was moving around the application easy or confusing? Where did you get lost?
+9. Which language did you use? Did any text read awkwardly, or stay in the wrong language?
 
-### Governança
+### Governança / Governance
 
-9. Was the difference between confirming and rejecting an identity clear before you clicked?
-10. Was it clear that an algorithmic suggestion is not a decision?
+10. Was the difference between confirming and rejecting an identity clear before you clicked?
+11. Was it clear that an algorithmic suggestion is not a decision?
 
 ### When things went wrong
 
-11. What errors did you hit? Copy the message exactly as shown.
-12. Was each error message actionable — did it tell you what to do next?
-13. Did anything crash, hang, or close unexpectedly? What did the next start tell you?
+12. What errors did you hit? Copy the message exactly as shown.
+13. Was each error message actionable — did it tell you what to do next?
+14. Did anything crash, hang, or close unexpectedly? What did the next start tell you?
 
 ### Impressions
 
-14. Does it look like a professional tool? What specifically looks unfinished?
-15. What would stop you using this on a real project tomorrow?
-16. What is missing that you expected to find?
+15. Does it look like a professional tool? What specifically looks unfinished?
+16. What would stop you using this on a real project tomorrow?
+17. What is missing that you expected to find?
 
 ## Honest status
 

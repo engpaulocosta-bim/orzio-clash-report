@@ -6,6 +6,7 @@ using OrzioClashReport.Launcher.Contracts.Engine;
 using OrzioClashReport.Launcher.Contracts.Jobs;
 using OrzioClashReport.Launcher.Contracts.Operations;
 using OrzioClashReport.Launcher.Contracts.Ports;
+using OrzioClashReport.Launcher.Contracts.Settings;
 using OrzioClashReport.Launcher.Desktop.ViewModels;
 using OrzioClashReport.Launcher.Infrastructure.Diagnostics;
 using OrzioClashReport.Launcher.Infrastructure.Storage;
@@ -102,9 +103,20 @@ public sealed class DiagnosticsAndRecoveryTests : IDisposable
         viewModel.Load();
 
         Assert.True(viewModel.HasJobs);
-        Assert.Equal("Operação interrompida", viewModel.Title);
-        Assert.Contains("Nada é retomado automaticamente", viewModel.Explanation, StringComparison.Ordinal);
-        Assert.Equal("Comparar índice de runs", viewModel.Jobs[0].OperationLabel);
+
+        using (LanguageScope.Use(InterfaceLanguage.Portuguese))
+        {
+            Assert.Equal("Operação interrompida", viewModel.Title);
+            Assert.Contains("Nada é retomado automaticamente", viewModel.Explanation, StringComparison.Ordinal);
+            Assert.Equal("Comparar índice de runs", viewModel.Jobs[0].OperationLabel);
+        }
+
+        using (LanguageScope.Use(InterfaceLanguage.English))
+        {
+            Assert.Equal("Operation interrupted", viewModel.Title);
+            Assert.Contains("Nothing is resumed automatically", viewModel.Explanation, StringComparison.Ordinal);
+            Assert.Equal("Compare run index", viewModel.Jobs[0].OperationLabel);
+        }
 
         viewModel.DismissCommand.Execute(null);
 
@@ -389,8 +401,17 @@ public sealed class DiagnosticsAndRecoveryTests : IDisposable
         var viewModel = new DiagnosticsViewModel(
             Builder(), new StubFileDialogs(), new NoOpOutputRevealer());
 
-        Assert.Contains("Nunca inclui ficheiros do cliente", viewModel.Explanation, StringComparison.Ordinal);
-        Assert.Contains("caminhos absolutos", viewModel.Explanation, StringComparison.Ordinal);
+        using (LanguageScope.Use(InterfaceLanguage.Portuguese))
+        {
+            Assert.Contains("Nunca inclui ficheiros do cliente", viewModel.Explanation, StringComparison.Ordinal);
+            Assert.Contains("caminhos absolutos", viewModel.Explanation, StringComparison.Ordinal);
+        }
+
+        using (LanguageScope.Use(InterfaceLanguage.English))
+        {
+            Assert.Contains("never includes client files", viewModel.Explanation, StringComparison.Ordinal);
+            Assert.Contains("absolute paths", viewModel.Explanation, StringComparison.Ordinal);
+        }
     }
 
     private sealed class FixedTime : TimeProvider

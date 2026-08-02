@@ -27,16 +27,16 @@
         </StackPanel>
 
         <StackPanel Spacing="{DynamicResource OrzioSpaceSm}" IsVisible="{Binding HasProducedFile}">
-          <TextBlock Classes="caption" Text="FICHEIRO PRODUZIDO" />
+          <TextBlock Classes="caption" Text="{Binding ProducedCaption}" />
           <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
             <TextBlock VerticalAlignment="Center" Text="{Binding ProducedFileName}" />
-            <Button Classes="link" Content="Abrir" Command="{Binding OpenResultCommand}" />
-            <Button Classes="link" Content="Mostrar na pasta" Command="{Binding RevealResultCommand}" />
+            <Button Classes="link" Content="{Binding OpenLabel}" Command="{Binding OpenResultCommand}" />
+            <Button Classes="link" Content="{Binding RevealLabel}" Command="{Binding RevealResultCommand}" />
           </StackPanel>
         </StackPanel>
 
         <StackPanel Spacing="{DynamicResource OrzioSpaceXs}" IsVisible="{Binding Failed}">
-          <TextBlock Classes="caption" Text="DETALHE DO MOTOR" />
+          <TextBlock Classes="caption" Text="{Binding EngineDetailCaption}" />
           <TextBlock Classes="mono" Text="{Binding ErrorDetail}" />
         </StackPanel>
 
@@ -61,7 +61,7 @@
             Padding="{DynamicResource OrzioCardPadding}"
             IsVisible="{Binding HasOutputLines}">
       <StackPanel Spacing="{DynamicResource OrzioSpaceSm}">
-        <TextBlock Classes="caption" Text="SAÍDA DO MOTOR" />
+        <TextBlock Classes="caption" Text="{Binding EngineOutputCaption}" />
         <ScrollViewer Height="{DynamicResource OrzioOutputLogHeight}">
           <ItemsControl ItemsSource="{Binding OutputLines}">
             <ItemsControl.ItemTemplate>

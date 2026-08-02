@@ -55,9 +55,21 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public bool HasFailure => FailureMessage != null;
 
-        public string Explanation =>
-            "Um pacote de diagnóstico contém apenas os ficheiros listados abaixo. Nunca inclui ficheiros do "
-                + "cliente, caminhos absolutos, argumentos de execução ou o conteúdo dos seus modelos.";
+        public string Explanation => Text("Diagnostics.Explanation");
+
+        public string Caption => Text("Diagnostics.Caption");
+
+        public string ShowPreviewLabel => Text("Diagnostics.ShowPreview");
+
+        public string FilesCaption => Text("Diagnostics.FilesCaption");
+
+        public string LogCaption => Text("Diagnostics.LogCaption");
+
+        public string NoLogNote => Text("Diagnostics.NoLog");
+
+        public string CreateLabel => Text("Diagnostics.Create");
+
+        public string RevealLabel => Text("Action.Reveal");
 
         [RelayCommand]
         private void ShowPreview()
@@ -88,7 +100,8 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             FailureMessage = null;
 
             string? destination = await _dialogs
-                .PickSaveFileAsync("Guardar pacote de diagnóstico", PickedFileKind.HtmlReport, "orzio-diagnostics.zip")
+                .PickSaveFileAsync(
+                    Text("Diagnostics.Save"), PickedFileKind.HtmlReport, "orzio-diagnostics.zip")
                 .ConfigureAwait(true);
 
             if (destination == null)
@@ -107,7 +120,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                FailureMessage = "Não foi possível escrever o pacote de diagnóstico: " + ex.Message;
+                FailureMessage = Text("Diagnostics.WriteFailed", ex.Message);
             }
 
             OnPropertyChanged(nameof(HasBundle));

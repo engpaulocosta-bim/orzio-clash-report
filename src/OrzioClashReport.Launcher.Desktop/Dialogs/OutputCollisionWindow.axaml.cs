@@ -87,7 +87,7 @@ namespace OrzioClashReport.Launcher.Desktop.Dialogs
                 case OutputCollisionDecision.UseDifferentPath:
                     string? replacement = await _fileDialogs
                         .PickSaveFileAsync(
-                            "Guardar relatório como",
+                            Localization.Localizer.Instance.Get("QuickReport.PickOutput"),
                             PickedFileKind.HtmlReport,
                             Path.GetFileName(existingPath))
                         .ConfigureAwait(true);

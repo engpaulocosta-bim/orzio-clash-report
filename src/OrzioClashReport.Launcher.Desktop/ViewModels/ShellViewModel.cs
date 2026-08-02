@@ -23,16 +23,18 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
     /// <summary>One navigation entry. The glyph never stands alone: the label is always available.</summary>
     public sealed class NavigationItemViewModel : ViewModelBase
     {
-        public NavigationItemViewModel(ShellSection section, string label, string glyph)
+        private readonly string _labelKey;
+
+        public NavigationItemViewModel(ShellSection section, string labelKey, string glyph)
         {
             Section = section;
-            Label = label;
+            _labelKey = labelKey;
             Glyph = glyph;
         }
 
         public ShellSection Section { get; }
 
-        public string Label { get; }
+        public string Label => Text(_labelKey);
 
         public string Glyph { get; }
     }
@@ -59,7 +61,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         private double _windowWidth = SidebarWidth * 4;
 
         [ObservableProperty]
-        private string _statusMessage = "Pronto.";
+        private string _statusMessage = string.Empty;
 
         public ShellViewModel(
             EngineStatusViewModel engine,
@@ -72,13 +74,13 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
             Sections = new ReadOnlyCollection<NavigationItemViewModel>(new[]
             {
-                new NavigationItemViewModel(ShellSection.Home, "Início", "⌂"),
-                new NavigationItemViewModel(ShellSection.QuickReport, "Relatório rápido", "▤"),
-                new NavigationItemViewModel(ShellSection.Snapshots, "Snapshots", "◧"),
-                new NavigationItemViewModel(ShellSection.Longitudinal, "Longitudinal", "⇉"),
-                new NavigationItemViewModel(ShellSection.Projects, "Projetos", "❏"),
-                new NavigationItemViewModel(ShellSection.Governance, "Governança", "✎"),
-                new NavigationItemViewModel(ShellSection.Settings, "Definições", "⚙"),
+                new NavigationItemViewModel(ShellSection.Home, "Nav.Home", "⌂"),
+                new NavigationItemViewModel(ShellSection.QuickReport, "Nav.QuickReport", "▤"),
+                new NavigationItemViewModel(ShellSection.Snapshots, "Nav.Snapshots", "◧"),
+                new NavigationItemViewModel(ShellSection.Longitudinal, "Nav.Longitudinal", "⇉"),
+                new NavigationItemViewModel(ShellSection.Projects, "Nav.Projects", "❏"),
+                new NavigationItemViewModel(ShellSection.Governance, "Nav.Governance", "✎"),
+                new NavigationItemViewModel(ShellSection.Settings, "Nav.Settings", "⚙"),
             });
 
             foreach (NavigationItemViewModel item in Sections)
@@ -91,6 +93,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
             _selectedSection = Sections[0];
             _currentPage = _pages[ShellSection.Home];
+            _statusMessage = Text("Shell.Ready");
         }
 
         public EngineStatusViewModel Engine { get; }

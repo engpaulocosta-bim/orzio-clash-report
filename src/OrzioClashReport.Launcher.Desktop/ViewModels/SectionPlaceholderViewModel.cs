@@ -8,14 +8,19 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
     /// </summary>
     public sealed class SectionPlaceholderViewModel : ViewModelBase
     {
-        public SectionPlaceholderViewModel(string title, string description)
+        private readonly string _titleKey;
+        private readonly string _descriptionKey;
+
+        public SectionPlaceholderViewModel(string titleKey, string descriptionKey)
         {
-            Title = title ?? throw new ArgumentNullException(nameof(title));
-            Description = description ?? throw new ArgumentNullException(nameof(description));
+            _titleKey = titleKey ?? throw new ArgumentNullException(nameof(titleKey));
+            _descriptionKey = descriptionKey ?? throw new ArgumentNullException(nameof(descriptionKey));
         }
 
-        public string Title { get; }
+        public string Title => Text(_titleKey);
 
-        public string Description { get; }
+        public string Description => Text(_descriptionKey);
+
+        public string NotWiredNote => Text("Placeholder.NotWired");
     }
 }

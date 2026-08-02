@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OrzioClashReport.Launcher.Contracts.Operations;
+using OrzioClashReport.Launcher.Desktop.Localization;
 using OrzioClashReport.Launcher.Desktop.Platform;
 
 namespace OrzioClashReport.Launcher.Desktop.ViewModels
@@ -17,15 +18,16 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         [ObservableProperty]
         private string? _value;
 
-        public OccurrenceIndexFieldViewModel(string label)
+        private readonly string _labelKey;
+
+        public OccurrenceIndexFieldViewModel(string labelKey)
         {
-            Label = label ?? throw new ArgumentNullException(nameof(label));
+            _labelKey = labelKey ?? throw new ArgumentNullException(nameof(labelKey));
         }
 
-        public string Label { get; }
+        public string Label => Text(_labelKey);
 
-        public string Hint =>
-            "Índice da ocorrência dentro do snapshot, a começar em 0. A existência é verificada pelo motor.";
+        public string Hint => Text("Field.Occurrence.Hint");
 
         public bool HasValue => TryParse(out _);
 
@@ -33,7 +35,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public string? FormatError => Value == null || Value.Trim().Length == 0 || HasValue
             ? null
-            : "Indique um número inteiro maior ou igual a 0.";
+            : Text("Field.Occurrence.FormatError");
 
         public bool HasFormatError => FormatError != null;
 
@@ -65,39 +67,42 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
     /// The two decisions a human may record, presented so they are never distinguishable by colour
     /// alone: each carries its own glyph and its own words.
     /// </summary>
-    public sealed class DecisionKindOptionViewModel
+    public sealed class DecisionKindOptionViewModel : ViewModelBase
     {
+        private readonly string _labelKey;
+        private readonly string _explanationKey;
+
         private DecisionKindOptionViewModel(
-            HumanIdentityDecisionKind kind, string label, string glyph, string explanation)
+            HumanIdentityDecisionKind kind, string labelKey, string glyph, string explanationKey)
         {
             Kind = kind;
-            Label = label;
+            _labelKey = labelKey;
             Glyph = glyph;
-            Explanation = explanation;
+            _explanationKey = explanationKey;
         }
 
         public HumanIdentityDecisionKind Kind { get; }
 
         /// <summary>The visible label. The canonical value sent to the engine is never translated.</summary>
-        public string Label { get; }
+        public string Label => Text(_labelKey);
 
         public string Glyph { get; }
 
-        public string Explanation { get; }
+        public string Explanation => Text(_explanationKey);
 
         public bool IsConfirmation => Kind == HumanIdentityDecisionKind.ConfirmSameIdentity;
 
         public static DecisionKindOptionViewModel Confirm { get; } = new(
             HumanIdentityDecisionKind.ConfirmSameIdentity,
-            "Confirmar mesma identidade",
+            "Decision.Confirm.Label",
             "=",
-            "Declara que as duas ocorrências são o mesmo clash persistente. Exige um identificador persistente.");
+            "Decision.Confirm.Explanation");
 
         public static DecisionKindOptionViewModel Reject { get; } = new(
             HumanIdentityDecisionKind.RejectSameIdentity,
-            "Rejeitar mesma identidade",
+            "Decision.Reject.Label",
             "≠",
-            "Declara que as duas ocorrências não são o mesmo clash. Nunca leva identificador persistente.");
+            "Decision.Reject.Explanation");
 
         public static IReadOnlyList<DecisionKindOptionViewModel> All { get; } =
             new ReadOnlyCollection<DecisionKindOptionViewModel>(new[] { Confirm, Reject });
@@ -112,7 +117,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         [ObservableProperty]
         private DecisionKindOptionViewModel _selected = DecisionKindOptionViewModel.Confirm;
 
-        public string Label => "Decisão";
+        public string Label => Text("Decision.Label");
 
         public IReadOnlyList<DecisionKindOptionViewModel> Options => DecisionKindOptionViewModel.All;
 
@@ -137,17 +142,17 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         public CreateIdentityGovernanceFormViewModel(
             OperationRunnerViewModel runner, EngineStatusViewModel engine, IFileDialogs dialogs)
             : base(
-                "Criar documento de governança",
-                "Cria um documento vazio ligado a um projeto. As decisões são acrescentadas uma a uma, depois.",
+                "Form.CreateGovernance.Title",
+                "Form.CreateGovernance.Description",
                 LauncherOperationKind.CreateIdentityGovernance,
                 runner,
                 engine)
         {
             _projectId = Add(new TextFieldViewModel(
-                "Identificador do projeto", "Tem de ser exatamente o mesmo do catálogo do projeto."));
+                "Field.ProjectId.Label", "Field.ProjectId.GovernanceHint"));
             _output = Add(FileFieldViewModel.Destination(
-                "Documento de governança",
-                "Onde guardar o documento.",
+                "Field.Governance.Label",
+                "Field.Governance.DestinationHint",
                 dialogs,
                 PickedFileKind.IdentityGovernanceJson,
                 () => "identity-governance.json"));
@@ -180,31 +185,29 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         public AppendIdentityDecisionFormViewModel(
             OperationRunnerViewModel runner, EngineStatusViewModel engine, IFileDialogs dialogs)
             : base(
-                "Registar decisão humana",
-                "Uma sugestão do algoritmo nunca é uma decisão. Confiança alta não significa confirmado. "
-                    + "A identidade persistente só existe quando um humano a confirma aqui.",
+                "Form.AppendDecision.Title",
+                "Form.AppendDecision.Description",
                 LauncherOperationKind.AppendIdentityDecision,
                 runner,
                 engine)
         {
             _governance = Add(FileFieldViewModel.Input(
-                "Documento de governança",
-                "O documento onde a decisão é acrescentada.",
+                "Field.Governance.Label",
+                "Field.Governance.AppendHint",
                 dialogs,
                 PickedFileKind.IdentityGovernanceJson));
-            _decisionId = Add(new TextFieldViewModel(
-                "Identificador da decisão", "Um identificador estável desta decisão."));
+            _decisionId = Add(new TextFieldViewModel("Field.DecisionId.Label", "Field.DecisionId.Hint"));
             _decisionKind = Add(new DecisionKindFieldViewModel());
-            _leftRunId = Add(new TextFieldViewModel("Run à esquerda", "O run id do lado esquerdo."));
-            _leftOccurrence = Add(new OccurrenceIndexFieldViewModel("Ocorrência à esquerda"));
-            _rightRunId = Add(new TextFieldViewModel("Run à direita", "O run id do lado direito."));
-            _rightOccurrence = Add(new OccurrenceIndexFieldViewModel("Ocorrência à direita"));
+            _leftRunId = Add(new TextFieldViewModel("Field.LeftRunId.Label", "Field.LeftRunId.Hint"));
+            _leftOccurrence = Add(new OccurrenceIndexFieldViewModel("Field.LeftOccurrence.Label"));
+            _rightRunId = Add(new TextFieldViewModel("Field.RightRunId.Label", "Field.RightRunId.Hint"));
+            _rightOccurrence = Add(new OccurrenceIndexFieldViewModel("Field.RightOccurrence.Label"));
             _reviewerAlias = Add(new TextFieldViewModel(
-                "Alias do revisor", "Um alias. Não é preciso nome real, email ou login."));
+                "Field.ReviewerAlias.Label", "Field.ReviewerAlias.Hint"));
             _persistentIdentityId = Add(new TextFieldViewModel(
-                "Identificador persistente", "Obrigatório numa confirmação. Nunca usado numa rejeição."));
+                "Field.PersistentIdentityId.Label", "Field.PersistentIdentityId.Hint"));
             _decisionKind.Changed += ApplyDecisionKind;
-            _reason = Add(new TextFieldViewModel("Motivo", "Opcional."));
+            _reason = Add(new TextFieldViewModel("Field.Reason.Label", "Field.Reason.Hint"));
 
         }
 
@@ -268,17 +271,17 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         public ValidateIdentityGovernanceFormViewModel(
             OperationRunnerViewModel runner, EngineStatusViewModel engine, IFileDialogs dialogs)
             : base(
-                "Validar governança",
-                "Verifica apenas a ligação ao projeto e a existência dos pontos de evidência. Não escreve nada.",
+                "Form.ValidateGovernance.Title",
+                "Form.ValidateGovernance.Description",
                 LauncherOperationKind.ValidateIdentityGovernance,
                 runner,
                 engine)
         {
             _project = Add(FileFieldViewModel.Input(
-                "Projeto", "O catálogo do projeto.", dialogs, PickedFileKind.ProjectCatalogJson));
+                "Field.Project.Label", "Field.Project.Hint", dialogs, PickedFileKind.ProjectCatalogJson));
             _governance = Add(FileFieldViewModel.Input(
-                "Documento de governança",
-                "O documento a validar.",
+                "Field.Governance.Label",
+                "Field.Governance.ValidateHint",
                 dialogs,
                 PickedFileKind.IdentityGovernanceJson));
         }
@@ -299,23 +302,22 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         public RenderIdentityGovernanceReportFormViewModel(
             OperationRunnerViewModel runner, EngineStatusViewModel engine, IFileDialogs dialogs)
             : base(
-                "Gerar revisão de governança",
-                "Apresenta as decisões persistidas pela ordem em que foram registadas. É um artefacto derivado, "
-                    + "não evidência, e o motor só o gera depois de a validação passar.",
+                "Form.RenderGovernanceReport.Title",
+                "Form.RenderGovernanceReport.Description",
                 LauncherOperationKind.RenderIdentityGovernanceReport,
                 runner,
                 engine)
         {
             _project = Add(FileFieldViewModel.Input(
-                "Projeto", "O catálogo do projeto.", dialogs, PickedFileKind.ProjectCatalogJson));
+                "Field.Project.Label", "Field.Project.Hint", dialogs, PickedFileKind.ProjectCatalogJson));
             _governance = Add(FileFieldViewModel.Input(
-                "Documento de governança",
-                "O documento a apresentar.",
+                "Field.Governance.Label",
+                "Field.Governance.RenderHint",
                 dialogs,
                 PickedFileKind.IdentityGovernanceJson));
             _output = Add(FileFieldViewModel.Destination(
-                "Relatório de revisão",
-                "Onde guardar a revisão.",
+                "Field.ReviewReport.Label",
+                "Field.ReviewReport.Hint",
                 dialogs,
                 PickedFileKind.HtmlReport,
                 () => "identity-governance.html"));

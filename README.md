@@ -33,6 +33,10 @@ comparison, two-revision comparison, ordered run indexes and index comparison, p
 catalog creation, appending a snapshot, regenerating a project report, and the four
 identity-governance operations.
 
+The interface is available in Portuguese and English, following the operating system by default
+and switchable at any time; the language changes visible text only and never a value the engine
+receives.
+
 The installer is not code signed, so SmartScreen warns on first run; the published SHA-256
 is how a build is verified. The application is offline-first: no telemetry, no upload, and
 no account. Its own settings, logs, and job state live in

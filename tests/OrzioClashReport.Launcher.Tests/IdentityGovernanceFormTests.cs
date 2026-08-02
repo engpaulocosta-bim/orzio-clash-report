@@ -3,6 +3,7 @@ using OrzioClashReport.Launcher.Contracts.Engine;
 using OrzioClashReport.Launcher.Contracts.Jobs;
 using OrzioClashReport.Launcher.Contracts.Operations;
 using OrzioClashReport.Launcher.Contracts.Ports;
+using OrzioClashReport.Launcher.Contracts.Settings;
 using OrzioClashReport.Launcher.Desktop.ViewModels;
 
 namespace OrzioClashReport.Launcher.Tests;
@@ -179,7 +180,7 @@ public sealed class IdentityGovernanceFormTests
     public void TheOccurrenceIndex_IsZeroBasedAndValidatedForFormatOnly(
         string typed, bool valid, int? expected)
     {
-        var field = new OccurrenceIndexFieldViewModel("Ocorrência");
+        var field = new OccurrenceIndexFieldViewModel("Field.LeftOccurrence.Label");
 
         field.Value = typed;
 
@@ -190,7 +191,7 @@ public sealed class IdentityGovernanceFormTests
     [Fact]
     public void AMalformedOccurrenceIndex_ExplainsItselfWithoutClaimingItDoesNotExist()
     {
-        var field = new OccurrenceIndexFieldViewModel("Ocorrência");
+        var field = new OccurrenceIndexFieldViewModel("Field.LeftOccurrence.Label");
 
         field.Value = "-1";
 
@@ -204,7 +205,7 @@ public sealed class IdentityGovernanceFormTests
     [Fact]
     public void AnEmptyOccurrenceIndex_IsIncompleteRatherThanWrong()
     {
-        var field = new OccurrenceIndexFieldViewModel("Ocorrência");
+        var field = new OccurrenceIndexFieldViewModel("Field.LeftOccurrence.Label");
 
         Assert.False(field.HasValue);
         Assert.False(field.HasFormatError);
@@ -268,7 +269,16 @@ public sealed class IdentityGovernanceFormTests
         var harness = new Harness();
         AppendIdentityDecisionFormViewModel form = harness.Decision();
 
-        Assert.Contains("nunca é uma decisão", form.Description, StringComparison.Ordinal);
-        Assert.Contains("Confiança alta não significa confirmado", form.Description, StringComparison.Ordinal);
+        using (LanguageScope.Use(InterfaceLanguage.Portuguese))
+        {
+            Assert.Contains("nunca é uma decisão", form.Description, StringComparison.Ordinal);
+            Assert.Contains("Confiança alta não significa", form.Description, StringComparison.Ordinal);
+        }
+
+        using (LanguageScope.Use(InterfaceLanguage.English))
+        {
+            Assert.Contains("never a decision", form.Description, StringComparison.Ordinal);
+            Assert.Contains("High confidence does not mean", form.Description, StringComparison.Ordinal);
+        }
     }
 }

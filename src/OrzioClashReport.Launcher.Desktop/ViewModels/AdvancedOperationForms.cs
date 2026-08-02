@@ -15,22 +15,19 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         public CreateSnapshotFormViewModel(
             OperationRunnerViewModel runner, EngineStatusViewModel engine, IFileDialogs dialogs)
             : base(
-                "Criar snapshot",
-                "Guarda um run de coordenação como evidência imutável. O motor nunca substitui um snapshot existente.",
+                "Form.CreateSnapshot.Title",
+                "Form.CreateSnapshot.Description",
                 LauncherOperationKind.CreateSnapshot,
                 runner,
                 engine)
         {
             _xml = Add(FileFieldViewModel.Input(
-                "Export XML", "O export do Clash Detective deste run.", dialogs, PickedFileKind.ClashXml));
+                "Field.Xml.Label", "Field.Xml.Hint", dialogs, PickedFileKind.ClashXml));
             _manifest = Add(FileFieldViewModel.Input(
-                "Run manifest",
-                "As revisões e os testes executados, declarados explicitamente.",
-                dialogs,
-                PickedFileKind.RunManifestJson));
+                "Field.Manifest.Label", "Field.Manifest.Hint", dialogs, PickedFileKind.RunManifestJson));
             _output = Add(FileFieldViewModel.Destination(
-                "Snapshot",
-                "Onde guardar o snapshot.",
+                "Field.Snapshot.Label",
+                "Field.Snapshot.Hint",
                 dialogs,
                 PickedFileKind.SnapshotJson,
                 () => SuggestedName(_xml.Path, ".snapshot.json")));
@@ -55,19 +52,25 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         public CompareSnapshotsFormViewModel(
             OperationRunnerViewModel runner, EngineStatusViewModel engine, IFileDialogs dialogs)
             : base(
-                "Comparar snapshots",
-                "Anterior e atual são papéis declarados por si. A aplicação nunca deduz a ordem por data ou nome.",
+                "Form.CompareSnapshots.Title",
+                "Form.ExplicitRoles",
                 LauncherOperationKind.CompareSnapshots,
                 runner,
                 engine)
         {
             _previous = Add(FileFieldViewModel.Input(
-                "Snapshot anterior", "O run mais antigo desta comparação.", dialogs, PickedFileKind.SnapshotJson));
+                "Field.PreviousSnapshot.Label",
+                "Field.PreviousSnapshot.Hint",
+                dialogs,
+                PickedFileKind.SnapshotJson));
             _current = Add(FileFieldViewModel.Input(
-                "Snapshot atual", "O run mais recente desta comparação.", dialogs, PickedFileKind.SnapshotJson));
+                "Field.CurrentSnapshot.Label",
+                "Field.CurrentSnapshot.Hint",
+                dialogs,
+                PickedFileKind.SnapshotJson));
             _output = Add(FileFieldViewModel.Destination(
-                "Relatório",
-                "Onde guardar o relatório da comparação.",
+                "Field.Report.Label",
+                "Field.Report.Hint",
                 dialogs,
                 PickedFileKind.HtmlReport,
                 () => "comparison.html"));
@@ -91,23 +94,29 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         public CompareRunsFormViewModel(
             OperationRunnerViewModel runner, EngineStatusViewModel engine, IFileDialogs dialogs)
             : base(
-                "Comparar duas revisões",
-                "Anterior e atual são papéis declarados por si. A aplicação nunca deduz a ordem por data ou nome.",
+                "Form.CompareRuns.Title",
+                "Form.ExplicitRoles",
                 LauncherOperationKind.CompareRuns,
                 runner,
                 engine)
         {
             _previousXml = Add(FileFieldViewModel.Input(
-                "Export XML anterior", "O export do run mais antigo.", dialogs, PickedFileKind.ClashXml));
+                "Field.PreviousXml.Label", "Field.PreviousXml.Hint", dialogs, PickedFileKind.ClashXml));
             _previousManifest = Add(FileFieldViewModel.Input(
-                "Manifest anterior", "O manifest do run mais antigo.", dialogs, PickedFileKind.RunManifestJson));
+                "Field.PreviousManifest.Label",
+                "Field.PreviousManifest.Hint",
+                dialogs,
+                PickedFileKind.RunManifestJson));
             _currentXml = Add(FileFieldViewModel.Input(
-                "Export XML atual", "O export do run mais recente.", dialogs, PickedFileKind.ClashXml));
+                "Field.CurrentXml.Label", "Field.CurrentXml.Hint", dialogs, PickedFileKind.ClashXml));
             _currentManifest = Add(FileFieldViewModel.Input(
-                "Manifest atual", "O manifest do run mais recente.", dialogs, PickedFileKind.RunManifestJson));
+                "Field.CurrentManifest.Label",
+                "Field.CurrentManifest.Hint",
+                dialogs,
+                PickedFileKind.RunManifestJson));
             _output = Add(FileFieldViewModel.Destination(
-                "Relatório",
-                "Onde guardar o relatório da comparação.",
+                "Field.Report.Label",
+                "Field.Report.Hint",
                 dialogs,
                 PickedFileKind.HtmlReport,
                 () => "comparison.html"));
@@ -131,18 +140,17 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         public IndexSnapshotsFormViewModel(
             OperationRunnerViewModel runner, EngineStatusViewModel engine, IFileDialogs dialogs)
             : base(
-                "Criar índice de runs",
-                "A ordem que declarar é a ordem do índice. Nada é ordenado por data, nome ou revisão, "
-                    + "e um snapshot repetido é mantido tal como o declarou.",
+                "Form.IndexSnapshots.Title",
+                "Form.IndexSnapshots.Description",
                 LauncherOperationKind.IndexSnapshots,
                 runner,
                 engine)
         {
             _snapshots = Add(new OrderedFileListViewModel(
-                "Snapshots, na ordem declarada", dialogs, PickedFileKind.SnapshotJson));
+                "Field.OrderedSnapshots.Label", dialogs, PickedFileKind.SnapshotJson));
             _output = Add(FileFieldViewModel.Destination(
-                "Índice",
-                "Onde guardar o índice de runs.",
+                "Field.IndexDestination.Label",
+                "Field.IndexDestination.Hint",
                 dialogs,
                 PickedFileKind.RunIndexJson,
                 () => "run-index.json"));
@@ -165,17 +173,17 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         public CompareIndexFormViewModel(
             OperationRunnerViewModel runner, EngineStatusViewModel engine, IFileDialogs dialogs)
             : base(
-                "Comparar índice de runs",
-                "Compara apenas pares adjacentes, pela ordem declarada no índice.",
+                "Form.CompareIndex.Title",
+                "Form.CompareIndex.Description",
                 LauncherOperationKind.CompareIndex,
                 runner,
                 engine)
         {
             _index = Add(FileFieldViewModel.Input(
-                "Índice de runs", "O índice que declara a ordem dos runs.", dialogs, PickedFileKind.RunIndexJson));
+                "Field.Index.Label", "Field.Index.Hint", dialogs, PickedFileKind.RunIndexJson));
             _output = Add(FileFieldViewModel.Destination(
-                "Relatório longitudinal",
-                "Onde guardar o relatório longitudinal.",
+                "Field.LongitudinalReport.Label",
+                "Field.LongitudinalReport.Hint",
                 dialogs,
                 PickedFileKind.HtmlReport,
                 () => "longitudinal.html"));
@@ -199,26 +207,25 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         public CreateProjectFormViewModel(
             OperationRunnerViewModel runner, EngineStatusViewModel engine, IFileDialogs dialogs)
             : base(
-                "Criar projeto",
-                "O catálogo guarda apenas referências operacionais. Os snapshots continuam a ser a única evidência.",
+                "Form.CreateProject.Title",
+                "Form.CreateProject.Description",
                 LauncherOperationKind.CreateProject,
                 runner,
                 engine)
         {
-            _projectId = Add(new TextFieldViewModel(
-                "Identificador do projeto", "Estável e usado também na governança de identidade."));
-            _displayName = Add(new TextFieldViewModel("Nome", "O nome que aparece no relatório."));
+            _projectId = Add(new TextFieldViewModel("Field.ProjectId.Label", "Field.ProjectId.Hint"));
+            _displayName = Add(new TextFieldViewModel("Field.DisplayName.Label", "Field.DisplayName.Hint"));
             _index = Add(FileFieldViewModel.Input(
-                "Índice de runs", "O índice já existente deste projeto.", dialogs, PickedFileKind.RunIndexJson));
+                "Field.Index.Label", "Field.ExistingIndex.Hint", dialogs, PickedFileKind.RunIndexJson));
             _report = Add(FileFieldViewModel.Destination(
-                "Destino do relatório longitudinal",
-                "Onde o relatório será regenerado. A pasta tem de existir.",
+                "Field.ReportDestination.Label",
+                "Field.ReportDestination.Hint",
                 dialogs,
                 PickedFileKind.HtmlReport,
                 () => "longitudinal.html"));
             _output = Add(FileFieldViewModel.Destination(
-                "Ficheiro do projeto",
-                "Onde guardar o catálogo do projeto.",
+                "Field.ProjectFile.Label",
+                "Field.ProjectFile.Hint",
                 dialogs,
                 PickedFileKind.ProjectCatalogJson,
                 () => "project.json"));
@@ -243,22 +250,24 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         public AppendProjectSnapshotFormViewModel(
             OperationRunnerViewModel runner, EngineStatusViewModel engine, IFileDialogs dialogs)
             : base(
-                "Acrescentar snapshot ao projeto",
-                "Acrescenta uma referência ao fim do índice. Nada é reordenado, removido ou desduplicado, "
-                    + "e o relatório não é regenerado automaticamente.",
+                "Form.AppendProjectSnapshot.Title",
+                "Form.AppendProjectSnapshot.Description",
                 LauncherOperationKind.AppendProjectSnapshot,
                 runner,
                 engine)
         {
             _project = Add(FileFieldViewModel.Input(
-                "Projeto", "O catálogo do projeto.", dialogs, PickedFileKind.ProjectCatalogJson));
+                "Field.Project.Label", "Field.Project.Hint", dialogs, PickedFileKind.ProjectCatalogJson));
             _snapshot = Add(FileFieldViewModel.Input(
-                "Snapshot a acrescentar", "O run a juntar ao fim do índice.", dialogs, PickedFileKind.SnapshotJson));
+                "Field.AppendedSnapshot.Label",
+                "Field.AppendedSnapshot.Hint",
+                dialogs,
+                PickedFileKind.SnapshotJson));
         }
 
         public override bool CanBuild => _project.HasValue && _snapshot.HasValue;
 
-        public override string? FollowUpLabel => "Renderizar projeto agora";
+        protected override string? FollowUpLabelKey => "Form.AppendProjectSnapshot.FollowUp";
 
         protected override LauncherOperationRequest Build() =>
             new AppendProjectSnapshotRequest(_project.Path!, _snapshot.Path!);
@@ -277,14 +286,14 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         public RenderProjectFormViewModel(
             OperationRunnerViewModel runner, EngineStatusViewModel engine, IFileDialogs dialogs)
             : base(
-                "Regenerar relatório do projeto",
-                "O destino vem do catálogo existente. A aplicação não escolhe nem inventa esse destino.",
+                "Form.RenderProject.Title",
+                "Form.RenderProject.Description",
                 LauncherOperationKind.RenderProject,
                 runner,
                 engine)
         {
             _project = Add(FileFieldViewModel.Input(
-                "Projeto", "O catálogo do projeto.", dialogs, PickedFileKind.ProjectCatalogJson));
+                "Field.Project.Label", "Field.Project.Hint", dialogs, PickedFileKind.ProjectCatalogJson));
         }
 
         public override bool CanBuild => _project.HasValue;

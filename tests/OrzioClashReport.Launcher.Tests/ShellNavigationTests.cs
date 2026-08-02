@@ -13,7 +13,7 @@ public sealed class ShellNavigationTests
         pages = new Dictionary<ShellSection, ViewModelBase>();
         foreach (ShellSection section in Enum.GetValues<ShellSection>())
         {
-            pages[section] = new SectionPlaceholderViewModel(section.ToString(), "test page");
+            pages[section] = new SectionPlaceholderViewModel("Nav.Home", "App.Tagline");
         }
 
         return new ShellViewModel(engine, pages, new InterruptedJobsViewModel(new RecordingJournal()));
@@ -37,9 +37,27 @@ public sealed class ShellNavigationTests
             },
             shell.Sections.Select(section => section.Section).ToArray());
 
-        Assert.Equal(
-            new[] { "Início", "Relatório rápido", "Snapshots", "Longitudinal", "Projetos", "Governança", "Definições" },
-            shell.Sections.Select(section => section.Label).ToArray());
+        using (LanguageScope.Use(InterfaceLanguage.Portuguese))
+        {
+            Assert.Equal(
+                new[]
+                {
+                    "Início", "Relatório rápido", "Snapshots", "Longitudinal",
+                    "Projetos", "Governança", "Definições",
+                },
+                shell.Sections.Select(section => section.Label).ToArray());
+        }
+
+        using (LanguageScope.Use(InterfaceLanguage.English))
+        {
+            Assert.Equal(
+                new[]
+                {
+                    "Home", "Quick report", "Snapshots", "Longitudinal",
+                    "Projects", "Governance", "Settings",
+                },
+                shell.Sections.Select(section => section.Label).ToArray());
+        }
     }
 
     [Fact]
@@ -80,7 +98,7 @@ public sealed class ShellNavigationTests
         var engine = new EngineStatusViewModel(new StubEngineProbe(EngineProbeResult.Ready("0.1.0-preview.3")));
         var pages = new Dictionary<ShellSection, ViewModelBase>
         {
-            [ShellSection.Home] = new SectionPlaceholderViewModel("Home", "test"),
+            [ShellSection.Home] = new SectionPlaceholderViewModel("Nav.Home", "App.Tagline"),
         };
 
         Assert.Throws<ArgumentException>(
@@ -113,7 +131,7 @@ public sealed class ShellNavigationTests
         var pages = new Dictionary<ShellSection, ViewModelBase>();
         foreach (ShellSection section in Enum.GetValues<ShellSection>())
         {
-            pages[section] = new SectionPlaceholderViewModel(section.ToString(), "test page");
+            pages[section] = new SectionPlaceholderViewModel("Nav.Home", "App.Tagline");
         }
 
         var shell = new ShellViewModel(engine, pages, new InterruptedJobsViewModel(new RecordingJournal()));

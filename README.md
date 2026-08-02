@@ -17,6 +17,34 @@ been validated on three real historical exports and remain experimental.
 The project-catalog workflow is included in version `0.1.0-preview.3`.
 The identity-governance workflow is included in version `0.1.0-preview.3`.
 
+## Desktop application
+
+`Orzio Clash Report Desktop` is a Windows desktop application built on this engine. Its
+current source and package candidate version is `0.2.0-launcher-preview.1`, distributed as
+a per-user installer for a private pilot with a small number of invited evaluators.
+
+The engine is unchanged by it. The desktop application starts `orzioclash.exe` as a child
+process and passes exactly the argument vectors the commands documented below already use,
+so every published CLI contract keeps working and the CLI itself remains available for
+automation, CI, and diagnostics.
+
+What it covers without a terminal: the single-run report, snapshots and snapshot
+comparison, two-revision comparison, ordered run indexes and index comparison, project
+catalog creation, appending a snapshot, regenerating a project report, and the four
+identity-governance operations.
+
+The installer is not code signed, so SmartScreen warns on first run; the published SHA-256
+is how a build is verified. The application is offline-first: no telemetry, no upload, and
+no account. Its own settings, logs, and job state live in
+`%LOCALAPPDATA%\Orzio\ClashReportLauncher`; your exports, snapshots, indexes, catalogs,
+governance documents, and reports live wherever you put them and are never removed by
+uninstalling.
+
+Validation status is unchanged by the desktop application: the longitudinal operations it
+exposes remain experimental and are labelled as such in the application itself.
+
+See [docs/operations/launcher-pilot.md](docs/operations/launcher-pilot.md).
+
 ## Architecture
 
 The project follows Ports and Adapters, also known as hexagonal architecture. The core

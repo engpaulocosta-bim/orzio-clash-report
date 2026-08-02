@@ -1,0 +1,121 @@
+name: Release Launcher
+
+# The desktop application is versioned and released separately from the engine.
+# Engine tags look like `v0.1.0-preview.3`; launcher tags carry `-launcher-` and are
+# excluded from the engine workflow, so the two never fire on the same tag.
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*-launcher-preview.*"
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test --configuration Release --no-build
+
+      - name: Read the launcher version
+        id: identity
+        shell: pwsh
+        run: |
+          [xml] $project = Get-Content -LiteralPath "src/OrzioClashReport.Launcher.Desktop/OrzioClashReport.Launcher.Desktop.csproj"
+          $prefix = $project.Project.PropertyGroup.VersionPrefix | Where-Object { $_ }
+          $suffix = $project.Project.PropertyGroup.VersionSuffix | Where-Object { $_ }
+          if (-not $prefix -or -not $suffix) {
+            throw "The launcher project must declare both VersionPrefix and VersionSuffix."
+          }
+
+          $launcherVersion = "$prefix-$suffix"
+          $expectedTag = "v$launcherVersion"
+
+          if ("${{ github.ref_type }}" -eq "tag" -and "${{ github.ref_name }}" -ne $expectedTag) {
+            throw "Tag '${{ github.ref_name }}' does not match the launcher version '$expectedTag'."
+          }
+
+          "launcher-version=$launcherVersion" >> $env:GITHUB_OUTPUT
+
+      - name: Verify tagged commit belongs to master
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        run: |
+          git fetch origin master
+          git merge-base --is-ancestor HEAD origin/master
+          if ($LASTEXITCODE -ne 0) {
+            throw "Tagged commit is not contained in origin/master."
+          }
+
+      - name: Publish the launcher and the engine
+        shell: pwsh
+        run: scripts/publish-launcher.ps1
+
+      - name: Ensure Inno Setup is available
+        id: innosetup
+        shell: pwsh
+        run: |
+          $candidates = @(
+            "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
+            "${env:ProgramFiles}\Inno Setup 6\ISCC.exe"
+          ) | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) }
+
+          if ($candidates.Count -eq 0) {
+            choco install innosetup --no-progress --yes
+            $candidates = @(
+              "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
+              "${env:ProgramFiles}\Inno Setup 6\ISCC.exe"
+            ) | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) }
+          }
+
+          if ($candidates.Count -eq 0) {
+            throw "Inno Setup 6 could not be located or installed."
+          }
+
+          "compiler=$($candidates[0])" >> $env:GITHUB_OUTPUT
+
+      - name: Package the installer
+        id: package
+        shell: pwsh
+        run: |
+          scripts/package-launcher.ps1 `
+            -LauncherVersion "${{ steps.identity.outputs.launcher-version }}" `
+            -InnoSetupCompiler "${{ steps.innosetup.outputs.compiler }}"
+
+          $name = "OrzioClashReportSetup-${{ steps.identity.outputs.launcher-version }}.exe"
+          $installer = Join-Path $PWD "artifacts/launcher/$name"
+          if (-not (Test-Path -LiteralPath $installer -PathType Leaf)) {
+            throw "The installer was not produced: $installer"
+          }
+
+          "installer-path=$installer" >> $env:GITHUB_OUTPUT
+          "checksum-path=$installer.sha256" >> $env:GITHUB_OUTPUT
+          "package-name=orzio-clash-report-desktop-v${{ steps.identity.outputs.launcher-version }}-win-x64" >> $env:GITHUB_OUTPUT
+
+      - name: Upload the installer
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ${{ steps.package.outputs.package-name }}
+          path: |
+            ${{ steps.package.outputs.installer-path }}
+            ${{ steps.package.outputs.checksum-path }}
+          if-no-files-found: error

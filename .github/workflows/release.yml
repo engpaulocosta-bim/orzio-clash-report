@@ -5,6 +5,9 @@ on:
   push:
     tags:
       - "v*"
+      # The desktop application has its own workflow and its own tags; the engine's
+      # tag-versus-version check would fail on one of them.
+      - "!v*-launcher-*"
 
 permissions:
   contents: read

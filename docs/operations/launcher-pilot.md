@@ -127,5 +127,5 @@ Please answer all of these, even where the answer is "no problem".
   the second claim gets earned.
 - There is no Clash Ledger, no `Reopened`, no automatic identity propagation, no transitivity, no
   automatic chronology, and no automatic responsibility.
-- Legal distribution terms remain an owner decision. This build is for authorised private
-  distribution only.
+- Legal distribution terms remain an owner decision. This build is for
+  authorised private distribution only.

@@ -4,6 +4,76 @@ All notable changes for OrzioClashReport are recorded here.
 
 ## Unreleased
 
+## 0.2.0-launcher-preview.1
+
+Private pilot candidate for `Orzio Clash Report Desktop`, a Windows desktop application
+built on the unchanged `0.1.0-preview.3` engine.
+
+### Added
+
+- Four launcher projects on `net8.0` -- Contracts, Application, Infrastructure, and an
+  Avalonia Desktop shell -- alongside the unchanged `netstandard2.0` engine. No launcher
+  project references an engine project, and no engine project references the launcher.
+- An application shell with seven sections: Início, Relatório rápido, Snapshots,
+  Longitudinal, Projetos, Governança, and Definições. There is no basic or advanced mode.
+- A design token file that is the only place a colour, radius, spacing, or type size is
+  defined, with the specified light and dark palettes, and a test that fails any view
+  stating such a literal.
+- An engine status badge covering all six engine states, each with its own glyph and
+  wording so no state is distinguishable by colour alone. Engine identity comes from
+  running the engine with `--version` as its single argument, matched against the published
+  version line, after a SHA-256 check against the packaged engine manifest.
+- Quick report end to end without a terminal: choose an export, choose a destination,
+  generate, follow the engine's output, cancel, and open the result.
+- Typed forms for `snapshot`, `compare`, `compare-snapshots`, `index-snapshots`,
+  `compare-index`, `create-project`, `append-project-snapshot`, and `render-project`. No
+  screen assembles a command line; each form produces a typed request and one gateway turns
+  it into the engine's published argument vector.
+- Typed forms for `create-identity-governance`, `append-identity-decision`,
+  `validate-identity-governance`, and `render-identity-governance-report`.
+- Output collision handling for derived HTML only: an existing report prompts a human, and
+  replacing is never the default. Snapshots, run indexes, project catalogs, and governance
+  documents are never offered for replacement, because the engine persists them with
+  create-new semantics.
+- A job journal, so an operation interrupted by the application closing is reported at the
+  next start and never resumed automatically.
+- A redacted JSON Lines log, kept fourteen days and at most twenty files, pruned on start.
+  A destination is recorded as an extension, a SHA-256 of the path, and the kind of root it
+  lives under; the absolute path, the directory chain, the argument vector, and the
+  engine's own output are never written.
+- A diagnostic bundle produced only on an explicit action, containing exactly six named
+  files, after the human has seen the complete list and the exact redacted log.
+- A per-user Windows installer requiring no administrator rights, with publish, package,
+  and smoke scripts, and a SHA-256 for the installer.
+- `docs/operations/launcher-pilot.md` with the pilot procedure and the evaluation
+  questionnaire.
+
+### Validation Status
+
+- The engine is unchanged at `0.1.0-preview.3`; its validation status is unchanged with it.
+- Single-run parsing, grouping, and HTML remain human-validated on one private real export.
+- Longitudinal matching, lifecycle classification, continuity links, continuity paths, and
+  the longitudinal report have still not been validated against
+  three real historical exports, and the application labels those operations experimental.
+- The desktop application's operations are covered by automated tests, including tests that
+  drive a real child process through the argument vectors the launcher actually builds.
+  That is not validation on a real project; the private pilot is how that claim gets earned.
+- The desktop application has not yet been run by a human on a clean Windows machine.
+
+### Known Limitations
+
+- The installer is not code signed. SmartScreen warns on first run.
+- Windows only. There is no macOS package.
+- No PDF export, no embedded clash images, no report templating, no branding, and no
+  manifest builder: a run manifest is still authored outside the application.
+- No auto-update, no licensing, no account, no cloud, and no telemetry.
+- One operation runs per window; there is no queue.
+- The application reaches the engine as a child process. That is deliberate for this pilot
+  and is not treated as urgent debt.
+- No Clash Ledger, no `Reopened`, no automatic identity assignment, propagation,
+  transitivity, graph merge, chronology, or responsibility.
+- Legal distribution terms remain an owner decision.
+
 ## 0.1.0-preview.3
 
 Internal controlled pilot candidate for Windows `win-x64`.

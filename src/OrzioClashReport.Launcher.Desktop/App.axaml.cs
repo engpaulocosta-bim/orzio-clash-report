@@ -1,5 +1,7 @@
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using OrzioClashReport.Launcher.Desktop.Composition;
 
 namespace OrzioClashReport.Launcher.Desktop
 {
@@ -7,6 +9,8 @@ namespace OrzioClashReport.Launcher.Desktop
     // Avalonia's Application type inside the OrzioClashReport.Launcher namespace.
     public sealed partial class App : Avalonia.Application
     {
+        private MainWindow? _mainWindow;
+
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
@@ -16,7 +20,12 @@ namespace OrzioClashReport.Launcher.Desktop
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                desktop.MainWindow = new MainWindow();
+                _mainWindow = new MainWindow();
+
+                CompositionRoot root = CompositionRoot.Create(() => (TopLevel?)_mainWindow);
+                _mainWindow.DataContext = root.CreateShell();
+
+                desktop.MainWindow = _mainWindow;
             }
 
             base.OnFrameworkInitializationCompleted();

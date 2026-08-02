@@ -1,10 +1,33 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:OrzioClashReport.Launcher.Desktop.ViewModels"
+             xmlns:views="using:OrzioClashReport.Launcher.Desktop.Views"
              x:Class="OrzioClashReport.Launcher.Desktop.App"
              RequestedThemeVariant="Default">
 
+  <Application.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://OrzioClashReport.Launcher.Desktop/Theme/Tokens.axaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Application.Resources>
+
   <Application.Styles>
     <FluentTheme />
+    <StyleInclude Source="avares://OrzioClashReport.Launcher.Desktop/Theme/Styles.axaml" />
   </Application.Styles>
+
+  <Application.DataTemplates>
+    <DataTemplate DataType="vm:HomeViewModel">
+      <views:HomeView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:SettingsViewModel">
+      <views:SettingsView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:SectionPlaceholderViewModel">
+      <views:SectionPlaceholderView />
+    </DataTemplate>
+  </Application.DataTemplates>
 
 </Application>

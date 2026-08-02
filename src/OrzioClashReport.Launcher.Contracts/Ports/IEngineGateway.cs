@@ -14,9 +14,6 @@ namespace OrzioClashReport.Launcher.Contracts.Ports
     /// </summary>
     public interface IEngineGateway
     {
-        /// <summary>Probes the engine's identity and integrity.</summary>
-        Task<EngineProbeResult> ProbeAsync(CancellationToken cancellationToken);
-
         /// <summary>
         /// Runs one operation to completion. Cancellation must terminate the engine and everything it
         /// started, then wait for it to actually exit before the returned task completes.
@@ -25,6 +22,15 @@ namespace OrzioClashReport.Launcher.Contracts.Ports
             LauncherOperationRequest request,
             IProgress<EngineOutputChunk>? progress,
             CancellationToken cancellationToken);
+    }
+
+    /// <summary>
+    /// Establishes which engine is installed and whether it can be trusted. This is separate from
+    /// running operations so the shell can report engine state before any work is requested.
+    /// </summary>
+    public interface IEngineProbe
+    {
+        Task<EngineProbeResult> ProbeAsync(CancellationToken cancellationToken);
     }
 
     /// <summary>Verifies the installed engine against the packaged engine manifest.</summary>

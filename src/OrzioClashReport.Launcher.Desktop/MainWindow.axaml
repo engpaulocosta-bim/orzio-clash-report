@@ -1,14 +1,83 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:OrzioClashReport.Launcher.Desktop.Controls"
+        xmlns:vm="using:OrzioClashReport.Launcher.Desktop.ViewModels"
         x:Class="OrzioClashReport.Launcher.Desktop.MainWindow"
+        x:DataType="vm:ShellViewModel"
         Title="Orzio Clash Report"
-        Width="1280"
-        Height="800"
-        MinWidth="1024"
-        MinHeight="680">
+        Width="{DynamicResource OrzioWindowDefaultWidth}"
+        Height="{DynamicResource OrzioWindowDefaultHeight}"
+        MinWidth="{DynamicResource OrzioWindowMinWidth}"
+        MinHeight="{DynamicResource OrzioWindowMinHeight}"
+        Background="{DynamicResource OrzioCanvasBrush}">
 
-  <TextBlock Text="Orzio Clash Report"
-             HorizontalAlignment="Center"
-             VerticalAlignment="Center" />
+  <Grid RowDefinitions="*,Auto">
+
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
+
+      <!-- Sidebar, collapsing to an icon rail on narrow windows. -->
+      <Border Grid.Column="0"
+              Width="{Binding NavigationWidth}"
+              Background="{DynamicResource OrzioRaisedBrush}"
+              BorderBrush="{DynamicResource OrzioBorderSubtleBrush}"
+              BorderThickness="{DynamicResource OrzioSidebarBorder}">
+        <DockPanel>
+
+          <Border DockPanel.Dock="Top" Padding="{DynamicResource OrzioCardPadding}">
+            <TextBlock Classes="subtitle"
+                       Text="Orzio"
+                       IsVisible="{Binding !IsCompactNavigation}" />
+          </Border>
+
+          <ListBox DockPanel.Dock="Top"
+                   Classes="nav"
+                   ItemsSource="{Binding Sections}"
+                   SelectedItem="{Binding SelectedSection}"
+                   Background="Transparent"
+                   BorderThickness="{DynamicResource OrzioBorderNone}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:NavigationItemViewModel">
+                <StackPanel Orientation="Horizontal"
+                            Spacing="{DynamicResource OrzioSpaceMd}"
+                            ToolTip.Tip="{Binding Label}">
+                  <TextBlock Text="{Binding Glyph}" Width="{DynamicResource OrzioSpaceMd}" />
+                  <TextBlock Text="{Binding Label}"
+                             TextWrapping="NoWrap"
+                             IsVisible="{Binding $parent[ListBox].((vm:ShellViewModel)DataContext).IsCompactNavigation,
+                                                 Converter={x:Static BoolConverters.Not}}" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+        </DockPanel>
+      </Border>
+
+      <!-- Page content -->
+      <Border Grid.Column="1" Padding="{DynamicResource OrzioContentPadding}">
+        <ContentControl Content="{Binding CurrentPage}" />
+      </Border>
+
+    </Grid>
+
+    <!-- Status bar -->
+    <Border Grid.Row="1"
+            Height="{DynamicResource OrzioStatusBarHeight}"
+            Padding="{DynamicResource OrzioStatusBarPadding}"
+            Background="{DynamicResource OrzioRaisedBrush}"
+            BorderBrush="{DynamicResource OrzioBorderSubtleBrush}"
+            BorderThickness="{DynamicResource OrzioStatusBarBorder}">
+      <Grid ColumnDefinitions="*,Auto">
+        <TextBlock Grid.Column="0"
+                   Classes="secondary"
+                   VerticalAlignment="Center"
+                   TextWrapping="NoWrap"
+                   TextTrimming="CharacterEllipsis"
+                   Text="{Binding StatusMessage}" />
+        <controls:EngineStatusBadge Grid.Column="1" DataContext="{Binding Engine}" />
+      </Grid>
+    </Border>
+
+  </Grid>
 
 </Window>

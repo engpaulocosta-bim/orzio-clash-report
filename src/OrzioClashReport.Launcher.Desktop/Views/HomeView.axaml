@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="using:OrzioClashReport.Launcher.Desktop.Controls"
+             xmlns:vm="using:OrzioClashReport.Launcher.Desktop.ViewModels"
+             x:Class="OrzioClashReport.Launcher.Desktop.Views.HomeView"
+             x:DataType="vm:HomeViewModel">
+
+  <ScrollViewer>
+    <StackPanel Spacing="{DynamicResource OrzioSpaceLg}">
+
+      <StackPanel Spacing="{DynamicResource OrzioSpaceXs}">
+        <TextBlock Classes="display" Text="Orzio Clash Report" />
+        <TextBlock Classes="secondary"
+                   Text="Transforme exports do Navisworks Clash Detective em relatórios de coordenação, sem terminal." />
+      </StackPanel>
+
+      <Border Classes="card">
+        <StackPanel Spacing="{DynamicResource OrzioSpaceMd}">
+          <TextBlock Classes="caption" Text="ESTADO DO MOTOR" />
+          <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceMd}">
+            <controls:EngineStatusBadge DataContext="{Binding Engine}" />
+            <TextBlock Classes="secondary"
+                       VerticalAlignment="Center"
+                       Text="{Binding Engine.Description}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <StackPanel Spacing="{DynamicResource OrzioSpaceSm}">
+        <TextBlock Classes="caption" Text="COMEÇAR" />
+        <StackPanel Orientation="Horizontal" Spacing="{DynamicResource OrzioSpaceSm}">
+          <Button Classes="primary"
+                  Content="Relatório rápido"
+                  Command="{Binding OpenQuickReportCommand}" />
+          <Button Content="Criar snapshot"
+                  Command="{Binding OpenCreateSnapshotCommand}" />
+          <Button Content="Comparar revisões"
+                  Command="{Binding OpenCompareRevisionsCommand}" />
+        </StackPanel>
+      </StackPanel>
+
+      <StackPanel Spacing="{DynamicResource OrzioSpaceSm}">
+        <TextBlock Classes="caption" Text="ÚLTIMOS RESULTADOS" />
+
+        <TextBlock Classes="tertiary"
+                   IsVisible="{Binding !HasRecentOutputs}"
+                   Text="Ainda não foi gerado nenhum resultado nesta máquina." />
+
+        <ItemsControl ItemsSource="{Binding RecentOutputs}" IsVisible="{Binding HasRecentOutputs}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:RecentOutputViewModel">
+              <Border Classes="sunken"
+                      Padding="{DynamicResource OrzioCardPadding}"
+                      Margin="{DynamicResource OrzioStackGapSm}">
+                <Grid ColumnDefinitions="*,Auto,Auto">
+                  <StackPanel Grid.Column="0" Spacing="{DynamicResource OrzioSpaceXs}">
+                    <TextBlock Text="{Binding FileName}" />
+                    <TextBlock Classes="tertiary" Text="{Binding CreatedAtDisplay}" />
+                  </StackPanel>
+                  <Button Grid.Column="1"
+                          Classes="link"
+                          Content="Abrir"
+                          Command="{Binding OpenCommand}" />
+                  <Button Grid.Column="2"
+                          Classes="link"
+                          Content="Mostrar na pasta"
+                          Command="{Binding RevealCommand}" />
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

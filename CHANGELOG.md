@@ -4,6 +4,38 @@ All notable changes for OrzioClashReport are recorded here.
 
 ## Unreleased
 
+The single-run HTML report is the only artifact that leaves the machine that produced it.
+This entry is about making it fit to be forwarded.
+
+### Fixed
+
+- A discipline badge no longer prints the exporting machine's absolute path. The discipline
+  resolver reports whatever the export's path hierarchy or source-file property held, and in a
+  real Navisworks export that is routinely the nested model's full path, so every group heading
+  carried a client folder chain into a document that gets sent to other companies. The report now
+  shows the model's own name. The resolved value itself is unchanged, so grouping is unchanged.
+  The same value still reaches the longitudinal, lifecycle, and governance renderers, which this
+  entry does not touch.
+- The Navisworks reader no longer ignores the export's declared length unit, so a distance and a
+  coordinate are no longer shown without saying what they are measured in.
+
+### Added
+
+- The report is headed by the model it came from rather than by the tool that produced it, with
+  the source model, the clash tests executed, the units, and the moment it was generated stated
+  underneath. Any directory part of a source name is dropped before it is shown.
+- `--language en|pt` on the single-run command. It changes the report's own wording only: a clash
+  status, a discipline, a level, a clash test name, and an element id are reproduced exactly as
+  the export stated them, in both languages. The default is English, as before.
+- Print rules, so a clash group is not split across two pages, a table repeats its header on every
+  page, and discipline badges print as outlines rather than as filled colour.
+
+### Changed
+
+- `HtmlReportRenderer` takes the language and the generation instant as constructor arguments. The
+  engine core reads no ambient clock, which is what keeps the same export rendering byte-identical.
+- `ClashReportDocument` carries the source's declared `Units`, verbatim and unconverted.
+
 ## 0.2.0-launcher-preview.1
 
 Private pilot candidate for `Orzio Clash Report Desktop`, a Windows desktop application

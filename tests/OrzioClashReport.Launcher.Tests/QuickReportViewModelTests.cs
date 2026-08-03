@@ -55,6 +55,64 @@ public sealed class QuickReportViewModelTests
     }
 
     [Fact]
+    public void NothingClaimsToBeReady_UntilItActuallyIs()
+    {
+        QuickReportViewModel viewModel = Create(out _, out _);
+
+        using (LanguageScope.Use(InterfaceLanguage.Portuguese))
+        {
+            Assert.Equal("Faltam dados para executar.", viewModel.ActionHint);
+        }
+
+        using (LanguageScope.Use(InterfaceLanguage.English))
+        {
+            Assert.Equal("Something is still missing before this can run.", viewModel.ActionHint);
+        }
+
+        viewModel.InputXmlPath = Absolute("input.xml");
+
+        // One of the two is not both.
+        using (LanguageScope.Use(InterfaceLanguage.Portuguese))
+        {
+            Assert.Equal("Faltam dados para executar.", viewModel.ActionHint);
+        }
+
+        viewModel.OutputHtmlPath = Absolute("report.html");
+
+        using (LanguageScope.Use(InterfaceLanguage.Portuguese))
+        {
+            Assert.Equal("Pronto para executar.", viewModel.ActionHint);
+        }
+    }
+
+    [Fact]
+    public void AnUnusableEngineIsNeverDescribedAsReady()
+    {
+        QuickReportViewModel viewModel = Create(out _, out _, EngineProbeResult.Missing("no engine"));
+        viewModel.InputXmlPath = Absolute("input.xml");
+        viewModel.OutputHtmlPath = Absolute("report.html");
+
+        using LanguageScope scope = LanguageScope.Use(InterfaceLanguage.Portuguese);
+
+        Assert.False(viewModel.GenerateCommand.CanExecute(null));
+        Assert.Equal("Faltam dados para executar.", viewModel.ActionHint);
+    }
+
+    [Fact]
+    public async Task OnceSomethingHasRun_TheHintIsTheOutcome()
+    {
+        QuickReportViewModel viewModel = Create(out _, out _);
+        viewModel.InputXmlPath = Absolute("input.xml");
+        viewModel.OutputHtmlPath = Absolute("report.html");
+
+        await viewModel.GenerateCommand.ExecuteAsync(null);
+
+        using LanguageScope scope = LanguageScope.Use(InterfaceLanguage.Portuguese);
+
+        Assert.Equal("Concluído.", viewModel.ActionHint);
+    }
+
+    [Fact]
     public void GenerateIsUnavailable_WhileTheEngineIsNotUsable()
     {
         QuickReportViewModel viewModel = Create(out _, out _, EngineProbeResult.Missing("no engine"));

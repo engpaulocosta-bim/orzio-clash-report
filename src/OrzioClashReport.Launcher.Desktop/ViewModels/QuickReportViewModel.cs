@@ -35,10 +35,25 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
                 OnPropertyChanged(nameof(BlockedReason));
                 OnPropertyChanged(nameof(IsBlocked));
                 GenerateCommand.NotifyCanExecuteChanged();
+                OnPropertyChanged(nameof(ActionHint));
             };
 
-            Runner.PropertyChanged += (_, _) => GenerateCommand.NotifyCanExecuteChanged();
+            Runner.PropertyChanged += (_, _) =>
+            {
+                GenerateCommand.NotifyCanExecuteChanged();
+                OnPropertyChanged(nameof(ActionHint));
+            };
         }
+
+        /// <summary>
+        /// What the primary action is waiting for. The runner can only report what it has done, so
+        /// until something has run this says whether the operation can start, and readiness is
+        /// claimed only when it is true.
+        /// </summary>
+        public string ActionHint =>
+            Runner.HasRun ? Runner.StatusText
+            : CanGenerate() ? Text("Action.ReadyToRun")
+            : Text("Action.NotReadyToRun");
 
         public OperationRunnerViewModel Runner { get; }
 
@@ -168,6 +183,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             OnPropertyChanged(nameof(InputFileName));
             OnPropertyChanged(nameof(HasInput));
             GenerateCommand.NotifyCanExecuteChanged();
+            OnPropertyChanged(nameof(ActionHint));
         }
 
         partial void OnOutputHtmlPathChanged(string? value)
@@ -176,6 +192,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             OnPropertyChanged(nameof(OutputFileName));
             OnPropertyChanged(nameof(HasOutput));
             GenerateCommand.NotifyCanExecuteChanged();
+            OnPropertyChanged(nameof(ActionHint));
         }
     }
 }

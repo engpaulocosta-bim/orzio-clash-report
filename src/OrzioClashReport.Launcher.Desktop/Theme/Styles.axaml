@@ -114,6 +114,30 @@
     <Setter Property="TextBlock.Foreground" Value="{DynamicResource OrzioAccentBrush}" />
   </Style>
 
+  <!--
+    A disabled action must look disabled, and these come last because a later style wins: the class
+    styles above paint the content presenter unconditionally, so without them the primary button
+    keeps its full accent while refusing to be pressed, which reads as a broken button rather than a
+    step that is not ready yet. Colour is not the only signal; the caption beside the action says
+    what is still missing.
+  -->
+  <Style Selector="Button:disabled /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource OrzioDisabledSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioDisabledBorderBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource OrzioDisabledTextBrush}" />
+  </Style>
+
+  <Style Selector="Button.primary:disabled /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource OrzioDisabledSurfaceBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioDisabledBorderBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource OrzioDisabledTextBrush}" />
+  </Style>
+
+  <Style Selector="Button.link:disabled /template/ ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource OrzioDisabledTextBrush}" />
+  </Style>
+
   <!-- Inputs -->
   <Style Selector="TextBox">
     <Setter Property="Background" Value="{DynamicResource OrzioCanvasBrush}" />

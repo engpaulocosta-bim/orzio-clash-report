@@ -87,6 +87,44 @@ public sealed class InstallerContractTests
     }
 
     [Fact]
+    public void TheScriptsResolveTheirOwnLocationWhereItIsActuallyAvailable()
+    {
+        // Windows PowerShell 5.1 invoked with -File leaves $PSScriptRoot empty while a param()
+        // block's defaults are evaluated, so a default that reads it fails before the first line of
+        // real work. Both scripts resolve their paths in the body instead.
+        foreach (string script in new[] { PublishScript, PackageScript })
+        {
+            int parameters = script.IndexOf("param(", StringComparison.Ordinal);
+            int body = script.IndexOf("$ErrorActionPreference", StringComparison.Ordinal);
+            Assert.True(parameters >= 0 && body > parameters);
+
+            Assert.DoesNotContain(
+                "$PSScriptRoot",
+                script.Substring(parameters, body - parameters),
+                StringComparison.Ordinal);
+            Assert.Contains("$MyInvocation.MyCommand.Path", script, StringComparison.Ordinal);
+        }
+    }
+
+    [Fact]
+    public void PackagingSurvivesARepositoryPathThatContainsASpace()
+    {
+        // A trailing separator would escape the closing quote when the argument is turned back into
+        // a command line, so the paths handed to the compiler are trimmed and resolved first.
+        Assert.Contains("$StagingDirectory = (Resolve-Path -LiteralPath $StagingDirectory)", PackageScript, StringComparison.Ordinal);
+        Assert.Contains("$OutputDirectory = (Resolve-Path -LiteralPath $OutputDirectory)", PackageScript, StringComparison.Ordinal);
+        Assert.Contains(".TrimEnd('\\', '/')", PackageScript, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void PackagingRefusesAnInnoSetupTooOldForTheInstallerScript()
+    {
+        // ArchitecturesAllowed=x64compatible needs 6.3; an older compiler must say so.
+        Assert.Contains("x64compatible", InstallerScript, StringComparison.Ordinal);
+        Assert.Contains("6.3 or later", PackageScript, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void TheLauncherIsNotTrimmedAtThisStage()
     {
         Assert.Contains("-p:PublishTrimmed=false", PublishScript, StringComparison.Ordinal);

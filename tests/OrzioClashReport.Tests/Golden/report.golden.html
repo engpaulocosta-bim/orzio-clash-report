@@ -2,13 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>OrzioClashReport</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sample</title>
 <style>
 body{font-family:Segoe UI,Arial,sans-serif;background:#fff;color:#212121;margin:2rem;}
 .report-header{border-bottom:2px solid #212121;padding-bottom:1rem;margin-bottom:1.5rem;}
-.report-header h1{margin:0 0 .25rem 0;}
-.summary{font-size:1.1rem;font-weight:600;}
-.source{color:#616161;font-size:.9rem;}
+.report-header h1{margin:0;font-size:1.6rem;overflow-wrap:anywhere;}
+.subtitle{color:#616161;margin:.15rem 0 0 0;font-size:1rem;}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:.15rem 1rem;margin:.9rem 0 0 0;font-size:.9rem;}
+.meta dt{color:#616161;}
+.meta dd{margin:0;overflow-wrap:anywhere;}
+.summary{font-size:1.1rem;font-weight:600;margin:.9rem 0 0 0;}
 .group{margin-bottom:2rem;}
 .group h2{font-size:1.1rem;margin-bottom:.25rem;}
 .badge{color:#fff;border-radius:.75rem;padding:.15rem .6rem;font-size:.85rem;}
@@ -18,12 +22,29 @@ body{font-family:Segoe UI,Arial,sans-serif;background:#fff;color:#212121;margin:
 table{border-collapse:collapse;width:100%;}
 th,td{border:1px solid #e0e0e0;padding:.4rem .6rem;text-align:left;font-size:.9rem;}
 th{background:#fafafa;}
+td.numeric{font-variant-numeric:tabular-nums;white-space:nowrap;}
+@media print{
+body{margin:0;font-size:10pt;}
+.report-header{page-break-after:avoid;break-after:avoid;}
+.group{page-break-inside:avoid;break-inside:avoid;margin-bottom:1.2rem;}
+.group h2{page-break-after:avoid;break-after:avoid;}
+thead{display:table-header-group;}
+tr{page-break-inside:avoid;break-inside:avoid;}
+.badge{color:#000;background:transparent!important;border:1px solid #000;border-radius:.75rem;}
+th{background:#f2f2f2;}
+th,td{border:1px solid #999;}
+}
 </style>
 </head>
 <body>
 <header class="report-header">
-<h1>OrzioClashReport</h1>
-<p class="source">Source: sample.nwd</p>
+<h1>sample</h1>
+<p class="subtitle">Coordination clash report</p>
+<dl class="meta">
+<dt>Source model</dt><dd>sample.nwd</dd>
+<dt>Clash tests</dt><dd>Test 1</dd>
+<dt>Units</dt><dd>m</dd>
+</dl>
 <p class="summary">2 raw clashes &rarr; 2 groups</p>
 </header>
 <section class="group">
@@ -31,9 +52,9 @@ th{background:#fafafa;}
 <p class="clash-test">Clash test: Test 1</p>
 <p class="group-count">1 clash(es)</p>
 <table>
-<thead><tr><th>Name</th><th>Status</th><th>Distance</th><th>Point</th><th>Element A</th><th>Element B</th></tr></thead>
+<thead><tr><th>Name</th><th>Status</th><th>Distance (m)</th><th>Point (m)</th><th>Element A</th><th>Element B</th></tr></thead>
 <tbody>
-<tr><td>Clash1</td><td>New</td><td>-0.007</td><td>1.234, 2.345, -3.456</td><td>avac-1</td><td>arch-1</td></tr>
+<tr><td>Clash1</td><td>New</td><td class="numeric">-0.007</td><td class="numeric">1.234, 2.345, -3.456</td><td>avac-1</td><td>arch-1</td></tr>
 </tbody>
 </table>
 </section>
@@ -42,9 +63,9 @@ th{background:#fafafa;}
 <p class="clash-test">Clash test: Test 1</p>
 <p class="group-count">1 clash(es)</p>
 <table>
-<thead><tr><th>Name</th><th>Status</th><th>Distance</th><th>Point</th><th>Element A</th><th>Element B</th></tr></thead>
+<thead><tr><th>Name</th><th>Status</th><th>Distance (m)</th><th>Point (m)</th><th>Element A</th><th>Element B</th></tr></thead>
 <tbody>
-<tr><td>Clash2</td><td>Approved</td><td>0.050</td><td>&mdash;</td><td>avac-2</td><td>struct-2</td></tr>
+<tr><td>Clash2</td><td>Approved</td><td class="numeric">0.050</td><td class="numeric">&mdash;</td><td>avac-2</td><td>struct-2</td></tr>
 </tbody>
 </table>
 </section>

@@ -38,7 +38,11 @@ namespace OrzioClashReport.Input.NavisworksXml
                     $"'{_filePath}' is not a valid Clash Detective export: missing root <exchange> element.");
             }
 
+            // 'filename' is the exported model's own name. The sibling 'filepath' attribute holds an
+            // absolute directory on the exporting machine and is deliberately not read: a report is
+            // forwarded to other people, and a folder chain is not theirs to receive.
             string? sourceName = (string?)exchange.Attribute("filename");
+            string? units = (string?)exchange.Attribute("units");
 
             var batches = exchange
                 .Elements("batchtest")
@@ -47,7 +51,7 @@ namespace OrzioClashReport.Input.NavisworksXml
                 .Select(ParseClashTest)
                 .ToList();
 
-            return new ClashReportDocument(sourceName, null, batches);
+            return new ClashReportDocument(sourceName, null, batches, units);
         }
 
         private ClashBatch ParseClashTest(XElement clashTestElement)

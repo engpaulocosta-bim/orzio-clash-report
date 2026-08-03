@@ -23,7 +23,8 @@ namespace OrzioClashReport.Cli
     internal static class Program
     {
         private const string ProductName = "orzioclash";
-        private const string LegacyUsage = "Usage: orzioclash <input.xml> -o <output.html>";
+        private const string LegacyUsage =
+            "Usage: orzioclash <input.xml> -o <output.html> [--language en|pt]";
         private const string CompareUsage = "Usage: orzioclash compare --previous-xml <previous.xml> --previous-manifest <previous.json> --current-xml <current.xml> --current-manifest <current.json> [-o <output.html> | --output <output.html>]";
         private const string CompareIndexUsage = "Usage: orzioclash compare-index --index <run-index.json> [-o <output.html> | --output <output.html>]";
         private const string CompareSnapshotsUsage = "Usage: orzioclash compare-snapshots --previous-snapshot <previous.json> --current-snapshot <current.json> [-o <output.html> | --output <output.html>]";
@@ -123,8 +124,10 @@ namespace OrzioClashReport.Cli
             Console.WriteLine("  orzioclash <command> [options]");
             Console.WriteLine();
             Console.WriteLine("Default workflow:");
-            Console.WriteLine("  orzioclash <input.xml> -o <output.html>");
+            Console.WriteLine("  orzioclash <input.xml> -o <output.html> [--language en|pt]");
             Console.WriteLine("      Generate the grouped single-run HTML report from one Clash Detective XML export.");
+            Console.WriteLine("      --language sets the report's own wording only; values read from the export,");
+            Console.WriteLine("      including clash statuses and clash test names, are never translated.");
             Console.WriteLine();
             Console.WriteLine("Commands:");
             Console.WriteLine("  compare              Compare previous/current XML exports with explicit manifests.");
@@ -162,7 +165,12 @@ namespace OrzioClashReport.Cli
 
         private static int RunLegacyReport(string[] args)
         {
-            if (!TryParseLegacyArguments(args, out string inputPath, out string outputPath, out string parseError))
+            if (!TryParseLegacyArguments(
+                    args,
+                    out string inputPath,
+                    out string outputPath,
+                    out ReportLanguage language,
+                    out string parseError))
             {
                 Console.Error.WriteLine(parseError);
                 Console.Error.WriteLine(LegacyUsage);
@@ -179,7 +187,9 @@ namespace OrzioClashReport.Cli
                 IClashGrouper grouper = new RuleBasedGrouper(new PathHierarchyDisciplineResolver());
                 var report = grouper.Group(document);
 
-                IReportRenderer renderer = new HtmlReportRenderer();
+                // The clock is read once, here, and handed to the renderer. Core stays free of any
+                // ambient time, which is what lets the same export render byte-identically in a test.
+                IReportRenderer renderer = new HtmlReportRenderer(language, DateTimeOffset.UtcNow);
                 string html = renderer.Render(report);
 
                 File.WriteAllText(outputPath, html);
@@ -1085,10 +1095,15 @@ namespace OrzioClashReport.Cli
         }
 
         private static bool TryParseLegacyArguments(
-            string[] args, out string inputPath, out string outputPath, out string error)
+            string[] args,
+            out string inputPath,
+            out string outputPath,
+            out ReportLanguage language,
+            out string error)
         {
             inputPath = string.Empty;
             outputPath = "report.html";
+            language = ReportLanguage.English;
             error = string.Empty;
 
             if (args.Length == 0)
@@ -1112,6 +1127,22 @@ namespace OrzioClashReport.Cli
                     outputPath = args[i + 1];
                     i++;
                 }
+                else if (args[i] == "--language")
+                {
+                    if (i + 1 >= args.Length)
+                    {
+                        error = $"Missing value for '{args[i]}'.";
+                        return false;
+                    }
+
+                    if (!TryParseReportLanguage(args[i + 1], out language))
+                    {
+                        error = $"Unrecognized language '{args[i + 1]}'. Use 'en' or 'pt'.";
+                        return false;
+                    }
+
+                    i++;
+                }
                 else
                 {
                     error = $"Unrecognized argument '{args[i]}'.";
@@ -1126,6 +1157,26 @@ namespace OrzioClashReport.Cli
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// The language affects the report's own wording only. It never changes a clash status, a
+        /// discipline, a clash test name, or any other value read from the export.
+        /// </summary>
+        private static bool TryParseReportLanguage(string value, out ReportLanguage language)
+        {
+            switch (value)
+            {
+                case "en":
+                    language = ReportLanguage.English;
+                    return true;
+                case "pt":
+                    language = ReportLanguage.Portuguese;
+                    return true;
+                default:
+                    language = ReportLanguage.English;
+                    return false;
+            }
         }
 
         private static bool TryParseCompareArguments(

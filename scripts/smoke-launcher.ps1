@@ -28,7 +28,9 @@ function Assert-True {
     param([bool] $Condition, [string] $Message)
 
     if (-not $Condition) {
-        throw $Message
+        # Each message states what should have been true, so a failure has to say it was not.
+        # Throwing the expectation on its own reads like a success that crashed.
+        throw "CHECK FAILED, this is not true: $Message"
     }
 
     Write-Host "  ok  $Message"
@@ -38,6 +40,20 @@ if ($AfterUninstall) {
     Write-Host "Checking what remains after uninstalling..."
 
     $report = Join-Path $SmokeWorkspace "smoke-report.html"
+
+    if (-not (Test-Path -LiteralPath $report)) {
+        # An error record renders as one paragraph, so the explanation is written out first and the
+        # thrown message is the single sentence that says what to do.
+        Write-Host ""
+        Write-Host "This run verifies what survived uninstalling, so it expects a report left behind"
+        Write-Host "by the installed-state run at:"
+        Write-Host "  $report"
+        Write-Host ""
+        Write-Host "There is no report there, which means the installed-state run never happened."
+        Write-Host ""
+        throw "Run this script without -AfterUninstall first, while the application is still installed."
+    }
+
     Assert-True (Test-Path -LiteralPath $report -PathType Leaf) `
         "The report produced before uninstalling still exists."
     Assert-True ((Get-Item -LiteralPath $report).Length -gt 0) `
@@ -72,6 +88,20 @@ $launcher = Join-Path $InstallDirectory "OrzioClashReport.Launcher.Desktop.exe"
 $engine = Join-Path $InstallDirectory "engine\win-x64\orzioclash.exe"
 $manifestPath = Join-Path $InstallDirectory "engine\win-x64\engine-manifest.json"
 $sample = Join-Path $InstallDirectory "samples\sample-clash.xml"
+
+if (-not (Test-Path -LiteralPath $InstallDirectory -PathType Container)) {
+    # An error record renders as one paragraph, so the explanation is written out first and the
+    # thrown message is the single sentence that says what to do.
+    Write-Host ""
+    Write-Host "Nothing is installed at:"
+    Write-Host "  $InstallDirectory"
+    Write-Host ""
+    Write-Host "This script checks an installed application; it does not install one. Build the"
+    Write-Host "installer with scripts/publish-launcher.ps1 and scripts/package-launcher.ps1, then"
+    Write-Host "run the installer it produces. Pass -InstallDirectory if you installed elsewhere."
+    Write-Host ""
+    throw "Install the application first, then run this script again."
+}
 
 Assert-True (Test-Path -LiteralPath $launcher -PathType Leaf) "The launcher executable is installed."
 Assert-True (Test-Path -LiteralPath $engine -PathType Leaf) "The engine executable is installed."

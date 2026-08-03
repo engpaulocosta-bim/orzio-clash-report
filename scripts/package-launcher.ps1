@@ -107,10 +107,12 @@ if ($manifest.executableFileName -ne "orzioclash.exe") {
 Write-Host "Engine manifest verified: $($manifest.engineVersion) / $actualSha256"
 
 if (-not $InnoSetupCompiler) {
-    $candidates = @(
-        "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
-        "${env:ProgramFiles}\Inno Setup 6\ISCC.exe"
-    ) | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) }
+    # Where-Object yields nothing rather than an empty list, and under Set-StrictMode reading a
+    # property of nothing is an error, so the pipeline is collected into an array first.
+    $candidates = @(@(
+            "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe",
+            "${env:ProgramFiles}\Inno Setup 6\ISCC.exe"
+        ) | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) })
 
     if ($candidates.Count -eq 0) {
         throw "Inno Setup 6.3 or later was not found. Install it from https://jrsoftware.org/isdl.php, or pass -InnoSetupCompiler with the path to ISCC.exe."

@@ -61,7 +61,7 @@
                     IsVisible="{Binding Runner.IsRunning}" />
             <TextBlock VerticalAlignment="Center"
                        Classes="secondary"
-                       Text="{Binding Runner.StatusText}" />
+                       Text="{Binding ActionHint}" />
           </StackPanel>
 
         </StackPanel>

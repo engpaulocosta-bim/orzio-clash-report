@@ -124,8 +124,16 @@ namespace OrzioClashReport.Launcher.Desktop.Localization
                 "Choose a Clash Detective XML export");
             Add("QuickReport.PickOutput", "Guardar relatório como", "Save report as");
 
+            // ---- What the action beside the button is waiting for ---------------------------
+            // Readiness is a claim about the form, not about the runner, so it is only ever stated
+            // when every value the operation needs is actually present.
+            Add("Action.ReadyToRun", "Pronto para executar.", "Ready to run.");
+            Add("Action.NotReadyToRun",
+                "Faltam dados para executar.",
+                "Something is still missing before this can run.");
+
             // ---- Operation runner -----------------------------------------------------------
-            Add("Runner.Idle", "Pronto para gerar.", "Ready to run.");
+            Add("Runner.Idle", "Ainda não foi executado.", "Not run yet.");
             Add("Runner.Running", "A executar o motor…", "Running the engine…");
             Add("Runner.Succeeded", "Concluído.", "Finished.");
             Add("Runner.Failed", "A operação falhou.", "The operation failed.");

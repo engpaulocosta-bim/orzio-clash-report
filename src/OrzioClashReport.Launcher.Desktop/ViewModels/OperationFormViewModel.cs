@@ -86,14 +86,26 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
                 OnPropertyChanged(nameof(BlockedReason));
                 OnPropertyChanged(nameof(IsBlocked));
                 RunCommand.NotifyCanExecuteChanged();
+                OnPropertyChanged(nameof(ActionHint));
             };
 
             Runner.PropertyChanged += (_, _) =>
             {
                 RunCommand.NotifyCanExecuteChanged();
                 OnPropertyChanged(nameof(ShowsFollowUp));
+                OnPropertyChanged(nameof(ActionHint));
             };
         }
+
+        /// <summary>
+        /// What the run action is waiting for. The runner can only report what it has done, so
+        /// until something has run this says whether the operation can start, and readiness is
+        /// claimed only when every value the request needs is present.
+        /// </summary>
+        public string ActionHint =>
+            Runner.HasRun ? Runner.StatusText
+            : CanRun() ? Text("Action.ReadyToRun")
+            : Text("Action.NotReadyToRun");
 
         public string Title => Text(_titleKey);
 
@@ -172,6 +184,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         {
             OnPropertyChanged(nameof(CanBuild));
             RunCommand.NotifyCanExecuteChanged();
+            OnPropertyChanged(nameof(ActionHint));
         }
 
         protected static IReadOnlyList<string> Snapshot(OrderedFileListViewModel list) => list.Paths;

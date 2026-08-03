@@ -92,6 +92,43 @@ public sealed class DesignTokenTests
         Assert.Contains("<Thickness x:Key=\"OrzioContentPadding\">32</Thickness>", tokens, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public void ADisabledActionDoesNotLookLikeOneThatCanBeTaken()
+    {
+        string tokens = File.ReadAllText(Path.Combine(ThemeDirectory, "Tokens.axaml"));
+        string styles = File.ReadAllText(Path.Combine(ThemeDirectory, "Styles.axaml"));
+
+        foreach (string variant in new[] { "Light", "Dark" })
+        {
+            string section = ExtractThemeDictionary(tokens, variant);
+            foreach (string key in new[]
+                     {
+                         "OrzioDisabledSurfaceColor",
+                         "OrzioDisabledBorderColor",
+                         "OrzioDisabledTextColor",
+                     })
+            {
+                Assert.Contains($"<Color x:Key=\"{key}\">", section, StringComparison.Ordinal);
+            }
+        }
+
+        // The primary button paints its own content presenter, so it needs its own disabled state.
+        Assert.Contains(
+            "Button:disabled /template/ ContentPresenter", styles, StringComparison.Ordinal);
+        Assert.Contains(
+            "Button.primary:disabled /template/ ContentPresenter", styles, StringComparison.Ordinal);
+
+        // A later style wins, so the disabled states must come after the styles they override.
+        Assert.True(
+            styles.IndexOf("Button.primary:disabled", StringComparison.Ordinal)
+                > styles.IndexOf("Button.primary:pressed", StringComparison.Ordinal),
+            "The disabled styles must be declared after the class styles they override.");
+        Assert.True(
+            styles.IndexOf("Button.link:disabled", StringComparison.Ordinal)
+                > styles.IndexOf("Button.link /template/", StringComparison.Ordinal),
+            "The disabled styles must be declared after the class styles they override.");
+    }
+
     [Theory]
     [InlineData("Light", "OrzioCanvasColor", "#FFFFFF")]
     [InlineData("Light", "OrzioRaisedColor", "#F7F8FA")]

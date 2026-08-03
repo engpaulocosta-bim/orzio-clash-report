@@ -43,7 +43,7 @@
       <Button Content="{Binding FollowUpLabel}"
               Command="{Binding FollowUpCommand}"
               IsVisible="{Binding ShowsFollowUp}" />
-      <TextBlock VerticalAlignment="Center" Classes="secondary" Text="{Binding Runner.StatusText}" />
+      <TextBlock VerticalAlignment="Center" Classes="secondary" Text="{Binding ActionHint}" />
     </StackPanel>
 
     <ContentControl Content="{Binding Runner}" IsVisible="{Binding Runner.HasRun}" />

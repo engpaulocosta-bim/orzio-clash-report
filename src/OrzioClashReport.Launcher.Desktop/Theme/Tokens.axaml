@@ -23,6 +23,11 @@
       <Color x:Key="OrzioAccentTintColor">#EEF3FE</Color>
       <Color x:Key="OrzioOnAccentColor">#FFFFFF</Color>
 
+      <!-- An action that cannot be taken must not look like one that can. -->
+      <Color x:Key="OrzioDisabledSurfaceColor">#F2F4F7</Color>
+      <Color x:Key="OrzioDisabledBorderColor">#E4E7EC</Color>
+      <Color x:Key="OrzioDisabledTextColor">#98A2B3</Color>
+
       <Color x:Key="OrzioPositiveColor">#116B45</Color>
       <Color x:Key="OrzioPositiveTintColor">#E7F5EF</Color>
       <Color x:Key="OrzioCautionColor">#8A5A00</Color>
@@ -45,6 +50,11 @@
       <Color x:Key="OrzioAccentPressedColor">#4A79D6</Color>
       <Color x:Key="OrzioAccentTintColor">#17243A</Color>
       <Color x:Key="OrzioOnAccentColor">#0F1216</Color>
+
+      <!-- An action that cannot be taken must not look like one that can. -->
+      <Color x:Key="OrzioDisabledSurfaceColor">#191E25</Color>
+      <Color x:Key="OrzioDisabledBorderColor">#272F38</Color>
+      <Color x:Key="OrzioDisabledTextColor">#5E6B79</Color>
 
       <Color x:Key="OrzioPositiveColor">#57C79A</Color>
       <Color x:Key="OrzioPositiveTintColor">#12291F</Color>
@@ -70,6 +80,9 @@
   <SolidColorBrush x:Key="OrzioAccentPressedBrush" Color="{DynamicResource OrzioAccentPressedColor}" />
   <SolidColorBrush x:Key="OrzioAccentTintBrush" Color="{DynamicResource OrzioAccentTintColor}" />
   <SolidColorBrush x:Key="OrzioOnAccentBrush" Color="{DynamicResource OrzioOnAccentColor}" />
+  <SolidColorBrush x:Key="OrzioDisabledSurfaceBrush" Color="{DynamicResource OrzioDisabledSurfaceColor}" />
+  <SolidColorBrush x:Key="OrzioDisabledBorderBrush" Color="{DynamicResource OrzioDisabledBorderColor}" />
+  <SolidColorBrush x:Key="OrzioDisabledTextBrush" Color="{DynamicResource OrzioDisabledTextColor}" />
   <SolidColorBrush x:Key="OrzioPositiveBrush" Color="{DynamicResource OrzioPositiveColor}" />
   <SolidColorBrush x:Key="OrzioPositiveTintBrush" Color="{DynamicResource OrzioPositiveTintColor}" />
   <SolidColorBrush x:Key="OrzioCautionBrush" Color="{DynamicResource OrzioCautionColor}" />

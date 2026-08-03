@@ -117,6 +117,57 @@ public sealed class InstallerContractTests
     }
 
     [Fact]
+    public void AFilteredPipelineIsCollectedBeforeItsLengthIsRead()
+    {
+        // Where-Object yields nothing rather than an empty list, and Set-StrictMode makes reading a
+        // property of nothing an error. Every such assignment is wrapped in @( ).
+        var assignment = new System.Text.RegularExpressions.Regex(
+            @"^\s*\$(?<name>\w+)\s*=\s*(?<value>@?\()",
+            System.Text.RegularExpressions.RegexOptions.Multiline);
+
+        foreach ((string name, string script) in new[]
+                 {
+                     ("publish-launcher.ps1", PublishScript),
+                     ("package-launcher.ps1", PackageScript),
+                     ("smoke-launcher.ps1", SmokeScript),
+                 })
+        {
+            foreach (System.Text.RegularExpressions.Match match in assignment.Matches(script))
+            {
+                string variable = match.Groups["name"].Value;
+                if (!script.Contains($"${variable}.Count", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                Assert.True(
+                    match.Groups["value"].Value.StartsWith("@(", StringComparison.Ordinal),
+                    $"{name}: ${variable}.Count is read, so its assignment must be wrapped in @( ).");
+            }
+        }
+    }
+
+    [Fact]
+    public void AFailedSmokeCheckSaysItFailedRatherThanRestatingTheExpectation()
+    {
+        // Each message states what should be true; throwing it unchanged reads like a success that
+        // crashed, which is exactly how it was first reported.
+        Assert.Contains("CHECK FAILED", SmokeScript, StringComparison.Ordinal);
+        Assert.DoesNotContain("throw $Message", SmokeScript, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void TheSmokeScriptSaysSoWhenThereIsNothingYetToCheck()
+    {
+        // It checks an installed application and it checks what an uninstall left behind; neither
+        // run can say anything useful when the step before it has not happened.
+        Assert.Contains(
+            "Install the application first, then run this script again.", SmokeScript, StringComparison.Ordinal);
+        Assert.Contains(
+            "Run this script without -AfterUninstall first", SmokeScript, StringComparison.Ordinal);
+    }
+
+    [Fact]
     public void PackagingRefusesAnInnoSetupTooOldForTheInstallerScript()
     {
         // ArchitecturesAllowed=x64compatible needs 6.3; an older compiler must say so.

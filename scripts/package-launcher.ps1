@@ -13,9 +13,9 @@
 #>
 [CmdletBinding()]
 param(
-    [string] $RepositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path,
-    [string] $StagingDirectory = (Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..")).Path "artifacts/launcher/staging"),
-    [string] $OutputDirectory = (Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..")).Path "artifacts/launcher"),
+    [string] $RepositoryRoot,
+    [string] $StagingDirectory,
+    [string] $OutputDirectory,
     [string] $LauncherVersion = "0.2.0-launcher-preview.1",
     [string] $InnoSetupCompiler
 )
@@ -23,9 +23,30 @@ param(
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
+# $PSScriptRoot is not populated while a param() block's defaults are evaluated under Windows
+# PowerShell 5.1 invoked with -File, so the defaults are resolved here instead of there.
+if (-not $RepositoryRoot) {
+    $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Path
+    $RepositoryRoot = (Resolve-Path -LiteralPath (Join-Path $scriptDirectory "..")).Path
+}
+
+$RepositoryRoot = $RepositoryRoot.TrimEnd('\', '/')
+
+if (-not $StagingDirectory) {
+    $StagingDirectory = Join-Path $RepositoryRoot "artifacts\launcher\staging"
+}
+
+if (-not $OutputDirectory) {
+    $OutputDirectory = Join-Path $RepositoryRoot "artifacts\launcher"
+}
+
 if (-not (Test-Path -LiteralPath $StagingDirectory -PathType Container)) {
     throw "Staging directory not found: $StagingDirectory. Run scripts/publish-launcher.ps1 first."
 }
+
+# A repository under a path with a space is ordinary; the installer compiler is handed the resolved
+# native path so nothing downstream has to guess where the value ends.
+$StagingDirectory = (Resolve-Path -LiteralPath $StagingDirectory).Path.TrimEnd('\', '/')
 
 Write-Host "Validating the staged layout..."
 
@@ -92,16 +113,30 @@ if (-not $InnoSetupCompiler) {
     ) | Where-Object { $_ -and (Test-Path -LiteralPath $_ -PathType Leaf) }
 
     if ($candidates.Count -eq 0) {
-        throw "Inno Setup 6 was not found. Install it, or pass -InnoSetupCompiler with the path to ISCC.exe."
+        throw "Inno Setup 6.3 or later was not found. Install it from https://jrsoftware.org/isdl.php, or pass -InnoSetupCompiler with the path to ISCC.exe."
     }
 
     $InnoSetupCompiler = $candidates[0]
 }
 
-New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
+# ArchitecturesAllowed=x64compatible was introduced in 6.3; an older compiler fails with an
+# unhelpful message about an unknown value, so it is rejected here with the reason.
+$compilerVersion = (Get-Item -LiteralPath $InnoSetupCompiler).VersionInfo.FileVersion
+if ($compilerVersion -match '^(?<major>\d+)\.(?<minor>\d+)') {
+    $major = [int] $Matches["major"]
+    $minor = [int] $Matches["minor"]
+    if ($major -lt 6 -or ($major -eq 6 -and $minor -lt 3)) {
+        throw "Inno Setup $compilerVersion is too old; the installer script needs 6.3 or later."
+    }
+}
 
-$script = Join-Path $RepositoryRoot "installer/windows/OrzioClashReportLauncher.iss"
+New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
+$OutputDirectory = (Resolve-Path -LiteralPath $OutputDirectory).Path.TrimEnd('\', '/')
+
+$script = Join-Path $RepositoryRoot "installer\windows\OrzioClashReportLauncher.iss"
 Write-Host "Compiling the installer..."
+# Each define is one argument. A trailing separator was trimmed above so that a quoted path with a
+# space survives being turned back into a command line.
 & $InnoSetupCompiler `
     "/DLauncherVersion=$LauncherVersion" `
     "/DStagingDirectory=$StagingDirectory" `

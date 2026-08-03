@@ -133,37 +133,37 @@ public sealed class QuickReportViewModelTests
     [Fact]
     public async Task TheRunner_ShowsTheEnginesOwnLinesWithoutInterpretingThem()
     {
-        var jobs = new OperationJobService(
-            new StreamingGateway(), new RecordingJournal(), new InMemoryRecentItemsStore(), new StubFileSystem());
-        var runner = new OperationRunnerViewModel(
-            jobs, new StubCollisionPrompt(OutputCollisionResolution.Cancel), new NoOpOutputRevealer());
+        await OnAProgressDeliveringThread(async () =>
+        {
+            var jobs = new OperationJobService(
+                new StreamingGateway(), new RecordingJournal(), new InMemoryRecentItemsStore(), new StubFileSystem());
+            var runner = new OperationRunnerViewModel(
+                jobs, new StubCollisionPrompt(OutputCollisionResolution.Cancel), new NoOpOutputRevealer());
 
-        await runner.RunAsync(new QuickReportRequest("input.xml", Absolute("report.html")));
+            await runner.RunAsync(new QuickReportRequest("input.xml", Absolute("report.html")));
 
-        // Progress is delivered asynchronously, exactly as it is when marshalled to the user
-        // interface thread, so the assertion waits for it rather than assuming it already landed.
-        await WaitUntil(() => runner.OutputLines.Count >= 2);
-
-        Assert.Contains("12 raw clashes -> 4 groups", runner.OutputLines);
-        Assert.Contains("! a diagnostic line", runner.OutputLines);
+            Assert.Contains("12 raw clashes -> 4 groups", runner.OutputLines);
+            Assert.Contains("! a diagnostic line", runner.OutputLines);
+        });
     }
 
     [Fact]
     public async Task TheRunnerKeepsOnlyTheTailOfAVeryLoudEngine()
     {
-        var jobs = new OperationJobService(
-            new ChattyGateway(OperationRunnerViewModel.MaximumVisibleLines * 3),
-            new RecordingJournal(),
-            new InMemoryRecentItemsStore(),
-            new StubFileSystem());
-        var runner = new OperationRunnerViewModel(
-            jobs, new StubCollisionPrompt(OutputCollisionResolution.Cancel), new NoOpOutputRevealer());
+        await OnAProgressDeliveringThread(async () =>
+        {
+            var jobs = new OperationJobService(
+                new ChattyGateway(OperationRunnerViewModel.MaximumVisibleLines * 3),
+                new RecordingJournal(),
+                new InMemoryRecentItemsStore(),
+                new StubFileSystem());
+            var runner = new OperationRunnerViewModel(
+                jobs, new StubCollisionPrompt(OutputCollisionResolution.Cancel), new NoOpOutputRevealer());
 
-        await runner.RunAsync(new QuickReportRequest("input.xml", Absolute("report.html")));
+            await runner.RunAsync(new QuickReportRequest("input.xml", Absolute("report.html")));
 
-        await WaitUntil(() => runner.OutputLines.Count >= OperationRunnerViewModel.MaximumVisibleLines);
-
-        Assert.Equal(OperationRunnerViewModel.MaximumVisibleLines, runner.OutputLines.Count);
+            Assert.Equal(OperationRunnerViewModel.MaximumVisibleLines, runner.OutputLines.Count);
+        });
     }
 
     [Fact]
@@ -206,14 +206,34 @@ public sealed class QuickReportViewModelTests
         Assert.Contains("could not be parsed", runner.ErrorDetail!, StringComparison.Ordinal);
     }
 
-    private static async Task WaitUntil(Func<bool> condition)
+    /// <summary>
+    /// Runs the body on a thread whose synchronization context delivers a posted callback there and
+    /// then, which is what the user interface thread does from the runner's point of view: by the
+    /// time the operation has finished, everything the engine printed has already been shown.
+    /// Without one, <see cref="Progress{T}"/> hands the callback to the thread pool and the
+    /// assertions would be racing it.
+    /// </summary>
+    private static async Task OnAProgressDeliveringThread(Func<Task> body)
     {
-        for (int i = 0; i < 300 && !condition(); i++)
+        SynchronizationContext? previous = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(new DeliverHereAndNowContext());
+        try
         {
-            await Task.Delay(10);
+            await body().ConfigureAwait(true);
         }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+        }
+    }
 
-        Assert.True(condition());
+    private sealed class DeliverHereAndNowContext : SynchronizationContext
+    {
+        public override void Post(SendOrPostCallback callback, object? state) => callback(state);
+
+        public override void Send(SendOrPostCallback callback, object? state) => callback(state);
+
+        public override SynchronizationContext CreateCopy() => this;
     }
 
     private sealed class StreamingGateway : IEngineGateway

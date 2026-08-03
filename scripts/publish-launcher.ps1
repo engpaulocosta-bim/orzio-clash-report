@@ -18,13 +18,26 @@
 #>
 [CmdletBinding()]
 param(
-    [string] $RepositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path,
-    [string] $StagingDirectory = (Join-Path (Resolve-Path (Join-Path $PSScriptRoot "..")).Path "artifacts/launcher/staging"),
+    [string] $RepositoryRoot,
+    [string] $StagingDirectory,
     [string] $Configuration = "Release"
 )
 
 $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
+
+# $PSScriptRoot is not populated while a param() block's defaults are evaluated under Windows
+# PowerShell 5.1 invoked with -File, so the defaults are resolved here instead of there.
+if (-not $RepositoryRoot) {
+    $scriptDirectory = Split-Path -Parent $MyInvocation.MyCommand.Path
+    $RepositoryRoot = (Resolve-Path -LiteralPath (Join-Path $scriptDirectory "..")).Path
+}
+
+$RepositoryRoot = $RepositoryRoot.TrimEnd('\', '/')
+
+if (-not $StagingDirectory) {
+    $StagingDirectory = Join-Path $RepositoryRoot "artifacts\launcher\staging"
+}
 
 function New-CleanDirectory {
     param([Parameter(Mandatory = $true)][string] $Path)

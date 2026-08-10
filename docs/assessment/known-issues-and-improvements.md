@@ -20,7 +20,37 @@ This separation follows the project's own three-claim rule in `AGENTS.md`: *comp
 *runs*, and *validated on a real model* are different claims. This review makes none of the
 three. It is a code-reading pass.
 
-Findings are ordered by impact, not by discovery order.
+Finding numbers are stable identifiers and do not change. They are **not** a priority order —
+see the ranking immediately below, which supersedes the numbering.
+
+---
+
+## Priority ranking
+
+The four findings that matter, in order of real impact:
+
+| Rank | Finding | Why it ranks here |
+|---|---|---|
+| 1 | **#3** — self-clash may degrade to `Unverifiable` | Contaminates confidence in everything else. See below. |
+| 2 | **#1** — silent duplicate collapsing | Most embarrassing: the output looks right and is wrong by omission. |
+| 3 | **#2** — three HTML writers bypass the atomic path | Silent corruption in an audit tool, but the fix is trivial. |
+| 4 | **#4** — 2732-line `Program.cs` | No correctness impact. Costs credibility with anyone who opens the repo. |
+
+**Finding 3 outranks finding 1**, which is not obvious and is worth stating explicitly.
+
+The project's only real-export validation fixture is a self-clash scenario
+(`README.md:1144-1146`). If self-clash occurrences can degrade to `Unverifiable` through the
+double-candidate path described in finding 3, then the lifecycle classifier has only ever
+been exercised on a **degraded** path. Every claim currently made about classification
+correctness would rest on ground that may not represent the normal two-model case.
+
+That makes finding 3 a de facto blocking issue. It is not one defect among thirteen; it is
+the one that determines whether the other validation claims mean anything. Until it is
+settled, the tool cannot honestly be described as classifying correctly — in a README, in an
+interview, or anywhere else.
+
+The remaining nine findings are public backlog. They are recorded here so the gap is visible
+and dated, not because they are queued for work.
 
 ---
 
@@ -114,7 +144,7 @@ in the README.
 
 ## 3. Self-clash tests can degrade selected matches to `Unverifiable`
 
-**Severity: high. Confidence: Reasoned — needs a test to confirm.**
+**Severity: blocking (ranked #1). Confidence: Reasoned — needs a test to confirm.**
 
 `ConservativeClashMatcher.DetermineModelAlignment`
 (`src/OrzioClashReport.Core/Matching/ConservativeClashMatcher.cs:109-132`) returns
@@ -153,21 +183,38 @@ The result would be a longitudinal report where genuinely-continuing self-clashe
 under-claims, which matches its design philosophy — but it is a silent quality cliff on a
 common case, and it is worth knowing about before the longitudinal validation runs.
 
-This is not hypothetical for this repository: the project's only real-export validation
-fixture is a self-clash scenario. `README.md:1144-1146` records that all five clashes in
+### Why this contaminates the other validation claims
+
+This is not hypothetical for this repository. The project's **only** real-export validation
+fixture is a self-clash scenario: `README.md:1144-1146` records that all five clashes in
 `samples/sample-clash.xml` share one `SourceModel` token on both sides.
+
+That is the whole problem. Every fixture-backed exercise of the lifecycle classifier has run
+against the `Ambiguous` alignment branch. If that branch degrades as described, then the
+classifier has been validated **only on a degraded path**, and nothing currently known about
+its correctness generalizes to the normal case of two distinct models — which is the case
+every real coordination project actually runs.
+
+So this is not one defect among thirteen. It is the finding that determines whether the
+project's other correctness claims carry weight. Until it is settled, "the tool classifies
+correctly" is not a statement the repository can support.
 
 ### Recommended fix
 
-1. Write a focused test: two runs, a self-clash test, the same element pair present in both
-   A/B orientations. Assert the resulting lifecycle statuses. This settles the question in
-   minutes and costs nothing if the concern turns out to be unfounded.
-2. If confirmed, the cleanest resolution is to canonicalize the element pair for self-clash
-   occurrences (order-independent key, as the grouper already does) so a pair produces one
-   candidate rather than two.
-3. Document the self-clash behavior explicitly either way — right now `Ambiguous` is
-   described in evidence strings (`:138-139`, `:147-148`) but its selection consequences are
-   not documented anywhere.
+1. **Get a two-model fixture.** Either a real anonymized export covering two distinct
+   models, or a credible synthetic one with two different `ModelName` values. This is the
+   actual deliverable; the test below is how you read its result.
+2. Run a full sequential comparison against it. Completion criterion: `New`, `StillOpen`, and
+   `Resolved` all appear and are all correct, with no `Unverifiable` that cannot be
+   justified from the evidence.
+3. Add a focused unit test alongside it: two runs, a self-clash test, the same element pair
+   present in both A/B orientations, asserting the resulting statuses. This pins the
+   degradation behavior whichever way it turns out.
+4. If degradation is confirmed, canonicalize the element pair for self-clash occurrences
+   (order-independent key, as the grouper already does at `RuleBasedGrouper.cs:128-129`) so
+   a pair produces one candidate rather than two.
+5. Document the self-clash behavior either way. Right now `Ambiguous` is described in
+   evidence strings (`:138-139`, `:147-148`), but its selection consequences appear nowhere.
 
 ---
 
@@ -519,22 +566,29 @@ the pair count by roughly the number of clash tests.
 
 ---
 
-## Suggested order of work
+## Closed scope: one weekend, 8-10 hours
 
-The first three items are cheap relative to their value and do not disturb the architecture:
+This is a **closed** scope, not a starting point. Thirteen findings is a list to publish, not
+a list to work through. Four items are in; everything else is explicitly out.
 
-1. **Finding 1** — surface the collapsed count (console, HTML, README). Small change, directly
-   defends the product's central claim.
-2. **Finding 2** — route all HTML writes through `DerivedHtmlReportWriter`. Mechanical.
-3. **Finding 5** — add `Directory.Build.props` and `-warnaserror` in CI. Makes an existing
-   README claim true and enforced.
-4. **Finding 3** — write the self-clash test. Cheap to run, and it either closes a real risk
-   or retires a worry before longitudinal validation starts.
-5. **Finding 6** — warn on unexpected XML shape.
-6. **Finding 4** — refactor `Program.cs`. Largest effort; best done once the smaller fixes
-   have stopped touching that file.
+1. **Two-model fixture, and confirm classification does not degrade** (finding 3).
+   Completion criterion: one real sequential run producing correct `New`, `StillOpen`, and
+   `Resolved`, with no unjustified `Unverifiable`.
+2. **Expose the collapsed-duplicate count** in the console summary, the HTML header, and the
+   README (finding 1).
+3. **Route the three remaining HTML writers through `DerivedHtmlReportWriter`** (finding 2).
+   Estimated under two hours.
+4. **Install the .NET SDK locally and confirm these findings.** Every finding in this
+   document is static. Nothing here was compiled or executed, and some of it may be wrong.
 
-Findings 7-13 are best folded into whatever work already touches the relevant file.
+**Out of scope: finding 4 and the remaining nine.** They stay in this document as public
+backlog. Do not touch them. `Program.cs` in particular is a refactor that improves how the
+repository reads, not whether it works, and it will consume the entire budget if allowed to
+start.
+
+**Kill rule:** if the four items are not closed at 10 hours, commit whatever exists and stop.
+The deadline protects time allocated elsewhere, not the code. An unfinished item returns to
+the backlog above; it does not get an extension.
 
 ---
 

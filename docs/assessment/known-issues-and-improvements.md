@@ -571,15 +571,18 @@ the pair count by roughly the number of clash tests.
 This is a **closed** scope, not a starting point. Thirteen findings is a list to publish, not
 a list to work through. Four items are in; everything else is explicitly out.
 
-1. **Two-model fixture, and confirm classification does not degrade** (finding 3).
-   Completion criterion: one real sequential run producing correct `New`, `StillOpen`, and
-   `Resolved`, with no unjustified `Unverifiable`.
-2. **Expose the collapsed-duplicate count** in the console summary, the HTML header, and the
+1. **Install the .NET SDK, build, run the tests, and confirm or discard these findings.**
+   This comes first, and the order matters. Every finding here is static, and the blocking
+   one (#3) is Reasoned rather than Confirmed. Starting with the fixture would risk hours
+   spent chasing a degradation that may not occur in a real run. If this step discards #3,
+   it has removed the most expensive item in the list before any of it was paid for.
+2. **Two-model fixture, and confirm classification does not degrade** (finding 3) — only if
+   step 1 confirms the degradation. Completion criterion: one real sequential run producing
+   correct `New`, `StillOpen`, and `Resolved`, with no unjustified `Unverifiable`.
+3. **Expose the collapsed-duplicate count** in the console summary, the HTML header, and the
    README (finding 1).
-3. **Route the three remaining HTML writers through `DerivedHtmlReportWriter`** (finding 2).
+4. **Route the three remaining HTML writers through `DerivedHtmlReportWriter`** (finding 2).
    Estimated under two hours.
-4. **Install the .NET SDK locally and confirm these findings.** Every finding in this
-   document is static. Nothing here was compiled or executed, and some of it may be wrong.
 
 **Out of scope: finding 4 and the remaining nine.** They stay in this document as public
 backlog. Do not touch them. `Program.cs` in particular is a refactor that improves how the
@@ -589,6 +592,11 @@ start.
 **Kill rule:** if the four items are not closed at 10 hours, commit whatever exists and stop.
 The deadline protects time allocated elsewhere, not the code. An unfinished item returns to
 the backlog above; it does not get an extension.
+
+**On how to read the rest of this document:** a public backlog is a record, not a plan. A
+list of thirteen findings with a suggested sequence is a work queue wearing documentation's
+clothes, and it invites exactly the drift the closed scope above exists to prevent. If a list
+is not meant to be executed, it has to say so in writing — which is what this section is for.
 
 ---
 

@@ -11,6 +11,10 @@ verified_release: "v0.1.0-preview.3"
 
 # FONTE — ORZIO CLASH REPORT
 
+> **Internal product source document, written in Portuguese.** This is a deliberate choice,
+> not an oversight: it is an internal working document and is not mirrored in English.
+> See [README.md](../../README.md) and [docs/assessment](../assessment) for English documentation.
+
 ## 1. Finalidade deste documento
 
 Este arquivo é a **fonte geral de verdade do projeto Orzio Clash Report**.

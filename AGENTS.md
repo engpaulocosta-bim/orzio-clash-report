@@ -3,8 +3,8 @@
 > This file is the agent contract for **any** coding assistant working in this repo
 > (Codex, Claude Code, or otherwise). It mirrors the architecture guardrail in
 > `.claude/skills/orzio-clash-report/SKILL.md`. If the two ever disagree, they are both
-> wrong — fix them together. The full kickoff brief lives in
-> [docs/claude-code-init-prompt.md](docs/claude-code-init-prompt.md); read it before Step 1.
+> wrong — fix them together. Known defects and improvement work are tracked in
+> [docs/assessment/known-issues-and-improvements.md](docs/assessment/known-issues-and-improvements.md).
 
 ## What this tool is
 

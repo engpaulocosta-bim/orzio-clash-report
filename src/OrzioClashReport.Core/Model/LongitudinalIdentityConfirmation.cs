@@ -21,7 +21,7 @@ namespace OrzioClashReport.Core.Model
             LeftEvidence = leftEvidence ?? throw new ArgumentNullException(nameof(leftEvidence));
             RightEvidence = rightEvidence ?? throw new ArgumentNullException(nameof(rightEvidence));
             ReviewerAlias = RequireValue(reviewerAlias, nameof(reviewerAlias));
-            Reason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
+            Reason = reason == null || reason.Trim().Length == 0 ? null : reason.Trim();
         }
 
         public string DecisionId { get; }

@@ -1,0 +1,83 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:OrzioClashReport.Launcher.Desktop.Controls"
+             xmlns:vm="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels"
+             x:Class="OrzioClashReport.Launcher.Desktop.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+  <ScrollViewer>
+    <StackPanel Classes="stack-lg">
+
+      <StackPanel Classes="stack-xs">
+        <TextBlock Classes="display" Text="Definições" />
+        <TextBlock Classes="secondary" Text="Aparência, dados locais e estado do motor." />
+      </StackPanel>
+
+      <Border Classes="card">
+        <StackPanel Classes="stack-md">
+          <TextBlock Classes="title" Text="Aparência" />
+
+          <StackPanel Classes="stack-sm">
+            <TextBlock Text="Tema" />
+            <ComboBox ItemsSource="{Binding Themes}"
+                      SelectedItem="{Binding Theme}"
+                      HorizontalAlignment="Left" />
+          </StackPanel>
+
+          <CheckBox IsChecked="{Binding ShowExperimentalWarnings}"
+                    Content="Mostrar avisos em funcionalidades experimentais" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Classes="stack-md">
+          <TextBlock Classes="title" Text="Motor" />
+
+          <controls:EngineStatusBadge DataContext="{Binding EngineStatus}" />
+
+          <StackPanel Classes="stack-xs">
+            <TextBlock Classes="caption" Text="Versão reportada" />
+            <TextBlock Classes="monospace" Text="{Binding EngineVersion}" />
+          </StackPanel>
+
+          <StackPanel Classes="stack-xs">
+            <TextBlock Classes="caption" Text="Integridade" />
+            <TextBlock Classes="secondary" Text="{Binding EngineIntegrity}" />
+          </StackPanel>
+
+          <StackPanel Classes="stack-xs">
+            <TextBlock Classes="caption" Text="Versão da aplicação" />
+            <TextBlock Classes="monospace" Text="{Binding LauncherVersion}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Classes="stack-md">
+          <TextBlock Classes="title" Text="Dados locais" />
+          <TextBlock Classes="secondary"
+                     Text="Definições, lista de recentes, registos e jobs ficam na sua pasta de utilizador. Os relatórios e ficheiros de projeto ficam onde os guardar, e a desinstalação não lhes toca." />
+
+          <TextBlock Classes="monospace" Text="{Binding DataDirectory}" />
+
+          <StackPanel Orientation="Horizontal" Classes="stack-sm">
+            <Button Content="Abrir pasta de dados" Command="{Binding OpenDataFolderCommand}" />
+            <Button Content="Limpar lista de recentes" Command="{Binding ClearRecentOutputsCommand}" />
+          </StackPanel>
+
+          <TextBlock Classes="caption" Text="{Binding StatusMessage}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Classes="stack-sm">
+          <TextBlock Classes="title" Text="O que esta aplicação não faz" />
+          <TextBlock Classes="secondary"
+                     Text="Não recolhe telemetria, não envia nada para a internet, não usa conta e funciona sem ligação. Os registos locais não guardam caminhos absolutos nem conteúdo dos seus ficheiros." />
+        </StackPanel>
+      </Border>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

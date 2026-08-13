@@ -16,4 +16,9 @@
     <ProjectReference Include="..\OrzioClashReport.Launcher.Contracts\OrzioClashReport.Launcher.Contracts.csproj" />
   </ItemGroup>
 
+  <!-- The stream-bounding and line-splitting rules are worth testing directly. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="OrzioClashReport.Launcher.Tests" />
+  </ItemGroup>
+
 </Project>

@@ -87,8 +87,12 @@ namespace OrzioClashReport.Launcher.Tests
         }
 
         [Fact]
-        public void OnlyTheDesktopProjectReferencesAvalonia()
+        public void OnlyTheDesktopProjectAndItsOwnTestsReferenceAvalonia()
         {
+            // The desktop project owns the UI framework. Its headless test project is the one other
+            // place allowed to see it, because booting the real shell is the point of those tests.
+            string[] allowed = { DesktopProject + ".csproj", DesktopProject + ".Tests.csproj" };
+
             foreach (string projectFile in RepositoryLayout.AllProjectFiles())
             {
                 string content = File.ReadAllText(projectFile);
@@ -97,8 +101,18 @@ namespace OrzioClashReport.Launcher.Tests
                     continue;
                 }
 
-                Assert.Equal(DesktopProject + ".csproj", Path.GetFileName(projectFile));
+                Assert.Contains(Path.GetFileName(projectFile), allowed);
             }
+        }
+
+        [Fact]
+        public void ThePolicyTestProjectStaysFreeOfTheUiFramework()
+        {
+            string content = File.ReadAllText(
+                RepositoryLayout.TestProjectFile("OrzioClashReport.Launcher.Tests"));
+
+            Assert.DoesNotContain("Avalonia", content, StringComparison.Ordinal);
+            Assert.DoesNotContain(DesktopProject, content, StringComparison.Ordinal);
         }
 
         [Fact]

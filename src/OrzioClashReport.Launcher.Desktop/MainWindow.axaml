@@ -1,0 +1,12 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="OrzioClashReport.Launcher.Desktop.MainWindow"
+        Title="Orzio Clash Report"
+        Width="1024"
+        Height="680"
+        MinWidth="1024"
+        MinHeight="680">
+
+  <TextBlock Text="Orzio Clash Report" />
+
+</Window>

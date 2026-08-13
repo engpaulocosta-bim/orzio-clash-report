@@ -27,6 +27,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrzioClashReport.Persistenc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrzioClashReport.Persistence.IdentityGovernanceJson", "src\OrzioClashReport.Persistence.IdentityGovernanceJson\OrzioClashReport.Persistence.IdentityGovernanceJson.csproj", "{C2C2A835-29C6-49C8-8DB3-4B27C5D85CE7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrzioClashReport.Launcher.Contracts", "src\OrzioClashReport.Launcher.Contracts\OrzioClashReport.Launcher.Contracts.csproj", "{E52AECB4-C635-4324-AB82-913C6CB8D12F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrzioClashReport.Launcher.Application", "src\OrzioClashReport.Launcher.Application\OrzioClashReport.Launcher.Application.csproj", "{833CDDE5-9CA8-4461-A460-88AB8F994FDF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrzioClashReport.Launcher.Infrastructure", "src\OrzioClashReport.Launcher.Infrastructure\OrzioClashReport.Launcher.Infrastructure.csproj", "{7230391F-9FD7-4781-9F61-5E98F55CC842}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrzioClashReport.Launcher.Desktop", "src\OrzioClashReport.Launcher.Desktop\OrzioClashReport.Launcher.Desktop.csproj", "{503A43C1-C83B-4957-B476-6565132D16A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrzioClashReport.Launcher.Tests", "tests\OrzioClashReport.Launcher.Tests\OrzioClashReport.Launcher.Tests.csproj", "{282B7973-4710-43E5-8A59-F0E05EFFB3B0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -76,6 +86,26 @@ Global
 		{C2C2A835-29C6-49C8-8DB3-4B27C5D85CE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2C2A835-29C6-49C8-8DB3-4B27C5D85CE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2C2A835-29C6-49C8-8DB3-4B27C5D85CE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E52AECB4-C635-4324-AB82-913C6CB8D12F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E52AECB4-C635-4324-AB82-913C6CB8D12F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E52AECB4-C635-4324-AB82-913C6CB8D12F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E52AECB4-C635-4324-AB82-913C6CB8D12F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{833CDDE5-9CA8-4461-A460-88AB8F994FDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{833CDDE5-9CA8-4461-A460-88AB8F994FDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{833CDDE5-9CA8-4461-A460-88AB8F994FDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{833CDDE5-9CA8-4461-A460-88AB8F994FDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7230391F-9FD7-4781-9F61-5E98F55CC842}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7230391F-9FD7-4781-9F61-5E98F55CC842}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7230391F-9FD7-4781-9F61-5E98F55CC842}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7230391F-9FD7-4781-9F61-5E98F55CC842}.Release|Any CPU.Build.0 = Release|Any CPU
+		{503A43C1-C83B-4957-B476-6565132D16A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{503A43C1-C83B-4957-B476-6565132D16A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{503A43C1-C83B-4957-B476-6565132D16A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{503A43C1-C83B-4957-B476-6565132D16A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{282B7973-4710-43E5-8A59-F0E05EFFB3B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{282B7973-4710-43E5-8A59-F0E05EFFB3B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{282B7973-4710-43E5-8A59-F0E05EFFB3B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{282B7973-4710-43E5-8A59-F0E05EFFB3B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{DCC898D6-AF90-4F16-8DD1-944EABA0D939} = {4F5DFCCE-B943-45BD-80E4-5FBDDCD5AE6B}
@@ -88,5 +118,10 @@ Global
 		{58ECFCA5-0FD7-40D8-B1CF-C46834A5A4DD} = {4F5DFCCE-B943-45BD-80E4-5FBDDCD5AE6B}
 		{FCE87C0E-F01C-4D64-BABA-FF87BCF1EAF9} = {4F5DFCCE-B943-45BD-80E4-5FBDDCD5AE6B}
 		{C2C2A835-29C6-49C8-8DB3-4B27C5D85CE7} = {4F5DFCCE-B943-45BD-80E4-5FBDDCD5AE6B}
+		{E52AECB4-C635-4324-AB82-913C6CB8D12F} = {4F5DFCCE-B943-45BD-80E4-5FBDDCD5AE6B}
+		{833CDDE5-9CA8-4461-A460-88AB8F994FDF} = {4F5DFCCE-B943-45BD-80E4-5FBDDCD5AE6B}
+		{7230391F-9FD7-4781-9F61-5E98F55CC842} = {4F5DFCCE-B943-45BD-80E4-5FBDDCD5AE6B}
+		{503A43C1-C83B-4957-B476-6565132D16A3} = {4F5DFCCE-B943-45BD-80E4-5FBDDCD5AE6B}
+		{282B7973-4710-43E5-8A59-F0E05EFFB3B0} = {19660F60-8A96-4B69-B260-C13ACEED1726}
 	EndGlobalSection
 EndGlobal

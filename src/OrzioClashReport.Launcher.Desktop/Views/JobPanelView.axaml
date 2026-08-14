@@ -1,0 +1,85 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels"
+             x:Class="OrzioClashReport.Launcher.Desktop.Views.JobPanelView"
+             x:DataType="vm:JobViewModel">
+
+  <StackPanel Classes="stack-md">
+
+    <!-- Running: live engine output plus the only way to stop it. -->
+    <Border Classes="card" IsVisible="{Binding IsRunning}">
+      <StackPanel Classes="stack-sm">
+        <StackPanel Orientation="Horizontal" Classes="stack-sm">
+          <TextBlock Text="{Binding StateGlyph}" />
+          <TextBlock Classes="subtitle" Text="{Binding StateLabel}" />
+        </StackPanel>
+
+        <ScrollViewer MaxHeight="{DynamicResource OrzioLiveOutputMaxHeight}">
+          <ItemsControl ItemsSource="{Binding OutputLines}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="x:String">
+                <TextBlock Classes="monospace" Text="{Binding}" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+
+        <Button Content="Cancelar" HorizontalAlignment="Left" Command="{Binding CancelCommand}" />
+      </StackPanel>
+    </Border>
+
+    <!-- Result: what was produced, or what failed and what to do about it. -->
+    <Border Classes="card" IsVisible="{Binding HasResult}">
+      <StackPanel Classes="stack-md">
+
+        <StackPanel Orientation="Horizontal" Classes="stack-sm">
+          <TextBlock Text="{Binding StateGlyph}"
+                     Classes.severity-positive="{Binding IsSucceeded}"
+                     Classes.severity-critical="{Binding IsFailed}"
+                     Classes.severity-neutral="{Binding IsCanceled}" />
+          <TextBlock Classes="subtitle"
+                     Text="{Binding StateLabel}"
+                     Classes.severity-positive="{Binding IsSucceeded}"
+                     Classes.severity-critical="{Binding IsFailed}"
+                     Classes.severity-neutral="{Binding IsCanceled}" />
+          <TextBlock Classes="tertiary" Text="{Binding DurationText}" />
+        </StackPanel>
+
+        <StackPanel Classes="stack-sm" IsVisible="{Binding HasArtifact}">
+          <TextBlock Classes="monospace" Text="{Binding ArtifactFileName}" />
+          <StackPanel Orientation="Horizontal" Classes="stack-sm">
+            <Button Classes="primary" Content="Abrir" Command="{Binding OpenArtifactCommand}" />
+            <Button Content="Mostrar na pasta" Command="{Binding RevealArtifactCommand}" />
+          </StackPanel>
+        </StackPanel>
+
+        <StackPanel Classes="stack-xs" IsVisible="{Binding IsFailed}">
+          <TextBlock Text="{Binding ErrorMessage}" />
+          <TextBlock Classes="secondary" Text="{Binding ErrorNextStep}" />
+        </StackPanel>
+
+        <ItemsControl ItemsSource="{Binding Warnings}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <Border Classes="notice">
+                <StackPanel Orientation="Horizontal" Classes="stack-sm">
+                  <TextBlock Text="⚠" Classes="severity-caution" />
+                  <TextBlock Text="{Binding}" />
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <Expander Header="Saída do motor" IsVisible="{Binding HasEngineOutput}">
+          <ScrollViewer MaxHeight="{DynamicResource OrzioEngineOutputMaxHeight}">
+            <SelectableTextBlock Classes="monospace" Text="{Binding EngineOutput}" />
+          </ScrollViewer>
+        </Expander>
+
+      </StackPanel>
+    </Border>
+
+  </StackPanel>
+
+</UserControl>

@@ -1,0 +1,77 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:OrzioClashReport.Launcher.Desktop.Controls"
+             xmlns:views="clr-namespace:OrzioClashReport.Launcher.Desktop.Views"
+             xmlns:vm="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels"
+             x:Class="OrzioClashReport.Launcher.Desktop.Views.QuickReportView"
+             x:DataType="vm:QuickReportViewModel">
+
+  <ScrollViewer>
+    <StackPanel Classes="stack-lg">
+
+      <StackPanel Classes="stack-xs">
+        <TextBlock Classes="display" Text="Relatório rápido" />
+        <TextBlock Classes="secondary"
+                   Text="Um export XML do Clash Detective para um relatório HTML agrupado. Não precisa de manifest nem de projeto." />
+      </StackPanel>
+
+      <controls:EngineStatusBadge DataContext="{Binding EngineStatus}"
+                                  IsVisible="{Binding !IsReady}" />
+
+      <Border Classes="card">
+        <StackPanel Classes="stack-md">
+
+          <StackPanel Classes="stack-sm">
+            <TextBlock Classes="subtitle" Text="Ficheiro de entrada" />
+            <TextBlock Classes="secondary" Text="O XML exportado pelo Clash Detective do Navisworks." />
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBox Grid.Column="0" Text="{Binding InputXmlPath}" Watermark="Nenhum ficheiro escolhido" />
+              <Button Grid.Column="1" Content="Escolher…" Command="{Binding BrowseInputCommand}" />
+            </Grid>
+          </StackPanel>
+
+          <StackPanel Classes="stack-sm">
+            <TextBlock Classes="subtitle" Text="Destino do relatório" />
+            <TextBlock Classes="secondary" Text="Onde o ficheiro HTML será escrito. Fica sempre onde o escolher." />
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBox Grid.Column="0" Text="{Binding OutputHtmlPath}" Watermark="Nenhum destino escolhido" />
+              <Button Grid.Column="1" Content="Escolher…" Command="{Binding BrowseOutputCommand}" />
+            </Grid>
+          </StackPanel>
+
+          <Button Classes="primary"
+                  Content="Gerar relatório"
+                  HorizontalAlignment="Left"
+                  Command="{Binding GenerateCommand}" />
+
+        </StackPanel>
+      </Border>
+
+      <!--
+        Collision. Replacing is never the default and never automatic: both options are explicit, and
+        the file being replaced is named.
+      -->
+      <Border Classes="notice" IsVisible="{Binding IsCollisionPending}">
+        <StackPanel Classes="stack-sm">
+          <StackPanel Orientation="Horizontal" Classes="stack-sm">
+            <TextBlock Text="⚠" Classes="severity-caution" />
+            <TextBlock Classes="subtitle" Text="Já existe um relatório neste destino" />
+          </StackPanel>
+
+          <TextBlock Classes="monospace" Text="{Binding CollisionFileName}" />
+          <TextBlock Classes="secondary"
+                     Text="O relatório é derivado e pode ser gerado de novo, por isso pode ser substituído. Nada mais é substituído por esta aplicação." />
+
+          <StackPanel Orientation="Horizontal" Classes="stack-sm">
+            <Button Content="Escolher outro nome" Command="{Binding ChooseAnotherNameCommand}" />
+            <Button Content="Substituir relatório existente" Command="{Binding ReplaceExistingCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <views:JobPanelView DataContext="{Binding Job}" />
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

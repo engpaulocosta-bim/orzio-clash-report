@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using OrzioClashReport.Launcher.Application.Operations;
+using OrzioClashReport.Launcher.Contracts.Operations;
 
 namespace OrzioClashReport.Launcher.Application.Engine
 {
@@ -166,6 +169,90 @@ namespace OrzioClashReport.Launcher.Application.Engine
             RequireInput(projectPath, nameof(projectPath));
 
             return new[] { "render-project", "--project", projectPath };
+        }
+
+        /// <summary>Create one empty identity-governance document bound to a project id.</summary>
+        public static IReadOnlyList<string> CreateIdentityGovernance(string projectId, string outputPath)
+        {
+            RequireInput(projectId, nameof(projectId));
+            RequireAbsoluteOutput(outputPath, nameof(outputPath));
+
+            return new[] { "create-identity-governance", "--project-id", projectId, "-o", outputPath };
+        }
+
+        /// <summary>
+        /// Append one explicit human decision. The decision kind is passed as its canonical value,
+        /// never a translation. A confirmation carries a persistent identity id; a rejection never
+        /// does, and this method cannot be made to emit one.
+        /// </summary>
+        public static IReadOnlyList<string> AppendIdentityDecision(
+            string governancePath, IdentityDecisionDraft decision)
+        {
+            RequireInput(governancePath, nameof(governancePath));
+
+            if (decision == null)
+            {
+                throw new ArgumentNullException(nameof(decision));
+            }
+
+            var arguments = new List<string>
+            {
+                "append-identity-decision",
+                "--governance", governancePath,
+                "--decision-id", decision.DecisionId,
+                "--decision-kind", decision.Kind.ToString(),
+                "--left-run-id", decision.LeftRunId,
+                "--left-occurrence-index", decision.LeftOccurrenceIndex.ToString(CultureInfo.InvariantCulture),
+                "--right-run-id", decision.RightRunId,
+                "--right-occurrence-index", decision.RightOccurrenceIndex.ToString(CultureInfo.InvariantCulture),
+                "--reviewer-alias", decision.ReviewerAlias,
+            };
+
+            if (decision.Kind == IdentityDecisionKind.ConfirmSameIdentity)
+            {
+                // Guaranteed present: the draft refuses to exist as a confirmation without one.
+                arguments.Add("--persistent-identity-id");
+                arguments.Add(decision.PersistentIdentityId!);
+            }
+
+            if (decision.Reason != null)
+            {
+                arguments.Add("--reason");
+                arguments.Add(decision.Reason);
+            }
+
+            return arguments;
+        }
+
+        /// <summary>Read-only validation of persisted decisions against a project's indexed snapshots.</summary>
+        public static IReadOnlyList<string> ValidateIdentityGovernance(string projectPath, string governancePath)
+        {
+            RequireInput(projectPath, nameof(projectPath));
+            RequireInput(governancePath, nameof(governancePath));
+
+            return new[]
+            {
+                "validate-identity-governance",
+                "--project", projectPath,
+                "--governance", governancePath,
+            };
+        }
+
+        /// <summary>Render the standalone review of the decisions that were actually recorded.</summary>
+        public static IReadOnlyList<string> RenderIdentityGovernanceReport(
+            string projectPath, string governancePath, string outputPath)
+        {
+            RequireInput(projectPath, nameof(projectPath));
+            RequireInput(governancePath, nameof(governancePath));
+            RequireAbsoluteOutput(outputPath, nameof(outputPath));
+
+            return new[]
+            {
+                "render-identity-governance-report",
+                "--project", projectPath,
+                "--governance", governancePath,
+                "-o", outputPath,
+            };
         }
 
         internal static void RequireInput(string value, string parameterName)

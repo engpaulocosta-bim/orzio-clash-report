@@ -102,6 +102,9 @@ namespace OrzioClashReport.Launcher.Desktop
                 OperationsSectionViewModel projects = BuildProjectsSection(
                     executor, outputRevealer, activeJobTracker, engineStatus, fileDialogService);
 
+                OperationsSectionViewModel governance = BuildGovernanceSection(
+                    executor, outputRevealer, activeJobTracker, engineStatus, fileDialogService);
+
                 var home = new HomeViewModel(
                     engineStatus,
                     recentItemsStore,
@@ -122,7 +125,7 @@ namespace OrzioClashReport.Launcher.Desktop
                     engineStatus,
                     home,
                     settings,
-                    BuildSectionContent(home, quickReport, snapshots, longitudinal, projects, settings),
+                    BuildSectionContent(home, quickReport, snapshots, longitudinal, projects, governance, settings),
                     log,
                     clock);
 
@@ -193,12 +196,29 @@ namespace OrzioClashReport.Launcher.Desktop
                 });
         }
 
+        private static OperationsSectionViewModel BuildGovernanceSection(
+            LauncherOperationExecutor executor,
+            IOutputRevealer revealer,
+            ActiveJobTracker tracker,
+            EngineStatusViewModel engineStatus,
+            IFileDialogService dialogs) =>
+            new OperationsSectionViewModel(
+                LauncherSection.Governance,
+                new OperationFormViewModel[]
+                {
+                    new CreateGovernanceFormViewModel(NewJob(executor, revealer, tracker), engineStatus, dialogs),
+                    new AppendIdentityDecisionFormViewModel(NewJob(executor, revealer, tracker), engineStatus, dialogs),
+                    new ValidateGovernanceFormViewModel(NewJob(executor, revealer, tracker), engineStatus, dialogs),
+                    new RenderGovernanceReportFormViewModel(NewJob(executor, revealer, tracker), engineStatus, dialogs),
+                });
+
         private static IReadOnlyDictionary<LauncherSection, object> BuildSectionContent(
             HomeViewModel home,
             QuickReportViewModel quickReport,
             OperationsSectionViewModel snapshots,
             OperationsSectionViewModel longitudinal,
             OperationsSectionViewModel projects,
+            OperationsSectionViewModel governance,
             SettingsViewModel settings)
         {
             return new Dictionary<LauncherSection, object>
@@ -208,15 +228,7 @@ namespace OrzioClashReport.Launcher.Desktop
                 [LauncherSection.Snapshots] = snapshots,
                 [LauncherSection.Longitudinal] = longitudinal,
                 [LauncherSection.Projects] = projects,
-                [LauncherSection.Governance] = new SectionPlaceholderViewModel(
-                    LauncherSection.Governance,
-                    new[]
-                    {
-                        "orzioclash create-identity-governance --project-id <id> -o <identity-governance.json>",
-                        "orzioclash append-identity-decision --governance <identity-governance.json> ...",
-                        "orzioclash validate-identity-governance --project <project.json> --governance <identity-governance.json>",
-                        "orzioclash render-identity-governance-report --project <project.json> --governance <identity-governance.json> -o <report.html>",
-                    }),
+                [LauncherSection.Governance] = governance,
                 [LauncherSection.Settings] = settings,
             };
         }

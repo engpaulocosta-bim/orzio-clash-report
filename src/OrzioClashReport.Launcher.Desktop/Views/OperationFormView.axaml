@@ -26,6 +26,45 @@
         <TextBlock Classes="subtitle" Text="{Binding Label}" />
         <TextBlock Classes="secondary" Text="{Binding Description}" />
         <TextBox Text="{Binding Value}" Watermark="{Binding Watermark}" />
+        <StackPanel Orientation="Horizontal" Classes="stack-sm" IsVisible="{Binding HasValidationMessage}">
+          <TextBlock Text="⚠" Classes="severity-caution" />
+          <TextBlock Text="{Binding ValidationMessage}" Classes="severity-caution" />
+        </StackPanel>
+      </StackPanel>
+    </DataTemplate>
+
+    <!--
+      A choice starts unselected, and each option shows its own glyph and label. Confirm and reject
+      are never distinguishable by colour alone.
+    -->
+    <DataTemplate DataType="fields:ChoiceFieldViewModel">
+      <StackPanel Classes="stack-sm">
+        <TextBlock Classes="subtitle" Text="{Binding Label}" />
+        <TextBlock Classes="secondary" Text="{Binding Description}" />
+
+        <ItemsControl ItemsSource="{Binding Options}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="fields:ChoiceOptionViewModel">
+              <RadioButton IsChecked="{Binding IsSelected, Mode=TwoWay}">
+                <StackPanel Classes="stack-xs">
+                  <StackPanel Orientation="Horizontal" Classes="stack-sm">
+                    <TextBlock Text="{Binding Glyph}"
+                               Classes.severity-positive="{Binding IsPositive}"
+                               Classes.severity-caution="{Binding IsCaution}"
+                               Classes.severity-critical="{Binding IsCritical}"
+                               Classes.severity-neutral="{Binding IsNeutral}" />
+                    <TextBlock Text="{Binding Label}"
+                               Classes.severity-positive="{Binding IsPositive}"
+                               Classes.severity-caution="{Binding IsCaution}"
+                               Classes.severity-critical="{Binding IsCritical}"
+                               Classes.severity-neutral="{Binding IsNeutral}" />
+                  </StackPanel>
+                  <TextBlock Classes="secondary" Text="{Binding Description}" />
+                </StackPanel>
+              </RadioButton>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
       </StackPanel>
     </DataTemplate>
 

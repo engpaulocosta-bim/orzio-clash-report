@@ -16,6 +16,7 @@ using OrzioClashReport.Launcher.Contracts.Platform;
 using OrzioClashReport.Launcher.Contracts.Settings;
 using OrzioClashReport.Launcher.Desktop.Platform;
 using OrzioClashReport.Launcher.Desktop.ViewModels;
+using OrzioClashReport.Launcher.Desktop.ViewModels.Operations;
 using OrzioClashReport.Launcher.Infrastructure.Engine;
 using OrzioClashReport.Launcher.Infrastructure.Logging;
 using OrzioClashReport.Launcher.Infrastructure.Platform;
@@ -87,10 +88,19 @@ namespace OrzioClashReport.Launcher.Desktop
                 ShellViewModel? shell = null;
 
                 var quickReport = new QuickReportViewModel(
-                    new JobViewModel(executor, outputRevealer, activeJobTracker),
+                    NewJob(executor, outputRevealer, activeJobTracker),
                     fileDialogService,
                     settingsStore,
                     engineStatus);
+
+                OperationsSectionViewModel snapshots = BuildSnapshotsSection(
+                    executor, outputRevealer, activeJobTracker, engineStatus, fileDialogService);
+
+                OperationsSectionViewModel longitudinal = BuildLongitudinalSection(
+                    executor, outputRevealer, activeJobTracker, engineStatus, fileDialogService);
+
+                OperationsSectionViewModel projects = BuildProjectsSection(
+                    executor, outputRevealer, activeJobTracker, engineStatus, fileDialogService);
 
                 var home = new HomeViewModel(
                     engineStatus,
@@ -112,7 +122,7 @@ namespace OrzioClashReport.Launcher.Desktop
                     engineStatus,
                     home,
                     settings,
-                    BuildSectionContent(home, quickReport, settings),
+                    BuildSectionContent(home, quickReport, snapshots, longitudinal, projects, settings),
                     log,
                     clock);
 
@@ -125,35 +135,79 @@ namespace OrzioClashReport.Launcher.Desktop
             base.OnFrameworkInitializationCompleted();
         }
 
+        private static JobViewModel NewJob(
+            LauncherOperationExecutor executor, IOutputRevealer revealer, ActiveJobTracker tracker) =>
+            new JobViewModel(executor, revealer, tracker);
+
+        private static OperationsSectionViewModel BuildSnapshotsSection(
+            LauncherOperationExecutor executor,
+            IOutputRevealer revealer,
+            ActiveJobTracker tracker,
+            EngineStatusViewModel engineStatus,
+            IFileDialogService dialogs) =>
+            new OperationsSectionViewModel(
+                LauncherSection.Snapshots,
+                new OperationFormViewModel[]
+                {
+                    new SnapshotFormViewModel(NewJob(executor, revealer, tracker), engineStatus, dialogs),
+                    new CompareSnapshotsFormViewModel(NewJob(executor, revealer, tracker), engineStatus, dialogs),
+                });
+
+        private static OperationsSectionViewModel BuildLongitudinalSection(
+            LauncherOperationExecutor executor,
+            IOutputRevealer revealer,
+            ActiveJobTracker tracker,
+            EngineStatusViewModel engineStatus,
+            IFileDialogService dialogs) =>
+            new OperationsSectionViewModel(
+                LauncherSection.Longitudinal,
+                new OperationFormViewModel[]
+                {
+                    new IndexSnapshotsFormViewModel(NewJob(executor, revealer, tracker), engineStatus, dialogs),
+                    new CompareIndexFormViewModel(NewJob(executor, revealer, tracker), engineStatus, dialogs),
+                    new CompareFormViewModel(NewJob(executor, revealer, tracker), engineStatus, dialogs),
+                });
+
+        private static OperationsSectionViewModel BuildProjectsSection(
+            LauncherOperationExecutor executor,
+            IOutputRevealer revealer,
+            ActiveJobTracker tracker,
+            EngineStatusViewModel engineStatus,
+            IFileDialogService dialogs)
+        {
+            var render = new RenderProjectFormViewModel(
+                NewJob(executor, revealer, tracker), engineStatus, dialogs);
+
+            // Appending never regenerates the report on its own. Offering the next step explicitly,
+            // with the project already filled in, is as far as the launcher goes.
+            var append = new AppendProjectSnapshotFormViewModel(
+                NewJob(executor, revealer, tracker), engineStatus, dialogs, render.UseProject);
+
+            return new OperationsSectionViewModel(
+                LauncherSection.Projects,
+                new OperationFormViewModel[]
+                {
+                    new CreateProjectFormViewModel(NewJob(executor, revealer, tracker), engineStatus, dialogs),
+                    append,
+                    render,
+                });
+        }
+
         private static IReadOnlyDictionary<LauncherSection, object> BuildSectionContent(
-            HomeViewModel home, QuickReportViewModel quickReport, SettingsViewModel settings)
+            HomeViewModel home,
+            QuickReportViewModel quickReport,
+            OperationsSectionViewModel snapshots,
+            OperationsSectionViewModel longitudinal,
+            OperationsSectionViewModel projects,
+            SettingsViewModel settings)
         {
             return new Dictionary<LauncherSection, object>
             {
                 [LauncherSection.Home] = home,
                 [LauncherSection.QuickReport] = quickReport,
-                [LauncherSection.Snapshots] = new SectionPlaceholderViewModel(
-                    LauncherSection.Snapshots,
-                    new[]
-                    {
-                        "orzioclash snapshot --xml <input.xml> --manifest <run-manifest.json> -o <run-snapshot.json>",
-                        "orzioclash compare-snapshots --previous-snapshot <previous.json> --current-snapshot <current.json> -o <output.html>",
-                    }),
-                [LauncherSection.Longitudinal] = new SectionPlaceholderViewModel(
-                    LauncherSection.Longitudinal,
-                    new[]
-                    {
-                        "orzioclash index-snapshots --snapshot <run-snapshot.json> ... -o <run-index.json>",
-                        "orzioclash compare-index --index <run-index.json> -o <output.html>",
-                    }),
-                [LauncherSection.Projects] = new SectionPlaceholderViewModel(
-                    LauncherSection.Projects,
-                    new[]
-                    {
-                        "orzioclash create-project --project-id <id> --name <name> --index <run-index.json> --report <report.html> -o <project.json>",
-                        "orzioclash append-project-snapshot --project <project.json> --snapshot <run-snapshot.json>",
-                        "orzioclash render-project --project <project.json>",
-                    }),
+                [LauncherSection.Snapshots] = snapshots,
+                [LauncherSection.Longitudinal] = longitudinal,
+                [LauncherSection.Projects] = projects,
                 [LauncherSection.Governance] = new SectionPlaceholderViewModel(
                     LauncherSection.Governance,
                     new[]

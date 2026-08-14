@@ -77,9 +77,43 @@ namespace OrzioClashReport.Launcher.FakeEngine
                     return 0;
 
                 default:
-                    Console.Error.WriteLine("fake-engine: unknown behaviour " + args[0]);
-                    return 1;
+                    return RunAsSubcommand(args);
             }
+        }
+
+        /// <summary>
+        /// Stands in for a real engine subcommand. It writes whatever <c>-o</c> names, if anything, and
+        /// otherwise just succeeds — enough for the launcher's own contract (argument vector, working
+        /// directory, output verification, collision policy) to be exercised end to end.
+        /// </summary>
+        private static int RunAsSubcommand(string[] args)
+        {
+            string[] known =
+            {
+                "snapshot", "compare", "compare-snapshots", "index-snapshots", "compare-index",
+                "create-project", "append-project-snapshot", "render-project",
+                "create-identity-governance", "append-identity-decision",
+                "validate-identity-governance", "render-identity-governance-report",
+            };
+
+            if (Array.IndexOf(known, args[0]) < 0)
+            {
+                Console.Error.WriteLine("fake-engine: unknown behaviour " + args[0]);
+                return 1;
+            }
+
+            string? destination = OutputOf(args);
+            if (destination != null)
+            {
+                File.WriteAllText(destination, "{ \"fake\": \"" + args[0] + "\" }");
+                Console.WriteLine(args[0] + " wrote " + Path.GetFileName(destination));
+            }
+            else
+            {
+                Console.WriteLine(args[0] + " completed");
+            }
+
+            return 0;
         }
 
         private static int RunAsSingleRun(string[] args)

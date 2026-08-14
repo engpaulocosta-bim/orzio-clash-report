@@ -1,0 +1,189 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:OrzioClashReport.Launcher.Desktop.Controls"
+             xmlns:fields="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels.Fields"
+             xmlns:views="clr-namespace:OrzioClashReport.Launcher.Desktop.Views"
+             xmlns:vm="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels"
+             x:Class="OrzioClashReport.Launcher.Desktop.Views.OperationFormView"
+             x:DataType="vm:OperationFormViewModel">
+
+  <UserControl.DataTemplates>
+
+    <!-- A single file, always chosen through the platform picker so the value is absolute. -->
+    <DataTemplate DataType="fields:PathFieldViewModel">
+      <StackPanel Classes="stack-sm">
+        <TextBlock Classes="subtitle" Text="{Binding Label}" />
+        <TextBlock Classes="secondary" Text="{Binding Description}" />
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBox Grid.Column="0" Text="{Binding Value}" Watermark="{Binding Watermark}" />
+          <Button Grid.Column="1" Content="Escolher…" Command="{Binding BrowseCommand}" />
+        </Grid>
+      </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate DataType="fields:TextFieldViewModel">
+      <StackPanel Classes="stack-sm">
+        <TextBlock Classes="subtitle" Text="{Binding Label}" />
+        <TextBlock Classes="secondary" Text="{Binding Description}" />
+        <TextBox Text="{Binding Value}" Watermark="{Binding Watermark}" />
+        <StackPanel Orientation="Horizontal" Classes="stack-sm" IsVisible="{Binding HasValidationMessage}">
+          <TextBlock Text="⚠" Classes="severity-caution" />
+          <TextBlock Text="{Binding ValidationMessage}" Classes="severity-caution" />
+        </StackPanel>
+      </StackPanel>
+    </DataTemplate>
+
+    <!--
+      A choice starts unselected, and each option shows its own glyph and label. Confirm and reject
+      are never distinguishable by colour alone.
+    -->
+    <DataTemplate DataType="fields:ChoiceFieldViewModel">
+      <StackPanel Classes="stack-sm">
+        <TextBlock Classes="subtitle" Text="{Binding Label}" />
+        <TextBlock Classes="secondary" Text="{Binding Description}" />
+
+        <ItemsControl ItemsSource="{Binding Options}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="fields:ChoiceOptionViewModel">
+              <RadioButton IsChecked="{Binding IsSelected, Mode=TwoWay}">
+                <StackPanel Classes="stack-xs">
+                  <StackPanel Orientation="Horizontal" Classes="stack-sm">
+                    <TextBlock Text="{Binding Glyph}"
+                               Classes.severity-positive="{Binding IsPositive}"
+                               Classes.severity-caution="{Binding IsCaution}"
+                               Classes.severity-critical="{Binding IsCritical}"
+                               Classes.severity-neutral="{Binding IsNeutral}" />
+                    <TextBlock Text="{Binding Label}"
+                               Classes.severity-positive="{Binding IsPositive}"
+                               Classes.severity-caution="{Binding IsCaution}"
+                               Classes.severity-critical="{Binding IsCritical}"
+                               Classes.severity-neutral="{Binding IsNeutral}" />
+                  </StackPanel>
+                  <TextBlock Classes="secondary" Text="{Binding Description}" />
+                </StackPanel>
+              </RadioButton>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </DataTemplate>
+
+    <!-- An explicit sequence. Position is shown, and only the arrows change it. -->
+    <DataTemplate DataType="fields:OrderedFilesFieldViewModel">
+      <StackPanel Classes="stack-sm">
+        <TextBlock Classes="subtitle" Text="{Binding Label}" />
+        <TextBlock Classes="secondary" Text="{Binding Description}" />
+
+        <ItemsControl ItemsSource="{Binding Entries}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="fields:OrderedFileEntryViewModel">
+              <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
+                <TextBlock Grid.Column="0" Classes="tertiary" VerticalAlignment="Center" Text="{Binding Position}" />
+                <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding FileName}"
+                           ToolTip.Tip="{Binding Path}" />
+                <Button Grid.Column="2" Classes="ghost" Content="↑"
+                        ToolTip.Tip="Mover para cima"
+                        Command="{Binding $parent[ItemsControl].((fields:OrderedFilesFieldViewModel)DataContext).MoveUpCommand}"
+                        CommandParameter="{Binding}" />
+                <Button Grid.Column="3" Classes="ghost" Content="↓"
+                        ToolTip.Tip="Mover para baixo"
+                        Command="{Binding $parent[ItemsControl].((fields:OrderedFilesFieldViewModel)DataContext).MoveDownCommand}"
+                        CommandParameter="{Binding}" />
+                <Button Grid.Column="4" Classes="ghost" Content="Remover"
+                        Command="{Binding $parent[ItemsControl].((fields:OrderedFilesFieldViewModel)DataContext).RemoveCommand}"
+                        CommandParameter="{Binding}" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <ItemsControl ItemsSource="{Binding Warnings}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="x:String">
+              <Border Classes="notice">
+                <StackPanel Orientation="Horizontal" Classes="stack-sm">
+                  <TextBlock Text="⚠" Classes="severity-caution" />
+                  <TextBlock Text="{Binding}" />
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <StackPanel Orientation="Horizontal" Classes="stack-sm">
+          <Button Content="Acrescentar…" Command="{Binding AddCommand}" />
+          <Button Classes="ghost" Content="Limpar" Command="{Binding ClearCommand}" />
+        </StackPanel>
+      </StackPanel>
+    </DataTemplate>
+
+  </UserControl.DataTemplates>
+
+  <StackPanel Classes="stack-lg">
+
+    <StackPanel Classes="stack-xs">
+      <TextBlock Classes="title" Text="{Binding Title}" />
+      <TextBlock Classes="secondary" Text="{Binding Description}" />
+    </StackPanel>
+
+    <ItemsControl ItemsSource="{Binding Notes}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate x:DataType="x:String">
+          <Border Classes="notice">
+            <StackPanel Orientation="Horizontal" Classes="stack-sm">
+              <TextBlock Text="ⓘ" Classes="severity-neutral" />
+              <TextBlock Text="{Binding}" />
+            </StackPanel>
+          </Border>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+    </ItemsControl>
+
+    <controls:EngineStatusBadge DataContext="{Binding EngineStatus}" IsVisible="{Binding !IsReady}" />
+
+    <Border Classes="card">
+      <StackPanel Classes="stack-md">
+        <ItemsControl ItemsSource="{Binding Fields}" />
+
+        <Button Classes="primary"
+                Content="Executar"
+                HorizontalAlignment="Left"
+                Command="{Binding RunCommand}" />
+      </StackPanel>
+    </Border>
+
+    <!-- Collision. Replacing is offered only for a derived report, and never by default. -->
+    <Border Classes="notice" IsVisible="{Binding IsCollisionPending}">
+      <StackPanel Classes="stack-sm">
+        <StackPanel Orientation="Horizontal" Classes="stack-sm">
+          <TextBlock Text="⚠" Classes="severity-caution" />
+          <TextBlock Classes="subtitle" Text="Já existe um ficheiro neste destino" />
+        </StackPanel>
+
+        <TextBlock Classes="monospace" Text="{Binding CollisionFileName}" />
+
+        <TextBlock Classes="secondary"
+                   IsVisible="{Binding !IsCollisionReplaceable}"
+                   Text="Este artefacto é evidência e nunca é substituído. Escolha outro nome." />
+
+        <StackPanel Orientation="Horizontal" Classes="stack-sm">
+          <Button Content="Escolher outro nome" Command="{Binding DismissCollisionCommand}" />
+          <Button Content="Substituir relatório existente"
+                  IsVisible="{Binding IsCollisionReplaceable}"
+                  Command="{Binding ReplaceExistingCommand}" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+
+    <Border Classes="notice" IsVisible="{Binding HasFollowUp}">
+      <StackPanel Orientation="Horizontal" Classes="stack-sm">
+        <TextBlock Text="ⓘ" Classes="severity-neutral" />
+        <TextBlock Text="{Binding FollowUpMessage}" />
+      </StackPanel>
+    </Border>
+
+    <views:JobPanelView DataContext="{Binding Job}" />
+
+  </StackPanel>
+
+</UserControl>

@@ -4,6 +4,64 @@ All notable changes for OrzioClashReport are recorded here.
 
 ## Unreleased
 
+## 0.2.0-launcher-preview.1
+
+First installable Windows desktop application. The engine is unchanged: this release adds a
+graphical launcher around the existing CLI contracts and does not alter, weaken, or bypass any
+of them.
+
+### Added
+
+- Four launcher projects on `net8.0`: `OrzioClashReport.Launcher.Contracts` (dependency-free
+  DTOs and ports), `.Application` (pure launcher policy), `.Infrastructure` (process, filesystem
+  and hashing adapters) and `.Desktop` (Avalonia UI with a manual composition root and no
+  dependency-injection container).
+- An application shell with exactly seven sections — Início, Relatório rápido, Snapshots,
+  Longitudinal, Projetos, Governança, Definições — and a token-based design system in which no
+  view carries a literal colour, font size, radius or spacing value.
+- Engine verification before use: the executable is located at its packaged path, hashed against
+  `engine-manifest.json`, and only then run with `--version` as its single argument under a
+  five-second timeout. Six engine states are each shown with their own glyph and label, never by
+  colour alone.
+- Quick report end to end without a terminal: choose an export, choose a destination, generate,
+  follow the engine's output, cancel, and open the result.
+- Typed forms for `snapshot`, `compare`, `compare-snapshots`, `index-snapshots`, `compare-index`,
+  `create-project`, `append-project-snapshot` and `render-project`, each with one argument-vector
+  test compared element by element.
+- Typed forms for `create-identity-governance`, `append-identity-decision`,
+  `validate-identity-governance` and `render-identity-governance-report`.
+- A job journal under `%LOCALAPPDATA%\Orzio\ClashReportLauncher\jobs`, an interrupted-operation
+  notice at startup, redacted JSON Lines logs with fourteen-day and twenty-file retention, and an
+  explicitly requested diagnostic bundle limited to a closed six-entry allow-list.
+- A Windows installer, plus publish, package and smoke scripts. Per-user installation without
+  administrator rights; machine-wide only as an explicit fallback for AppLocker environments.
+
+### Contracts preserved
+
+- Core remains `netstandard2.0`. No engine project references the launcher, and an architecture
+  test fails the build if one ever does.
+- The CLI remains available and its published stdout, stderr and exit-code contracts are unchanged.
+- The launcher never assembles a command line. Arguments are passed element by element, with no
+  shell intermediary, and every `-o` destination is absolute.
+- Run order remains an explicit human declaration. Nothing is sorted by date, name or revision, and
+  a repeated entry is preserved and reported rather than removed.
+- Persistent clash identity exists only through an explicit human `ConfirmSameIdentity` decision
+  carrying a `persistentIdentityId`. A rejection can never carry one. An algorithmic `High`
+  confidence is never presented as a human confirmation.
+- Snapshots, run indexes, project catalogs and governance documents keep their create-new
+  semantics: the launcher refuses to replace one and only ever offers a different name. A derived
+  HTML report may be replaced, but never by default and never without a decision naming the file.
+
+### Known limitations
+
+- The installer is not code signed, and this is stated rather than worked around.
+- The launcher drives the engine as a subprocess. This is a deliberate choice for this phase.
+- The installer has not yet been built or run on Windows; the ten-step smoke script exists and is
+  pending a clean-machine run by an evaluator.
+- Longitudinal matching, lifecycle, continuity links, continuity paths and longitudinal HTML remain
+  experimental and unvalidated against three real historical exports.
+- No macOS package, no PDF, no auto-update, no licensing, no cloud, and no telemetry.
+
 ## 0.1.0-preview.3
 
 Internal controlled pilot candidate for Windows `win-x64`.

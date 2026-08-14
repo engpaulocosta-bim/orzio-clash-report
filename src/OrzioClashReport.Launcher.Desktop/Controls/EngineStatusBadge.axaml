@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels"
+             x:Class="OrzioClashReport.Launcher.Desktop.Controls.EngineStatusBadge"
+             x:DataType="vm:EngineStatusViewModel">
+
+  <!--
+    The engine state is always readable without colour: a distinct glyph and a distinct text label
+    are both present, and the colour class only reinforces them.
+  -->
+  <Border Classes="notice"
+          ToolTip.Tip="{Binding Explanation}">
+    <StackPanel Orientation="Horizontal" Classes="stack-sm">
+
+      <TextBlock Text="{Binding Glyph}"
+                 Classes.severity-neutral="{Binding IsNeutral}"
+                 Classes.severity-positive="{Binding IsPositive}"
+                 Classes.severity-caution="{Binding IsCaution}"
+                 Classes.severity-critical="{Binding IsCritical}" />
+
+      <TextBlock Text="{Binding Label}"
+                 Classes.severity-neutral="{Binding IsNeutral}"
+                 Classes.severity-positive="{Binding IsPositive}"
+                 Classes.severity-caution="{Binding IsCaution}"
+                 Classes.severity-critical="{Binding IsCritical}" />
+
+      <TextBlock Text="{Binding ReportedVersion}" Classes="tertiary" />
+
+    </StackPanel>
+  </Border>
+
+</UserControl>

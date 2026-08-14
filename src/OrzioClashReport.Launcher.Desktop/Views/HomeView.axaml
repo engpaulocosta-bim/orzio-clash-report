@@ -1,0 +1,92 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:OrzioClashReport.Launcher.Desktop.Controls"
+             xmlns:vm="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels"
+             x:Class="OrzioClashReport.Launcher.Desktop.Views.HomeView"
+             x:DataType="vm:HomeViewModel">
+
+  <ScrollViewer>
+    <StackPanel Classes="stack-lg">
+
+      <StackPanel Classes="stack-xs">
+        <TextBlock Classes="display" Text="Orzio Clash Report" />
+        <TextBlock Classes="secondary"
+                   Text="Transforma exports do Navisworks Clash Detective em relatórios de coordenação, comparações entre revisões e decisões humanas explícitas." />
+      </StackPanel>
+
+      <controls:EngineStatusBadge DataContext="{Binding EngineStatus}" />
+
+      <Border Classes="card">
+        <StackPanel Classes="stack-md">
+          <TextBlock Classes="title" Text="Começar" />
+
+          <StackPanel Classes="stack-sm">
+            <TextBlock Classes="subtitle" Text="Relatório rápido" />
+            <TextBlock Classes="secondary"
+                       Text="Um export XML para um relatório HTML agrupado. É o caminho mais curto e não precisa de manifest." />
+            <Button Classes="primary"
+                    Content="Gerar relatório rápido"
+                    HorizontalAlignment="Left"
+                    Command="{Binding GoToQuickReportCommand}" />
+          </StackPanel>
+
+          <Separator />
+
+          <StackPanel Classes="stack-sm">
+            <TextBlock Classes="subtitle" Text="Criar snapshot" />
+            <TextBlock Classes="secondary"
+                       Text="Congela um run como evidência imutável, a partir do XML e do respetivo manifest declarado." />
+            <Button Content="Ir para Snapshots"
+                    HorizontalAlignment="Left"
+                    Command="{Binding GoToSnapshotsCommand}" />
+          </StackPanel>
+
+          <Separator />
+
+          <StackPanel Classes="stack-sm">
+            <TextBlock Classes="subtitle" Text="Comparar revisões" />
+            <TextBlock Classes="secondary"
+                       Text="Compara pares adjacentes na ordem que declarar. A ordem é sempre sua: nada é ordenado por data, nome ou revisão." />
+            <Button Content="Ir para Longitudinal"
+                    HorizontalAlignment="Left"
+                    Command="{Binding GoToLongitudinalCommand}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Classes="stack-md">
+          <TextBlock Classes="title" Text="Últimos relatórios" />
+
+          <TextBlock Classes="secondary"
+                     IsVisible="{Binding !HasRecentOutputs}"
+                     Text="Ainda não gerou nenhum ficheiro. O que gerar aparece aqui, e fica onde o guardou." />
+
+          <ItemsControl ItemsSource="{Binding RecentOutputs}" IsVisible="{Binding HasRecentOutputs}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:RecentOutputViewModel">
+                <Grid ColumnDefinitions="*,Auto">
+                  <StackPanel Grid.Column="0" Classes="stack-xs">
+                    <TextBlock Text="{Binding FileName}" />
+                    <StackPanel Orientation="Horizontal" Classes="stack-sm">
+                      <TextBlock Classes="caption" Text="{Binding FolderName}" />
+                      <TextBlock Classes="caption" Text="{Binding CompletedAt}" />
+                    </StackPanel>
+                  </StackPanel>
+
+                  <Button Grid.Column="1"
+                          Classes="ghost"
+                          Content="Abrir"
+                          Command="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).OpenRecentCommand}"
+                          CommandParameter="{Binding}" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

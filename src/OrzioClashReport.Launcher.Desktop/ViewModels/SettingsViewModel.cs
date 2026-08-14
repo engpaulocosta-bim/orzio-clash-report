@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using OrzioClashReport.Launcher.Contracts.Diagnostics;
 using OrzioClashReport.Launcher.Contracts.Engine;
 using OrzioClashReport.Launcher.Contracts.Platform;
 using OrzioClashReport.Launcher.Contracts.Settings;
@@ -19,10 +22,15 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         private readonly ISettingsStore _settingsStore;
         private readonly IRecentItemsStore _recentItemsStore;
         private readonly IOutputRevealer _outputRevealer;
+        private readonly IDiagnosticsBundleBuilder _diagnosticsBundleBuilder;
         private readonly Action<LauncherThemePreference> _applyTheme;
         private readonly string _dataDirectory;
 
+        private const int PreviewLineCount = 200;
+
         private bool _isLoading;
+        private EngineInfo? _engine;
+        private string? _lastBundlePath;
 
         [ObservableProperty]
         private LauncherThemePreference _theme = LauncherThemePreference.System;
@@ -39,16 +47,28 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         [ObservableProperty]
         private string _statusMessage = string.Empty;
 
+        [ObservableProperty]
+        private string _redactedLogPreview = string.Empty;
+
+        [ObservableProperty]
+        private bool _hasDiagnosticsPreview;
+
+        [ObservableProperty]
+        private bool _canRevealDiagnosticsBundle;
+
         public SettingsViewModel(
             ISettingsStore settingsStore,
             IRecentItemsStore recentItemsStore,
             IOutputRevealer outputRevealer,
+            IDiagnosticsBundleBuilder diagnosticsBundleBuilder,
             EngineStatusViewModel engineStatus,
             string dataDirectory,
             string launcherVersion,
             Action<LauncherThemePreference> applyTheme)
         {
             _settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
+            _diagnosticsBundleBuilder = diagnosticsBundleBuilder
+                ?? throw new ArgumentNullException(nameof(diagnosticsBundleBuilder));
             _recentItemsStore = recentItemsStore ?? throw new ArgumentNullException(nameof(recentItemsStore));
             _outputRevealer = outputRevealer ?? throw new ArgumentNullException(nameof(outputRevealer));
             EngineStatus = engineStatus ?? throw new ArgumentNullException(nameof(engineStatus));
@@ -91,8 +111,13 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             _applyTheme(settings.Theme);
         }
 
+        /// <summary>What a diagnostic bundle would contain, shown before anything is written.</summary>
+        public ObservableCollection<DiagnosticBundleItem> DiagnosticPlan { get; } =
+            new ObservableCollection<DiagnosticBundleItem>();
+
         public void UpdateEngine(EngineInfo info)
         {
+            _engine = info;
             EngineVersion = info.ReportedVersion ?? "—";
 
             switch (info.Integrity.Verdict)
@@ -144,6 +169,66 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         {
             await _recentItemsStore.ClearAsync(CancellationToken.None).ConfigureAwait(true);
             StatusMessage = "Lista de relatórios recentes limpa. Nenhum ficheiro foi apagado.";
+        }
+
+        /// <summary>
+        /// Shows exactly what a bundle would contain, including the redacted log itself, before
+        /// anything is written. Nothing is collected until the user asks a second time.
+        /// </summary>
+        [RelayCommand]
+        private async Task PrepareDiagnosticsAsync()
+        {
+            DiagnosticPlan.Clear();
+            foreach (DiagnosticBundleItem item in _diagnosticsBundleBuilder.Plan())
+            {
+                DiagnosticPlan.Add(item);
+            }
+
+            RedactedLogPreview = await _diagnosticsBundleBuilder
+                .PreviewRedactedLogAsync(PreviewLineCount, CancellationToken.None)
+                .ConfigureAwait(true);
+
+            HasDiagnosticsPreview = true;
+            CanRevealDiagnosticsBundle = false;
+            StatusMessage = string.Empty;
+        }
+
+        [RelayCommand]
+        private async Task CreateDiagnosticsBundleAsync()
+        {
+            if (_engine == null)
+            {
+                StatusMessage = "Espere que a verificação do motor termine antes de gerar o diagnóstico.";
+                return;
+            }
+
+            try
+            {
+                _lastBundlePath = await _diagnosticsBundleBuilder
+                    .BuildAsync(_engine, CancellationToken.None)
+                    .ConfigureAwait(true);
+
+                CanRevealDiagnosticsBundle = true;
+                StatusMessage = "Pacote de diagnóstico criado em " + Path.GetFileName(_lastBundlePath) + ".";
+            }
+            catch (IOException exception)
+            {
+                StatusMessage = "Não foi possível criar o pacote de diagnóstico: " + exception.Message;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                StatusMessage = "Não foi possível criar o pacote de diagnóstico: sem permissão de escrita.";
+            }
+        }
+
+        [RelayCommand]
+        private async Task RevealDiagnosticsBundleAsync()
+        {
+            if (_lastBundlePath != null)
+            {
+                await _outputRevealer.RevealInFolderAsync(_lastBundlePath, CancellationToken.None)
+                    .ConfigureAwait(true);
+            }
         }
 
         private async Task PersistAsync()

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using OrzioClashReport.Launcher.Contracts.Diagnostics;
 using OrzioClashReport.Launcher.Contracts.Engine;
 using OrzioClashReport.Launcher.Contracts.Jobs;
 using OrzioClashReport.Launcher.Contracts.Logging;
@@ -107,5 +108,34 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
     internal sealed class FixedClock : IClock
     {
         public DateTimeOffset UtcNow { get; set; } = DateTimeOffset.UnixEpoch;
+    }
+
+    internal sealed class NoOpJobJournal : IJobJournal
+    {
+        public List<JobJournalEntry> Interrupted { get; } = new List<JobJournalEntry>();
+
+        public Task BeginAsync(JobJournalEntry entry, CancellationToken cancellationToken) => Task.CompletedTask;
+
+        public Task CompleteAsync(string jobId, CancellationToken cancellationToken) => Task.CompletedTask;
+
+        public Task<IReadOnlyList<JobJournalEntry>> ReadInterruptedAsync(CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<JobJournalEntry>>(Interrupted.ToArray());
+
+        public Task ClearAsync(CancellationToken cancellationToken)
+        {
+            Interrupted.Clear();
+            return Task.CompletedTask;
+        }
+    }
+
+    internal sealed class StubDiagnosticsBundleBuilder : IDiagnosticsBundleBuilder
+    {
+        public IReadOnlyList<DiagnosticBundleItem> Plan() => DiagnosticBundleItem.All;
+
+        public Task<string> PreviewRedactedLogAsync(int maximumLines, CancellationToken cancellationToken) =>
+            Task.FromResult("{\"event\":\"job.finished\"}");
+
+        public Task<string> BuildAsync(EngineInfo engine, CancellationToken cancellationToken) =>
+            Task.FromResult("/diagnostics/bundle.zip");
     }
 }

@@ -1,0 +1,112 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="clr-namespace:OrzioClashReport.Launcher.Desktop.Controls"
+        xmlns:views="clr-namespace:OrzioClashReport.Launcher.Desktop.Views"
+        xmlns:vm="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels"
+        x:Class="OrzioClashReport.Launcher.Desktop.MainWindow"
+        x:DataType="vm:ShellViewModel"
+        Title="Orzio Clash Report"
+        Width="{DynamicResource OrzioWindowMinWidth}"
+        Height="{DynamicResource OrzioWindowMinHeight}"
+        MinWidth="{DynamicResource OrzioWindowMinWidth}"
+        MinHeight="{DynamicResource OrzioWindowMinHeight}"
+        Background="{DynamicResource OrzioCanvasBrush}">
+
+  <Window.DataTemplates>
+    <DataTemplate DataType="vm:HomeViewModel">
+      <views:HomeView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:QuickReportViewModel">
+      <views:QuickReportView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:SettingsViewModel">
+      <views:SettingsView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:OperationsSectionViewModel">
+      <views:OperationsSectionView />
+    </DataTemplate>
+    <DataTemplate DataType="vm:SectionPlaceholderViewModel">
+      <views:SectionPlaceholderView />
+    </DataTemplate>
+  </Window.DataTemplates>
+
+  <Grid RowDefinitions="*,Auto">
+
+    <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
+
+      <!--
+        Navigation. Below the rail breakpoint the same list collapses to icons; the label stays as a
+        tooltip so an icon is never the only way to know what a section is.
+      -->
+      <Border Grid.Column="0"
+              Classes="sidebar"
+              Classes.rail="{Binding IsRailMode}">
+        <ListBox Classes="navigation"
+                 ItemsSource="{Binding Sections}"
+                 SelectedItem="{Binding SelectedSection, Mode=TwoWay}">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="vm:NavigationItemViewModel">
+              <StackPanel Orientation="Horizontal"
+                          Classes="stack-sm"
+                          ToolTip.Tip="{Binding Label}">
+                <TextBlock Text="{Binding Glyph}" />
+                <TextBlock Classes="nav-label" Text="{Binding Label}" />
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Border>
+
+      <Border Grid.Column="1" Classes="content">
+        <DockPanel>
+
+          <!--
+            An operation that was still running when the application last stopped. It is reported,
+            never resumed: what to do about it is a human decision.
+          -->
+          <Border DockPanel.Dock="Top" Classes="notice" IsVisible="{Binding HasInterruptedOperations}">
+            <StackPanel Classes="stack-sm">
+              <StackPanel Orientation="Horizontal" Classes="stack-sm">
+                <TextBlock Text="⚠" Classes="severity-caution" />
+                <TextBlock Classes="subtitle" Text="Operação interrompida" />
+              </StackPanel>
+
+              <TextBlock Classes="secondary"
+                         Text="A aplicação fechou enquanto isto estava em curso. Nada foi retomado automaticamente. Verifique o destino antes de repetir." />
+
+              <ItemsControl ItemsSource="{Binding InterruptedOperations}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="x:String">
+                    <TextBlock Classes="monospace" Text="{Binding}" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+
+              <Button Content="Compreendido" HorizontalAlignment="Left"
+                      Command="{Binding DismissInterruptedCommand}" />
+            </StackPanel>
+          </Border>
+
+          <ContentControl Content="{Binding SelectedSection.Content}" />
+        </DockPanel>
+      </Border>
+
+    </Grid>
+
+    <Border Grid.Row="1" Classes="statusbar">
+      <Grid ColumnDefinitions="*,Auto" VerticalAlignment="Center">
+        <TextBlock Grid.Column="0"
+                   Classes="caption"
+                   VerticalAlignment="Center"
+                   TextTrimming="CharacterEllipsis"
+                   Text="{Binding StatusMessage}" />
+
+        <controls:EngineStatusBadge Grid.Column="1"
+                                    VerticalAlignment="Center"
+                                    DataContext="{Binding EngineStatus}" />
+      </Grid>
+    </Border>
+
+  </Grid>
+
+</Window>

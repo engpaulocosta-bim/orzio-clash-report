@@ -1,0 +1,210 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    Every visual decision lives here, expressed with the tokens from Tokens.axaml. Views apply
+    classes; they never carry a literal colour, font size, radius, padding or margin.
+  -->
+
+  <!-- Typography -->
+  <Style Selector="TextBlock">
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeBody}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioTextPrimaryBrush}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+
+  <Style Selector="TextBlock.display">
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeDisplay}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="TextBlock.title">
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeTitle}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="TextBlock.subtitle">
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeSubtitle}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="TextBlock.secondary">
+    <Setter Property="Foreground" Value="{DynamicResource OrzioTextSecondaryBrush}" />
+  </Style>
+
+  <Style Selector="TextBlock.tertiary">
+    <Setter Property="Foreground" Value="{DynamicResource OrzioTextTertiaryBrush}" />
+  </Style>
+
+  <Style Selector="TextBlock.caption">
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeCaption}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioTextSecondaryBrush}" />
+  </Style>
+
+  <Style Selector="TextBlock.monospace">
+    <Setter Property="FontFamily" Value="Consolas, Menlo, monospace" />
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeCaption}" />
+  </Style>
+
+  <!-- Layout primitives -->
+  <Style Selector="StackPanel.stack-xs">
+    <Setter Property="Spacing" Value="{DynamicResource OrzioGapXs}" />
+  </Style>
+
+  <Style Selector="StackPanel.stack-sm">
+    <Setter Property="Spacing" Value="{DynamicResource OrzioGapSm}" />
+  </Style>
+
+  <Style Selector="StackPanel.stack-md">
+    <Setter Property="Spacing" Value="{DynamicResource OrzioGapMd}" />
+  </Style>
+
+  <Style Selector="StackPanel.stack-lg">
+    <Setter Property="Spacing" Value="{DynamicResource OrzioGapLg}" />
+  </Style>
+
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{DynamicResource OrzioRaisedBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioBorderSubtleBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource OrzioHairlineAll}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OrzioRadiusMd}" />
+    <Setter Property="Padding" Value="{DynamicResource OrzioCardPadding}" />
+  </Style>
+
+  <Style Selector="Border.content">
+    <Setter Property="Background" Value="{DynamicResource OrzioCanvasBrush}" />
+    <Setter Property="Padding" Value="{DynamicResource OrzioContentPadding}" />
+  </Style>
+
+  <Style Selector="Border.sidebar">
+    <Setter Property="Background" Value="{DynamicResource OrzioRaisedBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioBorderSubtleBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource OrzioHairlineRight}" />
+    <Setter Property="Width" Value="{DynamicResource OrzioSidebarWidth}" />
+  </Style>
+
+  <!-- Rail mode: icons only, with the label kept as a tooltip. -->
+  <Style Selector="Border.sidebar.rail">
+    <Setter Property="Width" Value="{DynamicResource OrzioRailWidth}" />
+  </Style>
+
+  <Style Selector="Border.sidebar.rail TextBlock.nav-label">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+
+  <Style Selector="Border.statusbar">
+    <Setter Property="Background" Value="{DynamicResource OrzioRaisedBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioBorderSubtleBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource OrzioHairlineTop}" />
+    <Setter Property="Padding" Value="{DynamicResource OrzioStatusBarPadding}" />
+    <Setter Property="Height" Value="{DynamicResource OrzioStatusBarHeight}" />
+  </Style>
+
+  <Style Selector="Border.notice">
+    <Setter Property="Background" Value="{DynamicResource OrzioAccentTintBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioBorderSubtleBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource OrzioHairlineAll}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OrzioRadiusSm}" />
+    <Setter Property="Padding" Value="{DynamicResource OrzioCompactPadding}" />
+  </Style>
+
+  <Style Selector="Separator">
+    <Setter Property="Background" Value="{DynamicResource OrzioBorderSubtleBrush}" />
+  </Style>
+
+  <!-- Buttons: at most one filled primary call to action per screen. -->
+  <Style Selector="Button">
+    <Setter Property="Padding" Value="{DynamicResource OrzioButtonPadding}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OrzioRadiusSm}" />
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeBody}" />
+    <Setter Property="Background" Value="{DynamicResource OrzioCanvasBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioTextPrimaryBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioBorderStrongBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource OrzioHairlineAll}" />
+  </Style>
+
+  <Style Selector="Button:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource OrzioSunkenBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource OrzioTextPrimaryBrush}" />
+  </Style>
+
+  <Style Selector="Button.primary">
+    <Setter Property="Background" Value="{DynamicResource OrzioAccentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioOnAccentBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioAccentBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <Style Selector="Button.primary:pointerover /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource OrzioAccentHoverBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioAccentHoverBrush}" />
+    <Setter Property="TextBlock.Foreground" Value="{DynamicResource OrzioOnAccentBrush}" />
+  </Style>
+
+  <Style Selector="Button.primary:pressed /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource OrzioAccentPressedBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioAccentPressedBrush}" />
+  </Style>
+
+  <Style Selector="Button.ghost">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioAccentBrush}" />
+  </Style>
+
+  <!-- Navigation -->
+  <Style Selector="ListBox.navigation">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="{DynamicResource OrzioCompactPadding}" />
+  </Style>
+
+  <Style Selector="ListBox.navigation ListBoxItem">
+    <Setter Property="Padding" Value="{DynamicResource OrzioNavItemPadding}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OrzioRadiusSm}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioTextSecondaryBrush}" />
+  </Style>
+
+  <Style Selector="ListBox.navigation ListBoxItem:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource OrzioAccentTintBrush}" />
+  </Style>
+
+  <Style Selector="ListBox.navigation ListBoxItem:selected TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource OrzioAccentBrush}" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+
+  <!-- Form inputs -->
+  <Style Selector="TextBox">
+    <Setter Property="Background" Value="{DynamicResource OrzioCanvasBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioTextPrimaryBrush}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioBorderStrongBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource OrzioHairlineAll}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OrzioRadiusSm}" />
+    <Setter Property="Padding" Value="{DynamicResource OrzioButtonPadding}" />
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeBody}" />
+  </Style>
+
+  <Style Selector="ComboBox">
+    <Setter Property="CornerRadius" Value="{DynamicResource OrzioRadiusSm}" />
+    <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeBody}" />
+  </Style>
+
+  <!-- Severity accents, always accompanied by a glyph and a label in the markup that uses them. -->
+  <Style Selector="TextBlock.severity-positive">
+    <Setter Property="Foreground" Value="{DynamicResource OrzioPositiveBrush}" />
+  </Style>
+
+  <Style Selector="TextBlock.severity-caution">
+    <Setter Property="Foreground" Value="{DynamicResource OrzioCautionBrush}" />
+  </Style>
+
+  <Style Selector="TextBlock.severity-critical">
+    <Setter Property="Foreground" Value="{DynamicResource OrzioCriticalBrush}" />
+  </Style>
+
+  <Style Selector="TextBlock.severity-neutral">
+    <Setter Property="Foreground" Value="{DynamicResource OrzioTextSecondaryBrush}" />
+  </Style>
+
+</Styles>

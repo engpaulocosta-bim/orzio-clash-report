@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!--
+    Adapters for the operating system: process execution, filesystem stores, hashing, and shell
+    integration. This is the only launcher project allowed to touch System.Diagnostics.Process.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\OrzioClashReport.Launcher.Application\OrzioClashReport.Launcher.Application.csproj" />
+    <ProjectReference Include="..\OrzioClashReport.Launcher.Contracts\OrzioClashReport.Launcher.Contracts.csproj" />
+  </ItemGroup>
+
+  <!-- The stream-bounding and line-splitting rules are worth testing directly. -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="OrzioClashReport.Launcher.Tests" />
+  </ItemGroup>
+
+</Project>

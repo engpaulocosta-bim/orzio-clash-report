@@ -1076,6 +1076,55 @@ O motor está pronto. A experiência visual de produto ainda não está pronta.
 
 ---
 
+# 19.1 Estado da aplicação desktop
+
+A partir de `v0.2.0-launcher-preview.1` existe uma aplicação desktop Windows instalável sobre o motor existente.
+
+Projetos acrescentados, todos em `net8.0`:
+
+```text
+src/OrzioClashReport.Launcher.Contracts/
+src/OrzioClashReport.Launcher.Application/
+src/OrzioClashReport.Launcher.Infrastructure/
+src/OrzioClashReport.Launcher.Desktop/
+```
+
+O motor não foi alterado. O Core continua `netstandard2.0`, nenhum projeto do motor referencia o launcher, e a CLI continua disponível com os contratos publicados intactos.
+
+Sem terminal, o utilizador consegue:
+
+- relatório rápido;
+- criar snapshot;
+- comparar dois snapshots;
+- comparar dois runs a partir de XML e manifest;
+- criar índice ordenado e comparar índice;
+- criar projeto, acrescentar run e renderizar projeto;
+- criar governança, registar decisão, validar e gerar revisão.
+
+Regras preservadas na aplicação visual:
+
+- a UI nunca monta linha de comando; os argumentos passam elemento a elemento, sem shell intermediário;
+- `-o` é sempre absoluto e o working directory nunca é a pasta de instalação;
+- o motor é verificado por SHA-256 contra `engine-manifest.json` antes de ser executado;
+- a ordem dos runs é declaração humana explícita; nada é ordenado automaticamente e duplicados são preservados com aviso;
+- snapshot, run index, project catalog e governança nunca são substituídos; só o HTML derivado pode ser substituído, e apenas por decisão humana explícita;
+- sugestão algorítmica nunca vira decisão humana; `High` não é confirmação;
+- logs locais não registam caminhos absolutos; não há telemetria nem upload;
+- job interrompido é reportado, nunca retomado automaticamente.
+
+Estado de validação honesto desta fase:
+
+```text
+compila: sim
+testes automatizados: verdes
+smoke do instalador em Windows limpo: por executar
+validação longitudinal em três exports reais: por fazer
+```
+
+macOS, PDF, assinatura de código, auto-update, licenciamento e cloud continuam fora de escopo.
+
+---
+
 # 20. Visão futura: Orzio Clash Report Desktop
 
 ## 20.1 Objetivo

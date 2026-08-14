@@ -822,6 +822,44 @@ candidate competition blocks safe automatic classification; source GUID is evide
 there is no Clash Ledger, `Reopened`, aggregate multi-run lifecycle, persistent clash
 identity, fingerprint, path ID, aggregate path status, or aggregate path confidence.
 
+## Desktop launcher
+
+`v0.2.0-launcher-preview.1` adds a Windows desktop application in four `net8.0` projects:
+`OrzioClashReport.Launcher.Contracts`, `.Application`, `.Infrastructure` and `.Desktop`
+(Avalonia, manual composition root, no dependency-injection container). It is a layer over the
+engine, never a rewrite of it.
+
+- Core stays `netstandard2.0`. No engine project references the launcher, and an architecture
+  test fails the build if one ever does. The CLI stays available and its published contracts stay
+  unchanged.
+- `Launcher.Contracts` has zero project and package references, and never touches the UI framework
+  or the process API. `Launcher.Infrastructure` is the only place a process is started.
+- The launcher never assembles a command line. Arguments go through `ProcessStartInfo.ArgumentList`
+  element by element, with no shell intermediary, `UseShellExecute=false`, `CreateNoWindow=true`,
+  both streams redirected as UTF-8 without a BOM, and the whole process tree killed on cancellation.
+- Every `-o` destination is absolute, and the working directory is never the installation directory.
+- The engine is verified before it is run: located at its packaged path, hashed against
+  `engine-manifest.json`, then executed with `--version` as its single argument under a five-second
+  timeout and parsed with `^orzioclash (\d+\.\d+\.\d+-[A-Za-z0-9.]+)$`.
+- The launcher classifies nothing the engine classifies. It runs no grouping, matching, lifecycle or
+  governance rule, and never parses human prose from stdout to reach a domain conclusion. An
+  unclassified non-zero exit is reported as an execution failure carrying the engine's own exit code
+  and stderr.
+- An algorithmic suggestion never becomes a human decision. The launcher proposes no pairing, and
+  `High` confidence is never presented as confirmation. A `ConfirmSameIdentity` decision requires a
+  `persistentIdentityId`; a `RejectSameIdentity` decision can never carry one.
+- Run order stays an explicit human declaration: nothing is sorted by date, name or revision, and a
+  repeated entry is preserved and reported rather than removed.
+- Snapshots, run indexes, project catalogs and governance documents keep create-new semantics; the
+  launcher refuses to replace one. A derived HTML report may be replaced only after an explicit
+  human decision naming the file.
+- Local data lives under `%LOCALAPPDATA%\Orzio\ClashReportLauncher`, never in the installation
+  directory. Logs record a path only as file name, extension, SHA-256 and root kind. There is no
+  telemetry and no upload. A diagnostic bundle is produced only on explicit request, from a closed
+  six-entry allow-list, after the contents and the redacted log have been shown.
+- A job that was running when the application stopped is reported at startup and never resumed
+  automatically.
+
 ## Anti-patterns that fail review
 
 - Core with a `using System.Xml.Linq`, a Navisworks reference, or any HTML string.

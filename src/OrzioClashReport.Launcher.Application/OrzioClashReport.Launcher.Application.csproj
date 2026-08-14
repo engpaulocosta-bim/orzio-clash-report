@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <!--
+    Use cases and pure launcher policy. Depends on Contracts only: no UI framework, no process API,
+    no filesystem adapter, and no engine project.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\OrzioClashReport.Launcher.Contracts\OrzioClashReport.Launcher.Contracts.csproj" />
+  </ItemGroup>
+
+</Project>

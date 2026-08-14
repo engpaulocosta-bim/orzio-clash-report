@@ -1,0 +1,96 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+  <!--
+    The single source of colour, spacing, radius and type for the whole application. Views and
+    controls reference these tokens and never write a literal value; LauncherStyleTests enforces that.
+  -->
+
+  <!--
+    The light palette is defined at the root, so it also answers the Default theme variant. Only the
+    dark overrides live in a theme dictionary: a token defined solely inside a variant would silently
+    fail to resolve wherever the host reports no explicit variant.
+  -->
+  <SolidColorBrush x:Key="OrzioCanvasBrush" Color="#FFFFFF" />
+  <SolidColorBrush x:Key="OrzioRaisedBrush" Color="#F7F8FA" />
+  <SolidColorBrush x:Key="OrzioSunkenBrush" Color="#F0F2F5" />
+  <SolidColorBrush x:Key="OrzioBorderSubtleBrush" Color="#E4E7EC" />
+  <SolidColorBrush x:Key="OrzioBorderStrongBrush" Color="#D0D5DD" />
+  <SolidColorBrush x:Key="OrzioTextPrimaryBrush" Color="#101828" />
+  <SolidColorBrush x:Key="OrzioTextSecondaryBrush" Color="#475467" />
+  <SolidColorBrush x:Key="OrzioTextTertiaryBrush" Color="#98A2B3" />
+  <SolidColorBrush x:Key="OrzioAccentBrush" Color="#2A5BD7" />
+  <SolidColorBrush x:Key="OrzioAccentHoverBrush" Color="#2450BE" />
+  <SolidColorBrush x:Key="OrzioAccentPressedBrush" Color="#1E45A8" />
+  <SolidColorBrush x:Key="OrzioAccentTintBrush" Color="#EEF3FE" />
+  <SolidColorBrush x:Key="OrzioOnAccentBrush" Color="#FFFFFF" />
+
+  <ResourceDictionary.ThemeDictionaries>
+
+    <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="OrzioCanvasBrush" Color="#0F1216" />
+      <SolidColorBrush x:Key="OrzioRaisedBrush" Color="#151A20" />
+      <SolidColorBrush x:Key="OrzioSunkenBrush" Color="#1D242C" />
+      <SolidColorBrush x:Key="OrzioBorderSubtleBrush" Color="#272F38" />
+      <SolidColorBrush x:Key="OrzioBorderStrongBrush" Color="#364049" />
+      <SolidColorBrush x:Key="OrzioTextPrimaryBrush" Color="#E6EAEF" />
+      <SolidColorBrush x:Key="OrzioTextSecondaryBrush" Color="#A2AEBB" />
+      <SolidColorBrush x:Key="OrzioTextTertiaryBrush" Color="#6C7A89" />
+      <SolidColorBrush x:Key="OrzioAccentBrush" Color="#5B8DEF" />
+      <SolidColorBrush x:Key="OrzioAccentHoverBrush" Color="#7BA3F3" />
+      <SolidColorBrush x:Key="OrzioAccentPressedBrush" Color="#4A79D6" />
+      <SolidColorBrush x:Key="OrzioAccentTintBrush" Color="#17243A" />
+      <SolidColorBrush x:Key="OrzioOnAccentBrush" Color="#0F1216" />
+    </ResourceDictionary>
+
+  </ResourceDictionary.ThemeDictionaries>
+
+  <!-- Severity accents. Every severity is always paired with a distinct glyph and label. -->
+  <SolidColorBrush x:Key="OrzioPositiveBrush" Color="#0E7C4A" />
+  <SolidColorBrush x:Key="OrzioCautionBrush" Color="#B54708" />
+  <SolidColorBrush x:Key="OrzioCriticalBrush" Color="#B42318" />
+
+  <!-- Spacing scale -->
+  <sys:Double x:Key="OrzioGapXs">4</sys:Double>
+  <sys:Double x:Key="OrzioGapSm">8</sys:Double>
+  <sys:Double x:Key="OrzioGapMd">16</sys:Double>
+  <sys:Double x:Key="OrzioGapLg">24</sys:Double>
+  <sys:Double x:Key="OrzioGapXl">32</sys:Double>
+
+  <Thickness x:Key="OrzioContentPadding">32</Thickness>
+  <Thickness x:Key="OrzioCardPadding">24</Thickness>
+  <Thickness x:Key="OrzioCompactPadding">16</Thickness>
+  <Thickness x:Key="OrzioBadgePadding">10,4</Thickness>
+  <Thickness x:Key="OrzioNavItemPadding">12,10</Thickness>
+  <Thickness x:Key="OrzioStatusBarPadding">16,0</Thickness>
+  <Thickness x:Key="OrzioButtonPadding">16,8</Thickness>
+  <Thickness x:Key="OrzioHairlineBottom">0,0,0,1</Thickness>
+  <Thickness x:Key="OrzioHairlineRight">0,0,1,0</Thickness>
+  <Thickness x:Key="OrzioHairlineTop">0,1,0,0</Thickness>
+  <Thickness x:Key="OrzioHairlineAll">1</Thickness>
+
+  <!-- Radius scale -->
+  <CornerRadius x:Key="OrzioRadiusSm">4</CornerRadius>
+  <CornerRadius x:Key="OrzioRadiusMd">8</CornerRadius>
+
+  <!-- Type scale -->
+  <sys:Double x:Key="OrzioFontSizeDisplay">24</sys:Double>
+  <sys:Double x:Key="OrzioFontSizeTitle">18</sys:Double>
+  <sys:Double x:Key="OrzioFontSizeSubtitle">15</sys:Double>
+  <sys:Double x:Key="OrzioFontSizeBody">14</sys:Double>
+  <sys:Double x:Key="OrzioFontSizeCaption">12</sys:Double>
+
+  <!-- Shell geometry -->
+  <sys:Double x:Key="OrzioSidebarWidth">240</sys:Double>
+  <sys:Double x:Key="OrzioRailWidth">56</sys:Double>
+  <sys:Double x:Key="OrzioStatusBarHeight">40</sys:Double>
+  <sys:Double x:Key="OrzioRailBreakpoint">900</sys:Double>
+  <sys:Double x:Key="OrzioWindowMinWidth">1024</sys:Double>
+  <sys:Double x:Key="OrzioWindowMinHeight">680</sys:Double>
+
+  <!-- Scrolling panels: bounded so a long engine stream never pushes the actions off screen. -->
+  <sys:Double x:Key="OrzioLiveOutputMaxHeight">200</sys:Double>
+  <sys:Double x:Key="OrzioEngineOutputMaxHeight">240</sys:Double>
+
+</ResourceDictionary>

@@ -1,0 +1,130 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:OrzioClashReport.Launcher.Desktop.Controls"
+             xmlns:diagnostics="clr-namespace:OrzioClashReport.Launcher.Contracts.Diagnostics;assembly=OrzioClashReport.Launcher.Contracts"
+             xmlns:vm="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels"
+             x:Class="OrzioClashReport.Launcher.Desktop.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+  <ScrollViewer>
+    <StackPanel Classes="stack-lg">
+
+      <StackPanel Classes="stack-xs">
+        <TextBlock Classes="display" Text="Definições" />
+        <TextBlock Classes="secondary" Text="Aparência, dados locais e estado do motor." />
+      </StackPanel>
+
+      <Border Classes="card">
+        <StackPanel Classes="stack-md">
+          <TextBlock Classes="title" Text="Aparência" />
+
+          <StackPanel Classes="stack-sm">
+            <TextBlock Text="Tema" />
+            <ComboBox ItemsSource="{Binding Themes}"
+                      SelectedItem="{Binding Theme}"
+                      HorizontalAlignment="Left" />
+          </StackPanel>
+
+          <CheckBox IsChecked="{Binding ShowExperimentalWarnings}"
+                    Content="Mostrar avisos em funcionalidades experimentais" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Classes="stack-md">
+          <TextBlock Classes="title" Text="Motor" />
+
+          <controls:EngineStatusBadge DataContext="{Binding EngineStatus}" />
+
+          <StackPanel Classes="stack-xs">
+            <TextBlock Classes="caption" Text="Versão reportada" />
+            <TextBlock Classes="monospace" Text="{Binding EngineVersion}" />
+          </StackPanel>
+
+          <StackPanel Classes="stack-xs">
+            <TextBlock Classes="caption" Text="Integridade" />
+            <TextBlock Classes="secondary" Text="{Binding EngineIntegrity}" />
+          </StackPanel>
+
+          <StackPanel Classes="stack-xs">
+            <TextBlock Classes="caption" Text="Versão da aplicação" />
+            <TextBlock Classes="monospace" Text="{Binding LauncherVersion}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Classes="stack-md">
+          <TextBlock Classes="title" Text="Dados locais" />
+          <TextBlock Classes="secondary"
+                     Text="Definições, lista de recentes, registos e jobs ficam na sua pasta de utilizador. Os relatórios e ficheiros de projeto ficam onde os guardar, e a desinstalação não lhes toca." />
+
+          <TextBlock Classes="monospace" Text="{Binding DataDirectory}" />
+
+          <StackPanel Orientation="Horizontal" Classes="stack-sm">
+            <Button Content="Abrir pasta de dados" Command="{Binding OpenDataFolderCommand}" />
+            <Button Content="Limpar lista de recentes" Command="{Binding ClearRecentOutputsCommand}" />
+          </StackPanel>
+
+          <TextBlock Classes="caption" Text="{Binding StatusMessage}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Classes="stack-md">
+          <TextBlock Classes="title" Text="Diagnóstico" />
+          <TextBlock Classes="secondary"
+                     Text="Um pacote de diagnóstico é criado apenas quando o pedir, fica na sua pasta de dados e não é enviado para lado nenhum." />
+
+          <Button Content="Ver o que seria incluído" HorizontalAlignment="Left"
+                  Command="{Binding PrepareDiagnosticsCommand}" />
+
+          <StackPanel Classes="stack-md" IsVisible="{Binding HasDiagnosticsPreview}">
+
+            <StackPanel Classes="stack-sm">
+              <TextBlock Classes="subtitle" Text="O pacote contém exatamente estes ficheiros" />
+              <ItemsControl ItemsSource="{Binding DiagnosticPlan}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="diagnostics:DiagnosticBundleItem">
+                    <StackPanel Classes="stack-xs">
+                      <TextBlock Classes="monospace" Text="{Binding FileName}" />
+                      <TextBlock Classes="caption" Text="{Binding Description}" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <TextBlock Classes="secondary"
+                         Text="Nenhum ficheiro seu é incluído: nem XML, nem manifest, nem snapshot, nem governança, nem relatórios." />
+            </StackPanel>
+
+            <StackPanel Classes="stack-sm">
+              <TextBlock Classes="subtitle" Text="Pré-visualização do registo redigido" />
+              <ScrollViewer MaxHeight="{DynamicResource OrzioEngineOutputMaxHeight}">
+                <SelectableTextBlock Classes="monospace" Text="{Binding RedactedLogPreview}" />
+              </ScrollViewer>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Classes="stack-sm">
+              <Button Classes="primary" Content="Gerar pacote"
+                      Command="{Binding CreateDiagnosticsBundleCommand}" />
+              <Button Content="Mostrar na pasta"
+                      IsVisible="{Binding CanRevealDiagnosticsBundle}"
+                      Command="{Binding RevealDiagnosticsBundleCommand}" />
+            </StackPanel>
+
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Classes="stack-sm">
+          <TextBlock Classes="title" Text="O que esta aplicação não faz" />
+          <TextBlock Classes="secondary"
+                     Text="Não recolhe telemetria, não envia nada para a internet, não usa conta e funciona sem ligação. Os registos locais não guardam caminhos absolutos nem conteúdo dos seus ficheiros." />
+        </StackPanel>
+      </Border>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

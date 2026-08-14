@@ -26,6 +26,29 @@ parser is an input adapter, and the HTML renderer is an output adapter. This kee
 domain stable when the data source changes later, for example to the Navisworks API, or
 when another output format is added.
 
+### Desktop launcher
+
+`v0.2.0-launcher-preview.1` adds a Windows desktop application around the existing engine,
+in four `net8.0` projects: `OrzioClashReport.Launcher.Contracts` (dependency-free DTOs and
+ports), `.Application` (pure launcher policy), `.Infrastructure` (process, filesystem and
+hashing adapters) and `.Desktop` (Avalonia UI, manual composition root, no dependency
+injection container).
+
+The launcher sits strictly outside the engine and depends on it only through the published
+CLI contracts. No engine project references the launcher, Core stays `netstandard2.0`, and
+`LauncherArchitectureTests` fails the build if either boundary is crossed. The CLI remains
+available and unchanged.
+
+The launcher never assembles a command line: arguments are passed element by element with
+no shell intermediary, every `-o` destination is absolute, and the working directory is
+never the installation directory. It verifies the engine's SHA-256 against the packaged
+`engine-manifest.json` before running it, refuses to replace a snapshot, run index, project
+catalog or governance document, and asks for an explicit decision before replacing a
+derived HTML report.
+
+See [docs/operations/desktop-pilot.md](docs/operations/desktop-pilot.md) for the private
+pilot guide.
+
 ## Usage
 
 Requires the .NET SDK pinned in `global.json` (8.0.420).
@@ -680,6 +703,14 @@ by parsing and grouping tests. See [samples/README.md](samples/README.md).
 - **Validated longitudinally on sequential real exports**: not yet. Matching between runs,
   lifecycle classification, continuity links, continuity paths, and longitudinal HTML have
   not been validated against three real historical exports.
+- **Desktop launcher, built and tested**: yes. `dotnet build -c Release` is clean and the
+  launcher's own suites are green, including headless tests that boot the real shell and
+  integration tests that drive a real child process through success, failure, timeout,
+  cancellation, oversized output and undecodable output.
+- **Desktop launcher, installed and run on Windows**: not yet. The Inno Setup script and
+  the publish, package and smoke scripts exist and are covered by contract tests, but the
+  installer has not been compiled or executed, and `scripts/smoke-launcher.ps1` has not
+  been run on a clean machine.
 
 ## CI
 

@@ -13,14 +13,16 @@ namespace OrzioClashReport.Launcher.Tests
         [Fact]
         public void CreateIdentityGovernance()
         {
+            string output = TestPaths.Absolute("project/identity-governance.json");
+
             Assert.Equal(
                 new[]
                 {
                     "create-identity-governance",
                     "--project-id", "tower-a",
-                    "-o", "/project/identity-governance.json",
+                    "-o", output,
                 },
-                EngineArgumentBuilder.CreateIdentityGovernance("tower-a", "/project/identity-governance.json"));
+                EngineArgumentBuilder.CreateIdentityGovernance("tower-a", output));
         }
 
         [Fact]
@@ -154,18 +156,20 @@ namespace OrzioClashReport.Launcher.Tests
         [Fact]
         public void RenderIdentityGovernanceReport()
         {
+            string output = TestPaths.Absolute("project/identity-governance.html");
+
             Assert.Equal(
                 new[]
                 {
                     "render-identity-governance-report",
                     "--project", "/project/project.json",
                     "--governance", "/project/identity-governance.json",
-                    "-o", "/project/identity-governance.html",
+                    "-o", output,
                 },
                 EngineArgumentBuilder.RenderIdentityGovernanceReport(
                     "/project/project.json",
                     "/project/identity-governance.json",
-                    "/project/identity-governance.html"));
+                    output));
         }
 
         [Fact]

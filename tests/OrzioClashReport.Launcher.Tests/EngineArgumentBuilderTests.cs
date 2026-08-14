@@ -11,7 +11,7 @@ namespace OrzioClashReport.Launcher.Tests
     /// </summary>
     public sealed class EngineArgumentBuilderTests
     {
-        private const string Output = "/reports/output.html";
+        private static readonly string Output = TestPaths.Absolute("reports/output.html");
 
         [Fact]
         public void QuickReportPutsTheXmlFirstAndHasNoSubcommand()
@@ -24,15 +24,17 @@ namespace OrzioClashReport.Launcher.Tests
         [Fact]
         public void Snapshot()
         {
+            string output = TestPaths.Absolute("snapshots/run-001.json");
+
             Assert.Equal(
                 new[]
                 {
                     "snapshot",
                     "--xml", "/inputs/run.xml",
                     "--manifest", "/inputs/run.manifest.json",
-                    "-o", "/snapshots/run-001.json",
+                    "-o", output,
                 },
-                EngineArgumentBuilder.Snapshot("/inputs/run.xml", "/inputs/run.manifest.json", "/snapshots/run-001.json"));
+                EngineArgumentBuilder.Snapshot("/inputs/run.xml", "/inputs/run.manifest.json", output));
         }
 
         [Fact]
@@ -74,6 +76,8 @@ namespace OrzioClashReport.Launcher.Tests
         [Fact]
         public void IndexSnapshotsEmitsOneFlagPerEntryInTheDeclaredOrder()
         {
+            string output = TestPaths.Absolute("project/run-index.json");
+
             Assert.Equal(
                 new[]
                 {
@@ -81,11 +85,11 @@ namespace OrzioClashReport.Launcher.Tests
                     "--snapshot", "/snapshots/run-003.json",
                     "--snapshot", "/snapshots/run-001.json",
                     "--snapshot", "/snapshots/run-002.json",
-                    "-o", "/project/run-index.json",
+                    "-o", output,
                 },
                 EngineArgumentBuilder.IndexSnapshots(
                     new[] { "/snapshots/run-003.json", "/snapshots/run-001.json", "/snapshots/run-002.json" },
-                    "/project/run-index.json"));
+                    output));
         }
 
         [Fact]
@@ -101,7 +105,7 @@ namespace OrzioClashReport.Launcher.Tests
             };
 
             IReadOnlyList<string> arguments =
-                EngineArgumentBuilder.IndexSnapshots(declared, "/project/run-index.json");
+                EngineArgumentBuilder.IndexSnapshots(declared, TestPaths.Absolute("project/run-index.json"));
 
             var emitted = new List<string>();
             for (int i = 0; i < arguments.Count - 1; i++)
@@ -126,6 +130,8 @@ namespace OrzioClashReport.Launcher.Tests
         [Fact]
         public void CreateProject()
         {
+            string output = TestPaths.Absolute("project/project.json");
+
             Assert.Equal(
                 new[]
                 {
@@ -134,10 +140,10 @@ namespace OrzioClashReport.Launcher.Tests
                     "--name", "Tower A",
                     "--index", "/project/run-index.json",
                     "--report", "/project/longitudinal.html",
-                    "-o", "/project/project.json",
+                    "-o", output,
                 },
                 EngineArgumentBuilder.CreateProject(
-                    "tower-a", "Tower A", "/project/run-index.json", "/project/longitudinal.html", "/project/project.json"));
+                    "tower-a", "Tower A", "/project/run-index.json", "/project/longitudinal.html", output));
         }
 
         [Fact]

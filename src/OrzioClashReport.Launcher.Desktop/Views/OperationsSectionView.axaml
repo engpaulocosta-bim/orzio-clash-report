@@ -1,0 +1,42 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:views="clr-namespace:OrzioClashReport.Launcher.Desktop.Views"
+             xmlns:vm="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels"
+             x:Class="OrzioClashReport.Launcher.Desktop.Views.OperationsSectionView"
+             x:DataType="vm:OperationsSectionViewModel">
+
+  <ScrollViewer>
+    <StackPanel Classes="stack-lg">
+
+      <StackPanel Classes="stack-xs">
+        <TextBlock Classes="display" Text="{Binding Title}" />
+        <TextBlock Classes="secondary" Text="{Binding Description}" />
+      </StackPanel>
+
+      <ListBox Classes="navigation"
+               ItemsSource="{Binding Forms}"
+               SelectedItem="{Binding SelectedForm, Mode=TwoWay}">
+        <ListBox.ItemsPanel>
+          <ItemsPanelTemplate>
+            <StackPanel Orientation="Horizontal" />
+          </ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="vm:OperationFormViewModel">
+            <TextBlock Text="{Binding Title}" />
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+
+      <ContentControl Content="{Binding SelectedForm}">
+        <ContentControl.ContentTemplate>
+          <DataTemplate x:DataType="vm:OperationFormViewModel">
+            <views:OperationFormView />
+          </DataTemplate>
+        </ContentControl.ContentTemplate>
+      </ContentControl>
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

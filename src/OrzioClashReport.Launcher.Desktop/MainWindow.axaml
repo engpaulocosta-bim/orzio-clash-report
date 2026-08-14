@@ -22,6 +22,9 @@
     <DataTemplate DataType="vm:SettingsViewModel">
       <views:SettingsView />
     </DataTemplate>
+    <DataTemplate DataType="vm:OperationsSectionViewModel">
+      <views:OperationsSectionView />
+    </DataTemplate>
     <DataTemplate DataType="vm:SectionPlaceholderViewModel">
       <views:SectionPlaceholderView />
     </DataTemplate>

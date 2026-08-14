@@ -149,6 +149,13 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             }
         }
 
+        /// <summary>
+        /// Reports a form that could not produce a valid request. It is shown through the same result
+        /// panel as an engine failure, so the user never meets a raw exception.
+        /// </summary>
+        public void ShowValidationFailure(string message) =>
+            ShowRefusal(message, "Reveja os campos do formulário e tente novamente.");
+
         public void Reset()
         {
             OutputLines.Clear();

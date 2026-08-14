@@ -11,6 +11,7 @@ using OrzioClashReport.Launcher.Application.Engine;
 using OrzioClashReport.Launcher.Application.Presentation;
 using OrzioClashReport.Launcher.Contracts.Engine;
 using OrzioClashReport.Launcher.Contracts.Jobs;
+using OrzioClashReport.Launcher.Contracts.Operations;
 using OrzioClashReport.Launcher.Desktop.ViewModels;
 
 namespace OrzioClashReport.Launcher.Desktop.Tests
@@ -135,7 +136,8 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
             EngineLocation? engineLocation = null,
             EngineIntegrityResult? integrity = null,
             string? expectedVersion = null,
-            EngineProcessResult? processResult = null)
+            EngineProcessResult? processResult = null,
+            NoOpJobJournal? journal = null)
         {
             var probe = new EngineProbe(
                 new StubEngineLocator(engineLocation),
@@ -156,6 +158,7 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
                 new InMemorySettingsStore(),
                 recentItems,
                 revealer,
+                new StubDiagnosticsBundleBuilder(),
                 engineStatus,
                 Path.GetTempPath(),
                 "0.2.0-launcher-preview.1",
@@ -173,10 +176,54 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
             };
 
             created = new ShellViewModel(
-                probe, engineStatus, home, settings, content, new CollectingLog(), new FixedClock());
+                probe, engineStatus, home, settings, content,
+                journal ?? new NoOpJobJournal(), new CollectingLog(), new FixedClock());
 
             shell = created;
             return created;
+        }
+
+        [AvaloniaFact]
+        public async Task AnInterruptedOperationIsReportedAndNeverResumed()
+        {
+            var journal = new NoOpJobJournal();
+            journal.Interrupted.Add(new JobJournalEntry(
+                "job-1",
+                LauncherOperationKind.Snapshot,
+                DateTimeOffset.Parse("2026-08-13T09:00:00Z"),
+                "run-004.json"));
+
+            ShellViewModel shell = CreateShell(out _, journal: journal);
+            var window = new MainWindow { DataContext = shell };
+            window.Show();
+
+            await shell.LoadInterruptedOperationsAsync(CancellationToken.None);
+
+            Assert.True(shell.HasInterruptedOperations);
+
+            string reported = Assert.Single(shell.InterruptedOperations);
+            Assert.Contains("Snapshot", reported);
+            Assert.Contains("run-004.json", reported);
+
+            // Only the file name is surfaced: a leftover journal never discloses a client's folders.
+            Assert.DoesNotContain(Path.DirectorySeparatorChar.ToString(), reported);
+
+            await shell.DismissInterruptedCommand.ExecuteAsync(null);
+
+            Assert.False(shell.HasInterruptedOperations);
+            Assert.Empty(shell.InterruptedOperations);
+        }
+
+        [AvaloniaFact]
+        public async Task NothingIsReportedWhenThePreviousSessionEndedCleanly()
+        {
+            ShellViewModel shell = CreateShell(out _);
+            var window = new MainWindow { DataContext = shell };
+            window.Show();
+
+            await shell.LoadInterruptedOperationsAsync(CancellationToken.None);
+
+            Assert.False(shell.HasInterruptedOperations);
         }
 
         private static void Resize(Window window, double width)

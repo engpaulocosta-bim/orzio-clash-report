@@ -17,6 +17,7 @@ using OrzioClashReport.Launcher.Contracts.Settings;
 using OrzioClashReport.Launcher.Desktop.Platform;
 using OrzioClashReport.Launcher.Desktop.ViewModels;
 using OrzioClashReport.Launcher.Desktop.ViewModels.Operations;
+using OrzioClashReport.Launcher.Infrastructure.Diagnostics;
 using OrzioClashReport.Launcher.Infrastructure.Engine;
 using OrzioClashReport.Launcher.Infrastructure.Logging;
 using OrzioClashReport.Launcher.Infrastructure.Platform;
@@ -48,7 +49,8 @@ namespace OrzioClashReport.Launcher.Desktop
                 locations.EnsureCreated();
 
                 IClock clock = new SystemClock();
-                ILauncherLog log = new JsonLinesLauncherLog(locations.LogsDirectory, clock);
+                var launcherLog = new JsonLinesLauncherLog(locations.LogsDirectory, clock);
+                ILauncherLog log = launcherLog;
                 ISettingsStore settingsStore = new JsonSettingsStore(locations.SettingsFilePath);
                 IRecentItemsStore recentItemsStore = new JsonRecentItemsStore(locations.RecentItemsFilePath);
                 IOutputRevealer outputRevealer = new TopLevelOutputRevealer(() => _mainWindow);
@@ -70,6 +72,16 @@ namespace OrzioClashReport.Launcher.Desktop
                 IEngineGateway gateway = new CliEngineGateway(engineProbe, processRunner, fileProbe);
                 IJobJournal journal = new FileSystemJobJournal(locations.JobsDirectory);
                 IPathRedactor redactor = new Sha256PathRedactor();
+
+                // Housekeeping at startup: a log directory nobody prunes eventually becomes the
+                // largest thing the application owns.
+                new LogRetentionPolicy(locations.LogsDirectory, clock).Apply();
+
+                var diagnosticsBundleBuilder = new ZipDiagnosticsBundleBuilder(
+                    locations.DiagnosticsDirectory,
+                    () => launcherLog.CurrentFilePath,
+                    clock,
+                    LauncherBuildInfo.LauncherVersion);
 
                 var executor = new LauncherOperationExecutor(
                     gateway,
@@ -115,6 +127,7 @@ namespace OrzioClashReport.Launcher.Desktop
                     settingsStore,
                     recentItemsStore,
                     outputRevealer,
+                    diagnosticsBundleBuilder,
                     engineStatus,
                     locations.RootDirectory,
                     LauncherBuildInfo.LauncherVersion,
@@ -126,6 +139,7 @@ namespace OrzioClashReport.Launcher.Desktop
                     home,
                     settings,
                     BuildSectionContent(home, quickReport, snapshots, longitudinal, projects, governance, settings),
+                    journal,
                     log,
                     clock);
 

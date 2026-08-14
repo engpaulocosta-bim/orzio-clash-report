@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:controls="clr-namespace:OrzioClashReport.Launcher.Desktop.Controls"
+             xmlns:diagnostics="clr-namespace:OrzioClashReport.Launcher.Contracts.Diagnostics;assembly=OrzioClashReport.Launcher.Contracts"
              xmlns:vm="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels"
              x:Class="OrzioClashReport.Launcher.Desktop.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
@@ -66,6 +67,52 @@
           </StackPanel>
 
           <TextBlock Classes="caption" Text="{Binding StatusMessage}" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Classes="stack-md">
+          <TextBlock Classes="title" Text="Diagnóstico" />
+          <TextBlock Classes="secondary"
+                     Text="Um pacote de diagnóstico é criado apenas quando o pedir, fica na sua pasta de dados e não é enviado para lado nenhum." />
+
+          <Button Content="Ver o que seria incluído" HorizontalAlignment="Left"
+                  Command="{Binding PrepareDiagnosticsCommand}" />
+
+          <StackPanel Classes="stack-md" IsVisible="{Binding HasDiagnosticsPreview}">
+
+            <StackPanel Classes="stack-sm">
+              <TextBlock Classes="subtitle" Text="O pacote contém exatamente estes ficheiros" />
+              <ItemsControl ItemsSource="{Binding DiagnosticPlan}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="diagnostics:DiagnosticBundleItem">
+                    <StackPanel Classes="stack-xs">
+                      <TextBlock Classes="monospace" Text="{Binding FileName}" />
+                      <TextBlock Classes="caption" Text="{Binding Description}" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <TextBlock Classes="secondary"
+                         Text="Nenhum ficheiro seu é incluído: nem XML, nem manifest, nem snapshot, nem governança, nem relatórios." />
+            </StackPanel>
+
+            <StackPanel Classes="stack-sm">
+              <TextBlock Classes="subtitle" Text="Pré-visualização do registo redigido" />
+              <ScrollViewer MaxHeight="{DynamicResource OrzioEngineOutputMaxHeight}">
+                <SelectableTextBlock Classes="monospace" Text="{Binding RedactedLogPreview}" />
+              </ScrollViewer>
+            </StackPanel>
+
+            <StackPanel Orientation="Horizontal" Classes="stack-sm">
+              <Button Classes="primary" Content="Gerar pacote"
+                      Command="{Binding CreateDiagnosticsBundleCommand}" />
+              <Button Content="Mostrar na pasta"
+                      IsVisible="{Binding CanRevealDiagnosticsBundle}"
+                      Command="{Binding RevealDiagnosticsBundleCommand}" />
+            </StackPanel>
+
+          </StackPanel>
         </StackPanel>
       </Border>
 

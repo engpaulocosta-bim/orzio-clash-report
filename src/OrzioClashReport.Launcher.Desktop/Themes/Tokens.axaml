@@ -89,4 +89,8 @@
   <sys:Double x:Key="OrzioWindowMinWidth">1024</sys:Double>
   <sys:Double x:Key="OrzioWindowMinHeight">680</sys:Double>
 
+  <!-- Scrolling panels: bounded so a long engine stream never pushes the actions off screen. -->
+  <sys:Double x:Key="OrzioLiveOutputMaxHeight">200</sys:Double>
+  <sys:Double x:Key="OrzioEngineOutputMaxHeight">240</sys:Double>
+
 </ResourceDictionary>

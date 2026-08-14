@@ -30,4 +30,14 @@
     <ProjectReference Include="..\..\src\OrzioClashReport.Launcher.Infrastructure\OrzioClashReport.Launcher.Infrastructure.csproj" />
   </ItemGroup>
 
+  <!--
+    The fake engine is a real child process the integration tests launch. ReferenceOutputAssembly is
+    off because the tests invoke its executable, they do not link against it.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\OrzioClashReport.Launcher.FakeEngine\OrzioClashReport.Launcher.FakeEngine.csproj"
+                      ReferenceOutputAssembly="false"
+                      OutputItemType="None" />
+  </ItemGroup>
+
 </Project>

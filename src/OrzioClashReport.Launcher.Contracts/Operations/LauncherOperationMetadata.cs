@@ -1,4 +1,5 @@
 using System;
+using OrzioClashReport.Launcher.Contracts.Results;
 
 namespace OrzioClashReport.Launcher.Contracts.Operations
 {
@@ -60,6 +61,44 @@ namespace OrzioClashReport.Launcher.Contracts.Operations
 
                 default:
                     return false;
+            }
+        }
+
+        /// <summary>
+        /// What the operation's <c>-o</c> destination is, or <c>null</c> for operations that write no
+        /// destination the launcher names. Used only to label a produced file, never to decide anything.
+        /// </summary>
+        public static LauncherArtifactKind? OutputArtifactKind(LauncherOperationKind operation)
+        {
+            switch (operation)
+            {
+                case LauncherOperationKind.QuickReport:
+                case LauncherOperationKind.Compare:
+                case LauncherOperationKind.CompareSnapshots:
+                case LauncherOperationKind.CompareIndex:
+                case LauncherOperationKind.RenderIdentityGovernanceReport:
+                    return LauncherArtifactKind.HtmlReport;
+
+                case LauncherOperationKind.Snapshot:
+                    return LauncherArtifactKind.RunSnapshot;
+
+                case LauncherOperationKind.IndexSnapshots:
+                    return LauncherArtifactKind.RunIndex;
+
+                case LauncherOperationKind.CreateProject:
+                    return LauncherArtifactKind.ProjectCatalog;
+
+                case LauncherOperationKind.CreateIdentityGovernance:
+                    return LauncherArtifactKind.IdentityGovernance;
+
+                case LauncherOperationKind.AppendProjectSnapshot:
+                case LauncherOperationKind.RenderProject:
+                case LauncherOperationKind.AppendIdentityDecision:
+                case LauncherOperationKind.ValidateIdentityGovernance:
+                    return null;
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(operation), operation, "Unknown launcher operation.");
             }
         }
     }

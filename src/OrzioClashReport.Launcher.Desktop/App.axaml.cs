@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -6,7 +7,9 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
 using OrzioClashReport.Launcher.Application;
 using OrzioClashReport.Launcher.Application.Engine;
+using OrzioClashReport.Launcher.Application.Operations;
 using OrzioClashReport.Launcher.Application.Presentation;
+using OrzioClashReport.Launcher.Contracts.Engine;
 using OrzioClashReport.Launcher.Contracts.Jobs;
 using OrzioClashReport.Launcher.Contracts.Logging;
 using OrzioClashReport.Launcher.Contracts.Platform;
@@ -52,6 +55,7 @@ namespace OrzioClashReport.Launcher.Desktop
                 var manifestReader = new EngineManifestReader();
                 var locator = new InstalledEngineLocator();
                 IEngineProcessRunner processRunner = new ProcessJobRunner();
+                IFileProbe fileProbe = new FileSystemProbe();
 
                 var engineProbe = new EngineProbe(
                     locator,
@@ -62,9 +66,31 @@ namespace OrzioClashReport.Launcher.Desktop
                     // Never the installation directory: probing must not be able to write there.
                     Path.GetTempPath());
 
+                IEngineGateway gateway = new CliEngineGateway(engineProbe, processRunner, fileProbe);
+                IJobJournal journal = new FileSystemJobJournal(locations.JobsDirectory);
+                IPathRedactor redactor = new Sha256PathRedactor();
+
+                var executor = new LauncherOperationExecutor(
+                    gateway,
+                    fileProbe,
+                    recentItemsStore,
+                    journal,
+                    log,
+                    redactor,
+                    clock,
+                    AppContext.BaseDirectory);
+
+                var activeJobTracker = new ActiveJobTracker();
+                var fileDialogService = new StorageProviderFileDialogService(() => _mainWindow);
                 var engineStatus = new EngineStatusViewModel();
 
                 ShellViewModel? shell = null;
+
+                var quickReport = new QuickReportViewModel(
+                    new JobViewModel(executor, outputRevealer, activeJobTracker),
+                    fileDialogService,
+                    settingsStore,
+                    engineStatus);
 
                 var home = new HomeViewModel(
                     engineStatus,
@@ -86,7 +112,7 @@ namespace OrzioClashReport.Launcher.Desktop
                     engineStatus,
                     home,
                     settings,
-                    BuildSectionContent(home, settings),
+                    BuildSectionContent(home, quickReport, settings),
                     log,
                     clock);
 
@@ -100,14 +126,12 @@ namespace OrzioClashReport.Launcher.Desktop
         }
 
         private static IReadOnlyDictionary<LauncherSection, object> BuildSectionContent(
-            HomeViewModel home, SettingsViewModel settings)
+            HomeViewModel home, QuickReportViewModel quickReport, SettingsViewModel settings)
         {
             return new Dictionary<LauncherSection, object>
             {
                 [LauncherSection.Home] = home,
-                [LauncherSection.QuickReport] = new SectionPlaceholderViewModel(
-                    LauncherSection.QuickReport,
-                    new[] { "orzioclash <input.xml> -o <output.html>" }),
+                [LauncherSection.QuickReport] = quickReport,
                 [LauncherSection.Snapshots] = new SectionPlaceholderViewModel(
                     LauncherSection.Snapshots,
                     new[]

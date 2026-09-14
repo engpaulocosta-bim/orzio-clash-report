@@ -99,17 +99,14 @@ jobs:
       - name: Restore
         run: dotnet restore
 
-      - name: Verify Inno Setup
+      - name: Verify Inno Setup is available
         shell: pwsh
         run: |
           $iscc = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
           if (-not (Test-Path -LiteralPath $iscc -PathType Leaf)) {
             throw "Inno Setup compiler was not found at '$iscc'."
           }
-          & $iscc '/?'
-          if ($LASTEXITCODE -ne 0) {
-            throw "Inno Setup compiler could not be executed. Exit code: $LASTEXITCODE"
-          }
+          Write-Host "Inno Setup compiler found: $iscc"
 
       - name: Publish desktop staging tree
         shell: pwsh

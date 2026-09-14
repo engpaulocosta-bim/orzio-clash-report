@@ -79,3 +79,88 @@ jobs:
           $workspace = Join-Path $env:RUNNER_TEMP "orzio-release-smoke"
           New-Item -ItemType Directory -Force -Path $workspace | Out-Null
           scripts/smoke-release.ps1 -ExecutablePath $exe -SmokeWorkspace $workspace
+
+  windows-desktop-package:
+    name: Windows desktop package
+    runs-on: windows-2025
+    needs:
+      - build-and-test
+      - windows-packaging-smoke
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Verify Inno Setup
+        shell: pwsh
+        run: |
+          $iscc = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+          if (-not (Test-Path -LiteralPath $iscc -PathType Leaf)) {
+            throw "Inno Setup compiler was not found at '$iscc'."
+          }
+          & $iscc '/?'
+          if ($LASTEXITCODE -ne 0) {
+            throw "Inno Setup compiler could not be executed. Exit code: $LASTEXITCODE"
+          }
+
+      - name: Publish desktop staging tree
+        shell: pwsh
+        run: scripts/publish-launcher.ps1
+
+      - name: Build desktop installer
+        shell: pwsh
+        run: scripts/package-launcher.ps1
+
+      - name: Verify installer and checksum
+        id: desktop-package
+        shell: pwsh
+        run: |
+          $outputDirectory = Join-Path $PWD 'artifacts/launcher/installer'
+          $installers = @(Get-ChildItem -LiteralPath $outputDirectory -Filter '*.exe' -File)
+          $checksums = @(Get-ChildItem -LiteralPath $outputDirectory -Filter '*.sha256' -File)
+
+          if ($installers.Count -ne 1) {
+            throw "Expected exactly one desktop installer, found $($installers.Count)."
+          }
+          if ($checksums.Count -ne 1) {
+            throw "Expected exactly one desktop checksum, found $($checksums.Count)."
+          }
+
+          $installer = $installers[0]
+          $checksum = $checksums[0]
+          if ($installer.Length -le 0) {
+            throw 'Desktop installer is empty.'
+          }
+
+          $expectedLine = Get-Content -LiteralPath $checksum.FullName -Raw
+          if ($expectedLine -notmatch '^(?<hash>[0-9a-f]{64})  (?<name>.+\.exe)$') {
+            throw "Unexpected checksum format: $expectedLine"
+          }
+          if ($Matches['name'] -ne $installer.Name) {
+            throw "Checksum references '$($Matches['name'])' instead of '$($installer.Name)'."
+          }
+
+          $actualHash = (Get-FileHash -LiteralPath $installer.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($actualHash -ne $Matches['hash']) {
+            throw "Desktop installer checksum mismatch. Expected $($Matches['hash']), actual $actualHash."
+          }
+
+          "artifact-path=$outputDirectory" >> $env:GITHUB_OUTPUT
+          Write-Host "Desktop installer: $($installer.Name)"
+          Write-Host "SHA-256: $actualHash"
+
+      - name: Upload desktop installer artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: orzio-clash-report-desktop-installer
+          path: ${{ steps.desktop-package.outputs.artifact-path }}
+          if-no-files-found: error
+          retention-days: 14

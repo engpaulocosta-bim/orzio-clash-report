@@ -107,9 +107,16 @@ namespace OrzioClashReport.Tests
             var report = MakeGrouper(disciplines).Group(document);
 
             Assert.Equal(2, report.RawCount);
+            Assert.Equal(1, report.RetainedCount);
+            Assert.Equal(1, report.CollapsedCount);
             var group = Assert.Single(report.Groups);
             Assert.Single(group.Members);
-            Assert.Equal("Clash1", group.Members[0].Name);
+            Assert.Same(clash1, group.Members[0]);
+
+            ClashCollapse collapse = Assert.Single(report.Collapses);
+            Assert.Equal("Test", collapse.ClashTestName);
+            Assert.Same(clash1, collapse.RetainedClash);
+            Assert.Same(clash2, collapse.CollapsedClash);
         }
 
         [Fact]
@@ -128,8 +135,50 @@ namespace OrzioClashReport.Tests
 
             var report = MakeGrouper(disciplines).Group(document);
 
+            Assert.Equal(2, report.RawCount);
+            Assert.Equal(2, report.RetainedCount);
+            Assert.Equal(0, report.CollapsedCount);
+            Assert.Empty(report.Collapses);
             var group = Assert.Single(report.Groups);
             Assert.Equal(2, group.Members.Count);
+        }
+
+        [Fact]
+        public void Group_PreservesCollapseRecordsInBatchAndSourceOrder()
+        {
+            var avac1 = MakeObject("avac-1", "L1");
+            var arch1 = MakeObject("arch-1", "L1");
+            var avac2 = MakeObject("avac-2", "L2");
+            var arch2 = MakeObject("arch-2", "L2");
+
+            var retainedA = MakeClash("Retained A", "g1", avac1, arch1, new ClashPoint(1, 1, 1));
+            var collapsedA = MakeClash("Collapsed A", "g2", arch1, avac1, new ClashPoint(1, 1, 1.0001));
+            var retainedB = MakeClash("Retained B", "g3", avac2, arch2, new ClashPoint(2, 2, 2));
+            var collapsedB = MakeClash("Collapsed B", "g4", avac2, arch2, new ClashPoint(2, 2.0001, 2));
+
+            var disciplines = new Dictionary<string, string>
+            {
+                ["avac-1"] = "AVAC", ["arch-1"] = "Architecture",
+                ["avac-2"] = "AVAC", ["arch-2"] = "Architecture"
+            };
+
+            var document = new ClashReportDocument(
+                "doc",
+                null,
+                new[]
+                {
+                    new ClashBatch("Test A", 0.001, new[] { retainedA, collapsedA }),
+                    new ClashBatch("Test B", 0.001, new[] { retainedB, collapsedB })
+                });
+
+            GroupedClashReport report = MakeGrouper(disciplines).Group(document);
+
+            Assert.Equal(4, report.RawCount);
+            Assert.Equal(2, report.RetainedCount);
+            Assert.Equal(2, report.CollapsedCount);
+            Assert.Equal(new[] { "Test A", "Test B" }, report.Collapses.Select(c => c.ClashTestName));
+            Assert.Same(collapsedA, report.Collapses[0].CollapsedClash);
+            Assert.Same(collapsedB, report.Collapses[1].CollapsedClash);
         }
 
         [Fact]

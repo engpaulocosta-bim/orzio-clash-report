@@ -22,12 +22,14 @@ namespace OrzioClashReport.Tests
 
         private static ClashObject MakeObject(string elementId) => new ClashObject(elementId, null, null, null, null, null);
 
-        private static ClashResult MakeClash(string elementIdA, string elementIdB, string? guid, string? name = "Clash1") =>
-            new ClashResult(name, ClashStatus.New, null, null, null, MakeObject(elementIdA), MakeObject(elementIdB), guid);
+        private static ClashResult MakeClash(
+            string elementIdA, string elementIdB, string? guid, string? name = "Clash1", ClashPoint? point = null) =>
+            new ClashResult(name, ClashStatus.New, null, null, point, MakeObject(elementIdA), MakeObject(elementIdB), guid);
 
         private static ClashOccurrence MakeOccurrence(
-            string clashTestName, ModelRevision modelA, ModelRevision modelB, string elementIdA, string elementIdB, string? guid = "g1") =>
-            new ClashOccurrence(clashTestName, MakeClash(elementIdA, elementIdB, guid), modelA, modelB);
+            string clashTestName, ModelRevision modelA, ModelRevision modelB, string elementIdA, string elementIdB,
+            string? guid = "g1", ClashPoint? point = null) =>
+            new ClashOccurrence(clashTestName, MakeClash(elementIdA, elementIdB, guid, point: point), modelA, modelB);
 
         private static readonly ModelRevision SigmaStructurePrevious = MakeRevision("Sigma", "Structure", "Main", "R03");
         private static readonly ModelRevision SigmaStructureCurrent = MakeRevision("Sigma", "Structure", "Main", "R04");
@@ -317,6 +319,71 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
+        public void Assess_SelfClashWithSwappedIdsAndSamePoint_ProducesCandidate()
+        {
+            var selfModelPrevious = MakeRevision("Sigma", "Structure", "Main", "R03");
+            var selfModelCurrent = MakeRevision("Sigma", "Structure", "Main", "R04");
+            var point = new ClashPoint(10, 20, 30);
+            var previous = MakeOccurrence(
+                "Test 1", selfModelPrevious, selfModelPrevious, "elem-1", "elem-2", point: point);
+            var current = MakeOccurrence(
+                "Test 1", selfModelCurrent, selfModelCurrent, "elem-2", "elem-1", point: point);
+
+            var result = Matcher.Assess(previous, current);
+
+            Assert.NotNull(result);
+            Assert.DoesNotContain(result!.Evidence, evidence => evidence.Kind == MatchEvidenceKind.SpatialPosition);
+        }
+
+        [Fact]
+        public void Assess_SameElementPairAtPhysicallyDistinctPoints_ProducesAuditableLowCandidate()
+        {
+            var previous = MakeOccurrence(
+                "Test 1", SigmaStructurePrevious, AlfaHvacPrevious, "elem-A", "elem-B",
+                point: new ClashPoint(1, 2, 3));
+            var current = MakeOccurrence(
+                "Test 1", SigmaStructureCurrent, AlfaHvacCurrent, "elem-A", "elem-B",
+                point: new ClashPoint(1, 2, 3.01));
+
+            var result = Matcher.Assess(previous, current);
+
+            Assert.NotNull(result);
+            Assert.Equal(ClashMatchConfidence.Low, result!.Confidence);
+            Assert.Equal(MatchEvidenceKind.SpatialPosition, result.Evidence[3].Kind);
+            Assert.Equal(MatchEvidenceVerdict.Contradicts, result.Evidence[3].Verdict);
+        }
+
+        [Fact]
+        public void Assess_PointsWithinCoordinateTolerance_ProducesCandidate()
+        {
+            var previous = MakeOccurrence(
+                "Test 1", SigmaStructurePrevious, AlfaHvacPrevious, "elem-A", "elem-B",
+                point: new ClashPoint(1, 2, 3));
+            var current = MakeOccurrence(
+                "Test 1", SigmaStructureCurrent, AlfaHvacCurrent, "elem-A", "elem-B",
+                point: new ClashPoint(1.0000005, 2, 3));
+
+            Assert.NotNull(Matcher.Assess(previous, current));
+        }
+
+        [Fact]
+        public void Assess_MissingPoint_DoesNotDestroyCandidateAndIsUnavailableEvidence()
+        {
+            var previous = MakeOccurrence(
+                "Test 1", SigmaStructurePrevious, AlfaHvacPrevious, "elem-A", "elem-B",
+                point: null);
+            var current = MakeOccurrence(
+                "Test 1", SigmaStructureCurrent, AlfaHvacCurrent, "elem-A", "elem-B",
+                point: new ClashPoint(1, 2, 3));
+
+            var result = Matcher.Assess(previous, current);
+
+            Assert.NotNull(result);
+            Assert.Equal(MatchEvidenceKind.SpatialPosition, result!.Evidence[3].Kind);
+            Assert.Equal(MatchEvidenceVerdict.Unavailable, result.Evidence[3].Verdict);
+        }
+
+        [Fact]
         public void Assess_SameModelIdentityBothSides_OnlyOneIdDifferent_ReturnsNull()
         {
             var selfModelPrevious = MakeRevision("Sigma", "Structure", "Main", "R03");
@@ -406,22 +473,28 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
-        public void Assess_NeverProducesLowConfidence()
+        public void Assess_ProducesLowOnlyForSpatialContradiction()
         {
-            var scenarios = new[]
-            {
-                Matcher.Assess(DefaultPrevious("guid-1"), DefaultCurrent("guid-1")),
-                Matcher.Assess(DefaultPrevious("guid-1"), DefaultCurrent("guid-2")),
-                Matcher.Assess(DefaultPrevious(null), DefaultCurrent(null)),
-            };
+            var previous = MakeOccurrence(
+                "Test 1", SigmaStructurePrevious, AlfaHvacPrevious, "elem-A", "elem-B",
+                point: new ClashPoint(0, 0, 0));
+            var current = MakeOccurrence(
+                "Test 1", SigmaStructureCurrent, AlfaHvacCurrent, "elem-A", "elem-B",
+                point: new ClashPoint(10, 0, 0));
 
-            Assert.All(scenarios, s => Assert.NotEqual(ClashMatchConfidence.Low, s!.Confidence));
+            var result = Matcher.Assess(previous, current);
+
+            Assert.Equal(ClashMatchConfidence.Low, result!.Confidence);
+            Assert.Contains(
+                result.Evidence,
+                evidence => evidence.Kind == MatchEvidenceKind.SpatialPosition
+                    && evidence.Verdict == MatchEvidenceVerdict.Contradicts);
         }
 
         // --- 15.7 Evidence ---
 
         [Fact]
-        public void Assess_ContainsExactlyFourEvidenceItems()
+        public void Assess_ContainsExactlyFourEvidenceItemsWhenBothPointsAreMissing()
         {
             var result = Matcher.Assess(DefaultPrevious(), DefaultCurrent());
 
@@ -429,7 +502,7 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
-        public void Assess_EvidenceOrderIsClashTestNameThenModelIdentityThenElementIdentifierThenGuid()
+        public void Assess_EvidenceOrderWithoutPointsIsClashTestNameThenModelIdentityThenElementIdentifierThenGuid()
         {
             var result = Matcher.Assess(DefaultPrevious(), DefaultCurrent());
 
@@ -519,7 +592,7 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
-        public void Assess_DoesNotProduceSpatialPositionEvidence()
+        public void Assess_BothPointsMissing_DoNotInventSpatialPositionEvidence()
         {
             var result = Matcher.Assess(DefaultPrevious(), DefaultCurrent());
 

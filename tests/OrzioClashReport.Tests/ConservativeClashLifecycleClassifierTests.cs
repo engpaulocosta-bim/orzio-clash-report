@@ -32,10 +32,11 @@ namespace OrzioClashReport.Tests
 
         private static ClashOccurrence MakeOccurrence(
             string clashTestName, ModelRevision modelA, ModelRevision modelB,
-            string elementIdA = "a", string elementIdB = "b", string? guid = "g1", ClashStatus rawStatus = ClashStatus.New) =>
+            string elementIdA = "a", string elementIdB = "b", string? guid = "g1",
+            ClashStatus rawStatus = ClashStatus.New, ClashPoint? point = null) =>
             new ClashOccurrence(
                 clashTestName,
-                new ClashResult(clashTestName, rawStatus, null, null, null, MakeObject(elementIdA), MakeObject(elementIdB), guid),
+                new ClashResult(clashTestName, rawStatus, null, null, point, MakeObject(elementIdA), MakeObject(elementIdB), guid),
                 modelA, modelB);
 
         private static ExecutedClashTest TestFor(string name, ModelRevision modelA, ModelRevision modelB) =>
@@ -950,6 +951,49 @@ namespace OrzioClashReport.Tests
 
             var entry = Assert.Single(result.Entries);
             Assert.Equal(ClashLifecycleStatus.StillOpen, entry.Status);
+        }
+
+        [Fact]
+        public void Integration_PhysicallyDistinctRepeatedPairs_SelectCompatiblePointsWithoutFalseAmbiguity()
+        {
+            var previousNear = MakeOccurrence(
+                "Test 1", Sigma, Alfa, "elem-a", "elem-b", "near", point: new ClashPoint(0, 0, 0));
+            var previousFar = MakeOccurrence(
+                "Test 1", Sigma, Alfa, "elem-a", "elem-b", "far", point: new ClashPoint(10, 0, 0));
+            var currentFar = MakeOccurrence(
+                "Test 1", Sigma, Alfa, "elem-a", "elem-b", "far", point: new ClashPoint(10, 0, 0));
+            var currentNear = MakeOccurrence(
+                "Test 1", Sigma, Alfa, "elem-a", "elem-b", "near", point: new ClashPoint(0, 0, 0));
+
+            var matchResult = new DeterministicClashRunComparer(new ConservativeClashMatcher()).Compare(
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previousNear, previousFar),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, currentFar, currentNear));
+            var result = Classifier.Classify(matchResult);
+
+            Assert.Equal(4, matchResult.Candidates.Count);
+            Assert.Equal(2, matchResult.SelectedMatches.Count);
+            Assert.Equal(2, matchResult.AlternativeCandidates.Count);
+            Assert.Equal(2, result.Entries.Count);
+            Assert.All(result.Entries, entry => Assert.Equal(ClashLifecycleStatus.StillOpen, entry.Status));
+        }
+
+        [Fact]
+        public void Integration_OnlySpatiallyContradictoryCandidate_IsUnverifiableInsteadOfResolvedAndNew()
+        {
+            var previous = MakeOccurrence(
+                "Test 1", Sigma, Alfa, "elem-a", "elem-b", "same-guid", point: new ClashPoint(0, 0, 0));
+            var current = MakeOccurrence(
+                "Test 1", Sigma, Alfa, "elem-a", "elem-b", "same-guid", point: new ClashPoint(10, 0, 0));
+
+            var matchResult = new DeterministicClashRunComparer(new ConservativeClashMatcher()).Compare(
+                MakeRun("run-1", new[] { Sigma, Alfa }, new[] { StandardTest }, previous),
+                MakeRun("run-2", new[] { Sigma, Alfa }, new[] { StandardTest }, current));
+            var result = Classifier.Classify(matchResult);
+
+            var selected = Assert.Single(matchResult.SelectedMatches);
+            Assert.Equal(ClashMatchConfidence.Low, selected.Assessment.Confidence);
+            var entry = Assert.Single(result.Entries);
+            Assert.Equal(ClashLifecycleStatus.Unverifiable, entry.Status);
         }
 
         [Fact]

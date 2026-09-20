@@ -56,7 +56,7 @@ and dated, not because they are queued for work.
 
 ## 1. Duplicate collapsing is silent, undocumented, and unauditable
 
-**Severity: high (product-level). Confidence: Confirmed.**
+**Status: resolved by `CLASH-REPORT-DEDUP-01`.**
 
 `RuleBasedGrouper.CollapseDuplicates` discards clashes before grouping:
 `src/OrzioClashReport.Core/Grouping/RuleBasedGrouper.cs:63-87`. A clash is dropped when it
@@ -89,17 +89,14 @@ Compounding this: `README.md` documents grouping in detail (the "Group Identity"
 `README.md:640-654`) but **never mentions that clashes are discarded at all**. The rule is
 documented only in the agent-facing `AGENTS.md:46-47`, which users never read.
 
-### Recommended fix
+### Implemented correction
 
-1. Add `CollapsedCount` (and ideally `RetainedCount`) to `GroupedClashReport`, computed in
-   the grouper rather than inferred by callers.
-2. Print it in the console summary and render it in the HTML header, so
-   `raw = retained + collapsed` reconciles on the page.
-3. Document the collapsing rule in `README.md` next to "Group Identity", including that
-   clashes with no point are never collapsed
-   (`RuleBasedGrouper.cs:73` — `clash.Point.HasValue &&`).
-4. Consider an opt-out flag (`--no-collapse`) so a coordinator can audit against the raw
-   export.
+`GroupedClashReport` now exposes `RetainedCount`, `CollapsedCount`, and an ordered
+`Collapses` evidence list. Each `ClashCollapse` preserves the exact retained and collapsed
+`ClashResult` references plus the clash-test name. The CLI and HTML reconcile
+`raw = retained + collapsed`; the HTML also lists every collapsed occurrence. The README
+documents the rule and the missing-point safeguard. An opt-out flag remains a separate,
+non-required product decision.
 
 ---
 

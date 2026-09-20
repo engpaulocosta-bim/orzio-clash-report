@@ -192,6 +192,7 @@ The console output shows the raw-vs-grouped count, for example:
 
 ```text
 1458 raw clashes -> 25 groups
+Retained clashes: N; collapsed duplicates: M
 Report written to report.html
 ```
 
@@ -661,6 +662,22 @@ Important limits of the revision-aware flow:
    `Reopened`, or persistent clash ID.
 
 ### Group Identity
+
+Before groups are created, the grouper collapses duplicate detections only inside the same
+clash test. Two detections are duplicates when they have the same unordered element-id pair
+and both points fall within that clash test's tolerance. A clash without a point is never
+collapsed. The first occurrence is retained, and every later collapsed occurrence remains
+available in the report's collapse audit with an exact reference to the retained occurrence.
+
+The single-run HTML and CLI reconcile the operation explicitly:
+
+```text
+raw clashes = retained clashes + collapsed duplicates
+```
+
+The group member totals therefore equal `RetainedCount`, not `RawCount`. `CollapsedCount`
+and the ordered `Collapses` evidence list explain the difference without treating a
+duplicate collapse as cross-run identity.
 
 A group (`ClashGroup`) is identified by the combination of three facts, in this order:
 

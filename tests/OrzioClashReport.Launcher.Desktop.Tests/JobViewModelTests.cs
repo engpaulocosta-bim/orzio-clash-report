@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using OrzioClashReport.Launcher.Application.Operations;
@@ -60,19 +61,24 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
                 new CollectingLog(),
                 new ConstantPathRedactor(),
                 new FixedClock(),
-                "/launcher-installation");
+                Path.Combine(Path.GetTempPath(), "orzio-launcher-installation"));
 
             return new JobViewModel(executor, new NullOutputRevealer(), tracker);
         }
 
-        private static LauncherOperationRequest CreateRequest() =>
-            new LauncherOperationRequest(
+        private static LauncherOperationRequest CreateRequest()
+        {
+            string workingDirectory = Path.Combine(Path.GetTempPath(), "orzio-cancel-tests");
+            string outputPath = Path.Combine(workingDirectory, "report.html");
+
+            return new LauncherOperationRequest(
                 LauncherOperationKind.QuickReport,
-                new[] { "input.xml", "-o", "/work/report.html" },
-                "/work",
-                "/work/report.html",
+                new[] { "input.xml", "-o", outputPath },
+                workingDirectory,
+                outputPath,
                 OutputCollisionDecision.None,
                 "report.html");
+        }
 
         private sealed class CancelableGateway : IEngineGateway
         {

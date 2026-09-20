@@ -185,6 +185,8 @@ namespace OrzioClashReport.Cli
                 File.WriteAllText(outputPath, html);
 
                 Console.WriteLine($"{report.RawCount} raw clashes -> {report.GroupCount} groups");
+                Console.WriteLine(
+                    $"Retained clashes: {report.RetainedCount}; collapsed duplicates: {report.CollapsedCount}");
                 Console.WriteLine($"Report written to {outputPath}");
                 return 0;
             }

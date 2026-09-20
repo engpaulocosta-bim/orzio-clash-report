@@ -512,6 +512,16 @@ Contradicts
 Unavailable
 ```
 
+O matcher conservador exige o mesmo teste, o mesmo par de identidades de modelo e o par de
+IDs de elementos alinhado aos modelos, aceitando inversão A/B. Quando os dois clashes têm
+ponto, a distância Euclidiana é comparada com `1e-6` unidade do modelo. Uma contradição
+espacial continua auditável como candidata `Low`, mas não bloqueia uma seleção espacialmente
+compatível. Se for a única candidata, o lifecycle fica `Unverifiable`, evitando declarar
+automaticamente um falso par `Resolved` e `New`. Um ponto ausente não elimina uma candidata
+válida: se faltar somente de um lado, a evidência espacial é `Unavailable`; se faltar dos
+dois, nenhuma evidência espacial é inventada. Nenhuma ocorrência é deduplicada ou removida
+do snapshot, do comparador ou da contabilização.
+
 ## 6.4 Lifecycle
 
 Estados derivados conceituais:

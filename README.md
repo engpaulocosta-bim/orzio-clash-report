@@ -1077,7 +1077,7 @@ Honest limits of this stage:
 `ConservativeClashMatcher` (`src/OrzioClashReport.Core/Matching/ConservativeClashMatcher.cs`)
 is the first concrete `IClashMatcher` implementation.
 
-1. It requires three mandatory signals at the same time: same `ClashTestName` using ordinal
+1. It requires three identity signals at the same time: same `ClashTestName` using ordinal
    case-insensitive comparison, same revision-free `ModelIdentity` pair, and the
    `ElementId` pair aligned to those models.
 2. Revisions (`ModelRevision.Revision`, `SourceFileName`, `SourceFilePath`, `ContentHash`,
@@ -1087,15 +1087,26 @@ is the first concrete `IClashMatcher` implementation.
    previous and current runs as long as the elements follow the same swap.
 4. `ElementId` and source GUID are treated as opaque identifiers and compared with
    `StringComparison.Ordinal`, case-sensitively, never `OrdinalIgnoreCase`.
-5. Source GUID is supplemental evidence. An equal GUID raises confidence from `Medium` to
+5. When both occurrences contain a clash point, a fixed `1e-6` model-unit Euclidean
+   tolerance distinguishes spatially compatible evidence from a contradiction. A spatial
+   contradiction remains an auditable `Low` candidate rather than becoming an automatic
+   `Resolved`/`New` pair. Compatible points add no redundant evidence item.
+6. A point missing on either side does not destroy a candidate. One missing side produces
+   explicit `Unavailable` spatial evidence; when both sides have no point, the matcher does
+   not invent spatial evidence. Occurrence slots remain preserved and auditable.
+7. Source GUID is supplemental evidence. An equal GUID raises confidence from `Medium` to
    `High`; a different or missing GUID does not create or destroy a candidate.
-6. A `High` result requires the three mandatory signals plus an equal GUID. `Medium` occurs
-   when the three mandatory signals pass but GUID is missing or contradicts.
-7. This matcher never produces `Low`; it only accepts candidates when all three mandatory
-   signals are favorable. Weaker candidates are left for a future strategy.
-8. Complete-run comparison and lifecycle classification happen in separate components; this
+8. A `High` result requires the identity signals, spatial compatibility when both points
+   exist, and an equal GUID. `Medium` occurs when the required signals pass but GUID is missing or
+   contradicts. `Low` is reserved for an otherwise compatible pair whose available points
+   contradict.
+9. A spatially contradictory alternative remains in `AlternativeCandidates` for audit but
+   does not block a spatially compatible selected match. If it is the only candidate, its
+   `Low` confidence makes lifecycle `Unverifiable` instead of asserting `Resolved` and
+   `New`.
+10. Complete-run comparison and lifecycle classification happen in separate components; this
    matcher remains strictly pairwise.
-9. The `compare` command uses this matcher in the current revision-aware composition.
+11. The `compare` command uses this matcher in the current revision-aware composition.
 
 ## Deterministic Run Comparer
 

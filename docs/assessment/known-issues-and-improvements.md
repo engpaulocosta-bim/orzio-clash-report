@@ -139,9 +139,25 @@ in the README.
 
 ---
 
-## 3. Self-clash tests can degrade selected matches to `Unverifiable`
+## 3. Self-clash tests can degrade selected matches to `Unverifiable` (resolved by CLASH-MATCH-DUP-01)
 
-**Severity: blocking (ranked #1). Confidence: Reasoned — needs a test to confirm.**
+**Status: resolved in 2026-09-20 code; sequential real-export validation remains pending.**
+
+`CLASH-MATCH-DUP-01` added focused coverage for self-clash A/B inversion, physically
+distinct occurrences between the same element pair, missing points, and exact occurrence-slot
+accounting. `ConservativeClashMatcher` now uses a fixed `1e-6` model-unit Euclidean point
+tolerance only when both points exist. Points beyond that tolerance form an auditable `Low`
+candidate instead of a plausible competitor, so physically distinct clashes no longer
+degrade a spatially compatible selection merely because they share element IDs. When the
+contradictory relation is the only candidate, `Low` forces `Unverifiable` rather than an
+unsafe automatic `Resolved`/`New` split. One missing point is explicit `Unavailable`
+evidence; two missing points do not invent spatial evidence, and neither case silently drops
+an occurrence. The run comparer continues to preserve every slot, candidate, alternative,
+selected match, and unmatched occurrence.
+
+The analysis below is retained as the historical reason for the correction. Validation on
+three sequential real exports is still required before claiming real-project longitudinal
+validation.
 
 `ConservativeClashMatcher.DetermineModelAlignment`
 (`src/OrzioClashReport.Core/Matching/ConservativeClashMatcher.cs:109-132`) returns

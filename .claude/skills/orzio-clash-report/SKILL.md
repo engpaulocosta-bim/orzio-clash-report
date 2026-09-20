@@ -209,13 +209,21 @@ verifiability guards belong to a future run comparer.
 ## Conservative clash matcher
 
 `ConservativeClashMatcher` requires matching clash-test name, revision-free model pair, and
-model-aligned opaque element-id pair. Model revisions and file metadata never participate in
-matching. The matcher accepts direct or swapped A/B model alignment and handles self-clash
-element pairs without mutating occurrences. Source clash GUID is supplemental evidence only:
-equal GUID can raise `Medium` to `High`, but unequal or missing GUID does not create or
-destroy a candidate. Element identifiers and source GUIDs are compared ordinally and
-case-sensitively. The matcher does not use spatial position, metadata, scores, fingerprints,
-or lifecycle status.
+model-aligned opaque element-id pair. When both occurrences provide clash points, a fixed
+`1e-6` model-unit Euclidean tolerance distinguishes spatially compatible evidence from a
+contradiction. A spatial contradiction remains an auditable `Low` candidate rather than
+creating an automatic resolved/new pair; it is not a plausible competing alternative to a
+spatially compatible selected match. Compatible points add no redundant evidence item. A
+point missing on either side does not destroy an
+otherwise valid candidate: one missing side is recorded as `Unavailable`
+spatial evidence, while two missing sides produce no invented spatial evidence. Model
+revisions and file metadata never participate in matching. The matcher accepts direct or
+swapped A/B model alignment and handles self-clash element pairs without mutating,
+deduplicating, or dropping occurrence slots. Source clash GUID is supplemental evidence
+only: equal GUID can raise `Medium` to `High`, but unequal or missing GUID does not create
+or destroy a candidate. Element identifiers and source GUIDs are compared ordinally and
+case-sensitively. The matcher does not use metadata, numeric scores, fingerprints, or
+lifecycle status.
 
 ## Deterministic run comparer
 

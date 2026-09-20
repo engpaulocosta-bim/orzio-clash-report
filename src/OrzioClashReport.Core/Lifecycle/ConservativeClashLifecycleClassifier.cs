@@ -11,8 +11,9 @@ namespace OrzioClashReport.Core.Lifecycle
     /// <see cref="ClashRunMatchResult"/> without ever rerunning matching. A selected match becomes
     /// <see cref="ClashLifecycleStatus.StillOpen"/> only when its confidence is
     /// <see cref="ClashMatchConfidence.Medium"/> or <see cref="ClashMatchConfidence.High"/> and no alternative
-    /// candidate shares its previous or current index; otherwise it becomes
-    /// <see cref="ClashLifecycleStatus.Unverifiable"/>. An unmatched previous occurrence becomes
+    /// plausible candidate shares its previous or current index; otherwise it becomes
+    /// <see cref="ClashLifecycleStatus.Unverifiable"/>. An alternative whose spatial evidence explicitly
+    /// contradicts is retained for audit but is not plausible competition. An unmatched previous occurrence becomes
     /// <see cref="ClashLifecycleStatus.Resolved"/> only when it has no competing alternative and both of its
     /// revision-free <see cref="ModelIdentity"/> sides plus its clash test are observed in the current run;
     /// an unmatched current occurrence becomes <see cref="ClashLifecycleStatus.New"/> under the symmetric
@@ -91,7 +92,8 @@ namespace OrzioClashReport.Core.Lifecycle
                     : $"Match confidence is {confidence}, too weak to auto-classify."));
 
             int competingAlternatives = matchResult.AlternativeCandidates.Count(
-                a => a.PreviousIndex == selected.PreviousIndex || a.CurrentIndex == selected.CurrentIndex);
+                a => IsPlausibleAlternative(a)
+                    && (a.PreviousIndex == selected.PreviousIndex || a.CurrentIndex == selected.CurrentIndex));
             bool hasAmbiguity = competingAlternatives > 0;
             evidence.Add(new ClashLifecycleEvidence(
                 ClashLifecycleEvidenceKind.CandidateAmbiguity,
@@ -118,7 +120,8 @@ namespace OrzioClashReport.Core.Lifecycle
             var evidence = BuildUnmatchedEvidence(
                 occurrence,
                 otherRun: matchResult.CurrentRun,
-                competingAlternatives: matchResult.AlternativeCandidates.Count(a => a.PreviousIndex == previousIndex),
+                competingAlternatives: matchResult.AlternativeCandidates.Count(
+                    a => IsPlausibleAlternative(a) && a.PreviousIndex == previousIndex),
                 slotLabel: "previous slot");
 
             var status = HasBlocker(evidence) ? ClashLifecycleStatus.Unverifiable : ClashLifecycleStatus.Resolved;
@@ -132,7 +135,8 @@ namespace OrzioClashReport.Core.Lifecycle
             var evidence = BuildUnmatchedEvidence(
                 occurrence,
                 otherRun: matchResult.PreviousRun,
-                competingAlternatives: matchResult.AlternativeCandidates.Count(a => a.CurrentIndex == currentIndex),
+                competingAlternatives: matchResult.AlternativeCandidates.Count(
+                    a => IsPlausibleAlternative(a) && a.CurrentIndex == currentIndex),
                 slotLabel: "current slot");
 
             var status = HasBlocker(evidence) ? ClashLifecycleStatus.Unverifiable : ClashLifecycleStatus.New;
@@ -195,5 +199,15 @@ namespace OrzioClashReport.Core.Lifecycle
 
         private static bool HasBlocker(IEnumerable<ClashLifecycleEvidence> evidence) =>
             evidence.Any(e => e.Verdict == ClashLifecycleEvidenceVerdict.BlocksClassification);
+
+        /// <summary>
+        /// A spatial contradiction is retained in matching for audit, but it is not a plausible competitor to
+        /// a spatially compatible selected match. When it is the only candidate it will be selected at Low
+        /// confidence, and the confidence guard still classifies it as Unverifiable.
+        /// </summary>
+        private static bool IsPlausibleAlternative(ClashRunMatchCandidate candidate) =>
+            !candidate.Assessment.Evidence.Any(
+                evidence => evidence.Kind == MatchEvidenceKind.SpatialPosition
+                    && evidence.Verdict == MatchEvidenceVerdict.Contradicts);
     }
 }

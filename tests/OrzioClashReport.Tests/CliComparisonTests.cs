@@ -51,6 +51,8 @@ namespace OrzioClashReport.Tests
                 Assert.Equal(0, result.ExitCode);
                 Assert.True(File.Exists(outputPath));
                 Assert.Contains("raw clashes ->", result.StdOut);
+                Assert.Contains("Retained clashes:", result.StdOut);
+                Assert.Contains("collapsed duplicates:", result.StdOut);
                 Assert.Contains("Report written to", result.StdOut);
                 Assert.Equal(string.Empty, result.StdErr);
             }

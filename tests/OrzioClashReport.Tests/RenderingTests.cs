@@ -83,6 +83,33 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
+        public void Render_ReconcilesCountsAndListsEveryCollapsedDuplicate()
+        {
+            var elementA = new ClashObject("a", null, "L1", null, null, null);
+            var elementB = new ClashObject("b", null, "L1", null, null, null);
+            var retained = new ClashResult(
+                "Retained", ClashStatus.New, null, null, new ClashPoint(1, 2, 3),
+                elementA, elementB, "g1");
+            var collapsed = new ClashResult(
+                "Collapsed <duplicate>", ClashStatus.New, null, null, new ClashPoint(1.0001, 2, 3),
+                elementB, elementA, "g2");
+            var document = new ClashReportDocument(
+                "sample.nwd", null, new[] { new ClashBatch("Test & Audit", 0.001, new[] { retained, collapsed }) });
+            var group = new ClashGroup("Test & Audit", "Architecture", "AVAC", "L1", new[] { retained });
+            var collapse = new ClashCollapse("Test & Audit", retained, collapsed);
+            var report = new GroupedClashReport(document, new[] { group }, new[] { collapse }, rawCount: 2);
+
+            string html = new HtmlReportRenderer().Render(report);
+
+            Assert.Contains("2 raw clashes = 1 retained + 1 collapsed duplicates &rarr; 1 groups", html);
+            Assert.Contains("Collapsed duplicate audit", html);
+            Assert.Contains("Test &amp; Audit", html);
+            Assert.Contains("Collapsed &lt;duplicate&gt;", html);
+            Assert.Contains("<td>g2</td>", html);
+            Assert.Contains("1.000, 2.000, 3.000", html);
+        }
+
+        [Fact]
         public void Render_MatchesGoldenFile()
         {
             var report = BuildSampleReport();

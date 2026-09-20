@@ -28,17 +28,19 @@ namespace OrzioClashReport.Core.Grouping
             int rawCount = 0;
             var buckets = new Dictionary<string, Bucket>();
             var bucketOrder = new List<string>();
+            var collapses = new List<ClashCollapse>();
 
             foreach (var batch in document.Batches)
             {
                 rawCount += batch.Clashes.Count;
-                var deduped = CollapseDuplicates(batch.Clashes, batch.Tolerance ?? DefaultTolerance);
+                var deduped = CollapseDuplicates(
+                    batch.Name, batch.Clashes, batch.Tolerance ?? DefaultTolerance, collapses);
                 BucketClashes(batch.Name, deduped, buckets, bucketOrder);
             }
 
             var groups = FinalizeGroups(buckets, bucketOrder);
 
-            return new GroupedClashReport(document, groups, rawCount);
+            return new GroupedClashReport(document, groups, collapses, rawCount);
         }
 
         private readonly struct Bucket
@@ -60,8 +62,13 @@ namespace OrzioClashReport.Core.Grouping
         }
 
         /// <summary>Collapses clashes that share an element-id pair and land within tolerance of a previously kept point.</summary>
-        private static IEnumerable<ClashResult> CollapseDuplicates(IReadOnlyList<ClashResult> clashes, double tolerance)
+        private static IReadOnlyList<ClashResult> CollapseDuplicates(
+            string? clashTestName,
+            IReadOnlyList<ClashResult> clashes,
+            double tolerance,
+            List<ClashCollapse> collapses)
         {
+            var retained = new List<ClashResult>();
             var pairGroups = clashes.GroupBy(c => MakeUnorderedPairKey(c.ElementA.ElementId, c.ElementB.ElementId));
 
             foreach (var pairGroup in pairGroups)
@@ -70,20 +77,26 @@ namespace OrzioClashReport.Core.Grouping
 
                 foreach (var clash in pairGroup)
                 {
-                    bool isDuplicate = clash.Point.HasValue
-                        && kept.Any(k => k.Point.HasValue && WithinTolerance(k.Point.Value, clash.Point.Value, tolerance));
+                    ClashResult? retainedClash = clash.Point.HasValue
+                        ? kept.FirstOrDefault(
+                            candidate => candidate.Point.HasValue
+                                && WithinTolerance(candidate.Point.Value, clash.Point.Value, tolerance))
+                        : null;
 
-                    if (!isDuplicate)
+                    if (retainedClash == null)
                     {
                         kept.Add(clash);
                     }
+                    else
+                    {
+                        collapses.Add(new ClashCollapse(clashTestName, retainedClash, clash));
+                    }
                 }
 
-                foreach (var clash in kept)
-                {
-                    yield return clash;
-                }
+                retained.AddRange(kept);
             }
+
+            return retained;
         }
 
         /// <summary>Buckets deduped clashes from one clash test by an order-independent discipline pair plus level, never mixing with other clash tests.</summary>

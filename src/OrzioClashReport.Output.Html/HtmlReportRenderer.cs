@@ -36,6 +36,11 @@ namespace OrzioClashReport.Output.Html
 
             AppendHeader(html, report);
 
+            if (report.CollapsedCount > 0)
+            {
+                AppendCollapseAudit(html, report.Collapses);
+            }
+
             foreach (var group in report.Groups)
             {
                 AppendGroup(html, group, disciplineColors);
@@ -75,10 +80,44 @@ namespace OrzioClashReport.Output.Html
 
             html.Append("<p class=\"summary\">")
                 .Append(report.RawCount.ToString(CultureInfo.InvariantCulture))
-                .Append(" raw clashes &rarr; ")
+                .Append(" raw clashes = ")
+                .Append(report.RetainedCount.ToString(CultureInfo.InvariantCulture))
+                .Append(" retained + ")
+                .Append(report.CollapsedCount.ToString(CultureInfo.InvariantCulture))
+                .Append(" collapsed duplicates &rarr; ")
                 .Append(report.GroupCount.ToString(CultureInfo.InvariantCulture))
                 .Append(" groups</p>\n");
             html.Append("</header>\n");
+        }
+
+        private static void AppendCollapseAudit(StringBuilder html, IReadOnlyList<ClashCollapse> collapses)
+        {
+            html.Append("<section class=\"collapse-audit\">\n");
+            html.Append("<h2>Collapsed duplicate audit</h2>\n");
+            html.Append("<p>Each row preserves a raw clash collapsed because the same unordered element pair was already retained within the clash-test tolerance.</p>\n");
+            html.Append("<table>\n<thead><tr>")
+                .Append("<th>Clash test</th><th>Retained clash</th><th>Collapsed clash</th>")
+                .Append("<th>Retained GUID (evidence)</th><th>Collapsed GUID (evidence)</th>")
+                .Append("<th>Element A</th><th>Element B</th><th>Retained point</th><th>Collapsed point</th>")
+                .Append("</tr></thead>\n<tbody>\n");
+
+            foreach (ClashCollapse collapse in collapses)
+            {
+                html.Append("<tr>");
+                html.Append("<td>").Append(Encode(collapse.ClashTestName ?? "(unnamed test)")).Append("</td>");
+                html.Append("<td>").Append(Encode(collapse.RetainedClash.Name ?? "(unnamed)")).Append("</td>");
+                html.Append("<td>").Append(Encode(collapse.CollapsedClash.Name ?? "(unnamed)")).Append("</td>");
+                html.Append("<td>").Append(FormatOptionalText(collapse.RetainedClash.Guid)).Append("</td>");
+                html.Append("<td>").Append(FormatOptionalText(collapse.CollapsedClash.Guid)).Append("</td>");
+                html.Append("<td>").Append(Encode(collapse.CollapsedClash.ElementA.ElementId)).Append("</td>");
+                html.Append("<td>").Append(Encode(collapse.CollapsedClash.ElementB.ElementId)).Append("</td>");
+                html.Append("<td>").Append(FormatPoint(collapse.RetainedClash.Point)).Append("</td>");
+                html.Append("<td>").Append(FormatPoint(collapse.CollapsedClash.Point)).Append("</td>");
+                html.Append("</tr>\n");
+            }
+
+            html.Append("</tbody>\n</table>\n");
+            html.Append("</section>\n");
         }
 
         private static void AppendGroup(StringBuilder html, ClashGroup group, IReadOnlyDictionary<string, string> disciplineColors)
@@ -139,6 +178,9 @@ namespace OrzioClashReport.Output.Html
                     point.Value.X, point.Value.Y, point.Value.Z)
                 : "&mdash;";
 
+        private static string FormatOptionalText(string? value) =>
+            string.IsNullOrEmpty(value) ? "&mdash;" : Encode(value);
+
         private static string Encode(string value) => WebUtility.HtmlEncode(value);
 
         private const string Css = @"
@@ -147,6 +189,9 @@ body{font-family:Segoe UI,Arial,sans-serif;background:#fff;color:#212121;margin:
 .report-header h1{margin:0 0 .25rem 0;}
 .summary{font-size:1.1rem;font-weight:600;}
 .source{color:#616161;font-size:.9rem;}
+.collapse-audit{margin-bottom:2rem;}
+.collapse-audit h2{font-size:1.1rem;margin-bottom:.25rem;}
+.collapse-audit p{color:#616161;margin:.25rem 0 .5rem 0;font-size:.9rem;}
 .group{margin-bottom:2rem;}
 .group h2{font-size:1.1rem;margin-bottom:.25rem;}
 .badge{color:#fff;border-radius:.75rem;padding:.15rem .6rem;font-size:.85rem;}

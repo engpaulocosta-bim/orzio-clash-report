@@ -179,7 +179,7 @@ namespace OrzioClashReport.Output.Html
                 : "&mdash;";
 
         private static string FormatOptionalText(string? value) =>
-            string.IsNullOrEmpty(value) ? "&mdash;" : Encode(value);
+            value == null || value.Length == 0 ? "&mdash;" : Encode(value);
 
         private static string Encode(string value) => WebUtility.HtmlEncode(value);
 

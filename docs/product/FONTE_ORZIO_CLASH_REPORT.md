@@ -577,6 +577,20 @@ mesmo par não ordenado de element ids
 pontos dentro da tolerância
 ```
 
+O primeiro clash encontrado é retido. Cada clash posterior colapsado permanece representado
+por um `ClashCollapse`, que preserva o clash test e as referências exatas ao clash retido e
+ao clash colapsado. Clashes sem ponto nunca são colapsados.
+
+`GroupedClashReport` reconcilia obrigatoriamente:
+
+```text
+RawCount = RetainedCount + CollapsedCount
+```
+
+`Collapses` mantém a ordem determinística dos batches, dos pares pela primeira ocorrência e
+das ocorrências dentro de cada par. Esse registo explica uma deduplicação dentro do mesmo
+run; não cria identidade longitudinal.
+
 ## 8.3 Bucket
 
 ```text
@@ -624,7 +638,11 @@ Conteúdo atual:
 
 - fonte;
 - raw count;
+- retained count;
+- collapsed count;
 - group count;
+- auditoria ordenada de cada clash colapsado, com clash test, nomes, GUIDs como evidência,
+  element ids e pontos do retido e do colapsado;
 - badges de disciplina;
 - nível;
 - clash test;

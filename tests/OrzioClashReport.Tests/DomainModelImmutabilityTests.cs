@@ -88,5 +88,39 @@ namespace OrzioClashReport.Tests
 
             Assert.Single(report.Groups);
         }
+
+        [Fact]
+        public void GroupedClashReport_Collapses_IsUnaffectedByMutatingSourceListAfterConstruction()
+        {
+            var elementA = new ClashObject("a", null, "L1", null, null, null);
+            var elementB = new ClashObject("b", null, "L1", null, null, null);
+            var retained = new ClashResult(
+                "Retained", ClashStatus.New, null, null, new ClashPoint(1, 1, 1), elementA, elementB, "g1");
+            var collapsed = new ClashResult(
+                "Collapsed", ClashStatus.New, null, null, new ClashPoint(1, 1, 1), elementA, elementB, "g2");
+            var group = new ClashGroup("Test", "Architecture", "AVAC", "L1", new[] { retained });
+            var source = new List<ClashCollapse> { new ClashCollapse("Test", retained, collapsed) };
+            var report = new GroupedClashReport(
+                new ClashReportDocument("doc", null, null), new[] { group }, source, rawCount: 2);
+
+            source.Clear();
+
+            Assert.Single(report.Collapses);
+            Assert.Equal(1, report.RetainedCount);
+            Assert.Equal(1, report.CollapsedCount);
+        }
+
+        [Fact]
+        public void GroupedClashReport_RejectsUnreconciledCounts()
+        {
+            var elementA = new ClashObject("a", null, "L1", null, null, null);
+            var elementB = new ClashObject("b", null, "L1", null, null, null);
+            var retained = new ClashResult(
+                "Retained", ClashStatus.New, null, null, null, elementA, elementB, "g1");
+            var group = new ClashGroup("Test", "Architecture", "AVAC", "L1", new[] { retained });
+
+            Assert.Throws<ArgumentException>(() => new GroupedClashReport(
+                new ClashReportDocument("doc", null, null), new[] { group }, rawCount: 2));
+        }
     }
 }

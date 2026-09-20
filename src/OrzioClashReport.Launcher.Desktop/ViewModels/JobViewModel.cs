@@ -107,7 +107,8 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             StateGlyph = "⋯";
             StateLabel = "Em execução";
 
-            _cancellation = new CancellationTokenSource();
+            var cancellation = new CancellationTokenSource();
+            _cancellation = cancellation;
 
             var progress = new Progress<EngineJobProgress>(AppendProgress);
 
@@ -119,10 +120,15 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
                 Present(result);
                 return result;
             }
+            catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+            {
+                PresentCancellation();
+                return null;
+            }
             finally
             {
                 IsRunning = false;
-                _cancellation.Dispose();
+                cancellation.Dispose();
                 _cancellation = null;
                 _activeJobTracker.Release();
             }
@@ -238,6 +244,14 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
                 ArtifactFileName = Path.GetFileName(artifact.Path);
                 HasArtifact = true;
             }
+        }
+
+        private void PresentCancellation()
+        {
+            HasResult = true;
+            IsCanceled = true;
+            StateGlyph = "⊘";
+            StateLabel = "Cancelado";
         }
 
         private void ShowRefusal(string message, string nextStep)

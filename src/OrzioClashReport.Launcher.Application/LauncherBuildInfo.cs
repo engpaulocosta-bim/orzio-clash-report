@@ -7,7 +7,7 @@ namespace OrzioClashReport.Launcher.Application
     /// </summary>
     public static class LauncherBuildInfo
     {
-        public const string LauncherVersion = "0.2.0-launcher-preview.1";
+        public const string LauncherVersion = "0.2.1-launcher-preview.1";
 
         public const string FallbackExpectedEngineVersion = "0.1.0-preview.3";
     }

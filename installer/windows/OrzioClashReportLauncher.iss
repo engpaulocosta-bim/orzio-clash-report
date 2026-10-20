@@ -9,8 +9,8 @@
 ; their own folders, and are never touched.
 
 #define LauncherName "Orzio Clash Report"
-#define LauncherVersion "0.2.0"
-#define LauncherFullVersion "0.2.0-launcher-preview.1"
+#define LauncherVersion "0.2.1"
+#define LauncherFullVersion "0.2.1-launcher-preview.1"
 #define LauncherPublisher "Orzio"
 #define LauncherExeName "OrzioClashReport.Launcher.Desktop.exe"
 
@@ -41,6 +41,8 @@ DisableProgramGroupPage=yes
 ; The application never needs elevation: it writes only to the user's own local application data.
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
+CloseApplications=yes
+RestartApplications=no
 
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible

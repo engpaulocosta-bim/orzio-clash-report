@@ -45,6 +45,9 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         [NotifyPropertyChangedFor(nameof(IsDownloading))]
         [NotifyPropertyChangedFor(nameof(HasFailed))]
         [NotifyPropertyChangedFor(nameof(Glyph))]
+        [NotifyPropertyChangedFor(nameof(IsChecking))]
+        [NotifyPropertyChangedFor(nameof(IsUpToDate))]
+        [NotifyPropertyChangedFor(nameof(SidebarStatus))]
         [NotifyCanExecuteChangedFor(nameof(CheckCommand))]
         [NotifyCanExecuteChangedFor(nameof(InstallCommand))]
         private UpdateState _state = UpdateState.Idle;
@@ -89,6 +92,10 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public bool IsBusy => State is UpdateState.Checking or UpdateState.Downloading or UpdateState.Installing;
 
+        public bool IsChecking => State == UpdateState.Checking;
+
+        public bool IsUpToDate => State == UpdateState.UpToDate;
+
         public bool IsUpdateAvailable => State == UpdateState.Available;
 
         public bool IsDownloading => State == UpdateState.Downloading;
@@ -96,6 +103,17 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         public bool HasFailed => State == UpdateState.Failed;
 
         public bool HasReleaseNotes => _available?.ReleaseNotesUrl != null;
+
+        /// <summary>A short line for the sidebar footer; the full explanation lives in Definições.</summary>
+        public string SidebarStatus => State switch
+        {
+            UpdateState.Checking => "A procurar…",
+            UpdateState.UpToDate => "Atualizado · " + CurrentVersion,
+            UpdateState.Downloading => "A descarregar…",
+            UpdateState.Installing => "A instalar…",
+            UpdateState.Failed => "Verificação falhou",
+            _ => "Versão " + CurrentVersion,
+        };
 
         /// <summary>A glyph for the state, so it is never conveyed by colour alone.</summary>
         public string Glyph => State switch

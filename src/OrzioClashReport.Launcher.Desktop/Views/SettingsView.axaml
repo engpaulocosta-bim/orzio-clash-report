@@ -7,12 +7,78 @@
              x:DataType="vm:SettingsViewModel">
 
   <ScrollViewer>
-    <StackPanel Classes="stack-lg">
+    <StackPanel Classes="page">
 
       <StackPanel Classes="stack-xs">
         <TextBlock Classes="display" Text="Definições" />
         <TextBlock Classes="secondary" Text="Aparência, atualizações, dados locais e estado do motor." />
       </StackPanel>
+
+      <!--
+        Updates. The network is contacted only by "Procurar atualizações", and an installer is
+        downloaded only by "Instalar atualização". The download is checked against the release's
+        SHA-256 before it is started, and nothing starts while an engine job is running.
+      -->
+      <Border Classes="card">
+        <StackPanel Classes="stack-md" DataContext="{Binding Updates}" x:DataType="vm:UpdatesViewModel">
+          <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="{DynamicResource OrzioGapMd}">
+            <Border Grid.Column="0" Classes="icon-chip" Classes.positive="{Binding IsUpToDate}">
+              <PathIcon Data="{DynamicResource OrzioIconDownload}" />
+            </Border>
+            <StackPanel Grid.Column="1" Classes="stack-xs" VerticalAlignment="Center">
+              <TextBlock Classes="title" Text="Atualizações" />
+              <TextBlock Classes="secondary"
+                         Text="Procura uma nova versão oficial no GitHub apenas quando o pedir. A instalação só começa com a sua confirmação." />
+            </StackPanel>
+            <Border Grid.Column="2" Classes="status-pill" VerticalAlignment="Center">
+              <TextBlock Classes="monospace" Text="{Binding CurrentVersion}" />
+            </Border>
+          </Grid>
+
+          <Border Classes="notice"
+                  Classes.positive="{Binding IsUpToDate}"
+                  Classes.critical="{Binding HasFailed}">
+            <StackPanel Orientation="Horizontal" Classes="stack-sm">
+              <TextBlock Text="{Binding Glyph}" />
+              <TextBlock Text="{Binding StatusText}" />
+            </StackPanel>
+          </Border>
+
+          <StackPanel Classes="stack-xs" IsVisible="{Binding IsDownloading}">
+            <ProgressBar Minimum="0" Maximum="100" Value="{Binding DownloadPercent}" />
+            <TextBlock Classes="caption" Text="{Binding DownloadPercent, StringFormat='{}{0:0}% descarregado'}" />
+          </StackPanel>
+
+          <StackPanel Orientation="Horizontal" Classes="stack-sm">
+            <Button Classes="primary"
+                    IsVisible="{Binding IsUpdateAvailable}"
+                    Command="{Binding InstallCommand}">
+              <StackPanel Orientation="Horizontal" Classes="stack-sm">
+                <PathIcon Classes="small" Data="{DynamicResource OrzioIconDownload}" />
+                <TextBlock Text="{Binding AvailableVersion, StringFormat='Instalar atualização {0}'}" />
+              </StackPanel>
+            </Button>
+            <Button Command="{Binding CheckCommand}">
+              <StackPanel Orientation="Horizontal" Classes="stack-sm">
+                <PathIcon Classes="small" Data="{DynamicResource OrzioIconRefresh}"
+                          Classes.spin="{Binding IsChecking}" />
+                <TextBlock Text="Procurar atualizações" />
+              </StackPanel>
+            </Button>
+            <Button Classes="ghost"
+                    IsVisible="{Binding IsUpdateAvailable}"
+                    Command="{Binding OpenReleaseNotesCommand}">
+              <StackPanel Orientation="Horizontal" Classes="stack-xs">
+                <TextBlock Text="Notas da versão" />
+                <PathIcon Classes="small" Data="{DynamicResource OrzioIconOpenExternal}" />
+              </StackPanel>
+            </Button>
+          </StackPanel>
+
+          <TextBlock Classes="caption" IsVisible="{Binding LastCheckedText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                     Text="{Binding LastCheckedText}" />
+        </StackPanel>
+      </Border>
 
       <Border Classes="card">
         <StackPanel Classes="stack-md">
@@ -50,17 +116,6 @@
             <TextBlock Classes="caption" Text="Versão da aplicação" />
             <TextBlock Classes="monospace" Text="{Binding LauncherVersion}" />
           </StackPanel>
-        </StackPanel>
-      </Border>
-
-      <Border Classes="card">
-        <StackPanel Classes="stack-md">
-          <TextBlock Classes="title" Text="Atualizações" />
-          <TextBlock Classes="secondary"
-                     Text="Verifique manualmente se existe uma nova versão oficial do Orzio Clash Report no GitHub. A instalação só começa com a sua autorização." />
-          <Button Content="Procurar atualizações" HorizontalAlignment="Left"
-                  Click="CheckUpdates_Click" />
-          <TextBlock x:Name="UpdateStatus" Classes="secondary" TextWrapping="Wrap" />
         </StackPanel>
       </Border>
 

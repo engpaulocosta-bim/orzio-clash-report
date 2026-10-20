@@ -14,6 +14,8 @@
           <TextBlock Classes="subtitle" Text="{Binding StateLabel}" />
         </StackPanel>
 
+        <ProgressBar IsIndeterminate="True" />
+
         <ScrollViewer MaxHeight="{DynamicResource OrzioLiveOutputMaxHeight}">
           <ItemsControl ItemsSource="{Binding OutputLines}">
             <ItemsControl.ItemTemplate>
@@ -48,7 +50,12 @@
         <StackPanel Classes="stack-sm" IsVisible="{Binding HasArtifact}">
           <TextBlock Classes="monospace" Text="{Binding ArtifactFileName}" />
           <StackPanel Orientation="Horizontal" Classes="stack-sm">
-            <Button Classes="primary" Content="Abrir" Command="{Binding OpenArtifactCommand}" />
+            <Button Classes="primary" Command="{Binding OpenArtifactCommand}">
+              <StackPanel Orientation="Horizontal" Classes="stack-sm">
+                <PathIcon Classes="small" Data="{DynamicResource OrzioIconOpenExternal}" />
+                <TextBlock Text="Abrir" />
+              </StackPanel>
+            </Button>
             <Button Content="Mostrar na pasta" Command="{Binding RevealArtifactCommand}" />
           </StackPanel>
         </StackPanel>
@@ -61,7 +68,7 @@
         <ItemsControl ItemsSource="{Binding Warnings}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="x:String">
-              <Border Classes="notice">
+              <Border Classes="notice caution">
                 <StackPanel Orientation="Horizontal" Classes="stack-sm">
                   <TextBlock Text="⚠" Classes="severity-caution" />
                   <TextBlock Text="{Binding}" />

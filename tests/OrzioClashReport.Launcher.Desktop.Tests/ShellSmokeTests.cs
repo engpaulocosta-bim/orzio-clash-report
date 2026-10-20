@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Styling;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using OrzioClashReport.Launcher.Application.Engine;
@@ -61,6 +62,36 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
                 Assert.True(
                     window.TryFindResource(token, out object? value) && value != null,
                     $"The design token '{token}' did not resolve.");
+            }
+        }
+
+        [AvaloniaFact]
+        public void TheDarkThemeChangesTheSurfacesAndNotOnlyTheToolkitControls()
+        {
+            var window = new MainWindow { DataContext = CreateShell(out _) };
+            window.Show();
+
+            // A colour defined outside the theme dictionaries used to win over the dark palette, so
+            // dark mode drew light surfaces under dark controls and some text became unreadable.
+            foreach (string token in new[] { "OrzioCanvasBrush", "OrzioRaisedBrush", "OrzioTextPrimaryBrush" })
+            {
+                Assert.True(window.TryFindResource(token, ThemeVariant.Light, out object? light));
+                Assert.True(window.TryFindResource(token, ThemeVariant.Dark, out object? dark));
+                Assert.NotEqual(
+                    ((Avalonia.Media.ISolidColorBrush)light!).Color,
+                    ((Avalonia.Media.ISolidColorBrush)dark!).Color);
+            }
+        }
+
+        [AvaloniaFact]
+        public void EverySectionHasAVectorIcon()
+        {
+            var converter = new OrzioClashReport.Launcher.Desktop.Converters.SectionIconConverter();
+
+            foreach (LauncherSection section in Enum.GetValues<LauncherSection>())
+            {
+                object? icon = converter.Convert(section, typeof(Avalonia.Media.Geometry), null, System.Globalization.CultureInfo.InvariantCulture);
+                Assert.IsAssignableFrom<Avalonia.Media.Geometry>(icon);
             }
         }
 

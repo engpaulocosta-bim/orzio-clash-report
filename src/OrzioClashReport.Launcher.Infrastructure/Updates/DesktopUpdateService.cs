@@ -154,7 +154,15 @@ namespace OrzioClashReport.Launcher.Infrastructure.Updates
         }
 
         /// <summary>Downloads to local user data, verifies SHA-256, then opens the normal installer wizard.</summary>
-        public async Task<string> DownloadAndStartInstallerAsync(DesktopUpdateManifest manifest, CancellationToken cancellationToken = default)
+        public Task<string> DownloadAndStartInstallerAsync(DesktopUpdateManifest manifest, CancellationToken cancellationToken = default) =>
+            DownloadAndStartInstallerAsync(manifest, progress: null, cancellationToken);
+
+        /// <summary>
+        /// Same as the overload above, reporting download progress as a fraction between 0 and 1 when the
+        /// server declares the installer size. Verification still happens only after the last byte.
+        /// </summary>
+        public async Task<string> DownloadAndStartInstallerAsync(
+            DesktopUpdateManifest manifest, IProgress<double>? progress, CancellationToken cancellationToken = default)
         {
             if (!IsTrustedInstaller(manifest) || manifest.Sha256 is null
                 || !Regex.IsMatch(manifest.Sha256, @"\A[0-9a-fA-F]{64}\z"))
@@ -186,6 +194,9 @@ namespace OrzioClashReport.Launcher.Infrastructure.Updates
                     throw new InvalidDataException("Installer exceeds the permitted size.");
                 }
 
+                long? declaredLength = response.Content.Headers.ContentLength;
+                progress?.Report(0);
+
                 await using (Stream source = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
                 await using (FileStream destination = new FileStream(
                     temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, useAsync: true))
@@ -202,6 +213,10 @@ namespace OrzioClashReport.Launcher.Infrastructure.Updates
                         }
 
                         await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+                        if (declaredLength > 0)
+                        {
+                            progress?.Report(Math.Min(1d, (double)written / declaredLength.Value));
+                        }
                     }
                 }
 

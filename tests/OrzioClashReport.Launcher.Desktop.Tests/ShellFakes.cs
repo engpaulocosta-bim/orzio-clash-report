@@ -138,4 +138,43 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
         public Task<string> BuildAsync(EngineInfo engine, CancellationToken cancellationToken) =>
             Task.FromResult("/diagnostics/bundle.zip");
     }
+
+    /// <summary>Answers update checks from memory; never touches the network or starts a process.</summary>
+    internal sealed class FakeDesktopUpdateClient : OrzioClashReport.Launcher.Desktop.Platform.IDesktopUpdateClient
+    {
+        public OrzioClashReport.Launcher.Infrastructure.Updates.DesktopUpdateManifest? Available { get; set; }
+
+        public Exception? CheckFailure { get; set; }
+
+        public Exception? DownloadFailure { get; set; }
+
+        public int Downloads { get; private set; }
+
+        public Task<OrzioClashReport.Launcher.Infrastructure.Updates.DesktopUpdateCheckResult> CheckAsync(
+            string currentVersion, CancellationToken cancellationToken)
+        {
+            if (CheckFailure != null)
+            {
+                return Task.FromException<OrzioClashReport.Launcher.Infrastructure.Updates.DesktopUpdateCheckResult>(CheckFailure);
+            }
+
+            return Task.FromResult(new OrzioClashReport.Launcher.Infrastructure.Updates.DesktopUpdateCheckResult(
+                Available != null, currentVersion, Available));
+        }
+
+        public Task<string> DownloadAndStartInstallerAsync(
+            OrzioClashReport.Launcher.Infrastructure.Updates.DesktopUpdateManifest manifest,
+            IProgress<double>? progress,
+            CancellationToken cancellationToken)
+        {
+            Downloads++;
+            if (DownloadFailure != null)
+            {
+                return Task.FromException<string>(DownloadFailure);
+            }
+
+            progress?.Report(1);
+            return Task.FromResult("/updates/installer.exe");
+        }
+    }
 }

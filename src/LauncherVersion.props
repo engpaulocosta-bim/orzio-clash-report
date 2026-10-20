@@ -1,0 +1,16 @@
+<Project>
+
+  <!--
+    The single source of the desktop launcher version. The desktop executable, the launcher
+    application assembly (LauncherBuildInfo), the Windows installer and the desktop release
+    workflow all read these two values; none of them carries a copy.
+
+    Raising the version and merging to master is what publishes a new desktop release
+    (tag desktop-v<prefix>-<suffix>). A merge that leaves the version unchanged publishes nothing.
+  -->
+  <PropertyGroup>
+    <LauncherVersionPrefix>0.2.1</LauncherVersionPrefix>
+    <LauncherVersionSuffix>launcher-preview.1</LauncherVersionSuffix>
+  </PropertyGroup>
+
+</Project>

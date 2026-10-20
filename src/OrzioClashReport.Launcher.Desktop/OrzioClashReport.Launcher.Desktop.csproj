@@ -1,5 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\LauncherVersion.props" />
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
@@ -9,8 +11,8 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <VersionPrefix>0.2.1</VersionPrefix>
-    <VersionSuffix>launcher-preview.1</VersionSuffix>
+    <VersionPrefix>$(LauncherVersionPrefix)</VersionPrefix>
+    <VersionSuffix>$(LauncherVersionSuffix)</VersionSuffix>
   </PropertyGroup>
 
   <ItemGroup>

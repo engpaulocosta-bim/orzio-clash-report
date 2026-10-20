@@ -1,24 +1,31 @@
 name: Desktop auto release
 
-# Publishes once per desktop version, after the version is merged to master.
+# One desktop release per launcher version. The version lives only in src/LauncherVersion.props.
+#
+# - pull_request: plan only. Reports the tag a merge would publish, and warns when the PR changes
+#   shipped code without raising a version that is already published.
+# - push to master: publishes desktop-v<version> when that release does not exist yet. A merge that
+#   leaves the version unchanged publishes nothing.
+# - workflow_dispatch on master: retries a failed publication; it never replaces a published version.
 on:
   push:
     branches: [master]
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: desktop-release-master
-  cancel-in-progress: false
-
 jobs:
-  desktop-release:
-    if: github.ref == 'refs/heads/master'
-    runs-on: windows-2025
-    permissions:
-      contents: write
+  plan:
+    name: Plan desktop release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.plan.outputs.version }}
+      prefix: ${{ steps.plan.outputs.prefix }}
+      tag: ${{ steps.plan.outputs.tag }}
+      previous-tag: ${{ steps.plan.outputs.previous-tag }}
+      should-publish: ${{ steps.plan.outputs.should-publish }}
 
     steps:
       - name: Checkout
@@ -26,55 +33,83 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check release version and existing publication
-        id: release
+      - name: Resolve version and existing publication
+        id: plan
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: |
           $ErrorActionPreference = 'Stop'
-          [xml]$project = Get-Content 'src/OrzioClashReport.Launcher.Desktop/OrzioClashReport.Launcher.Desktop.csproj'
-          $prefix = [string]$project.Project.PropertyGroup.VersionPrefix
-          $suffix = [string]$project.Project.PropertyGroup.VersionSuffix
-          $version = if ($suffix) { "$prefix-$suffix" } else { $prefix }
-          if ($version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?$') {
-            throw "Invalid desktop version: $version"
-          }
-          $buildInfo = Get-Content 'src/OrzioClashReport.Launcher.Application/LauncherBuildInfo.cs' -Raw
-          $installerSource = Get-Content 'installer/windows/OrzioClashReportLauncher.iss' -Raw
-          if ($buildInfo -notmatch 'LauncherVersion\s*=\s*"([^"]+)"' -or $Matches[1] -ne $version) {
-            throw "LauncherBuildInfo must match project version $version."
-          }
-          if ($installerSource -notmatch '(?m)^#define LauncherFullVersion "([^"]+)"' -or $Matches[1] -ne $version) {
-            throw "Inno Setup full version must match $version."
-          }
-          if ($installerSource -notmatch '(?m)^#define LauncherVersion "([^"]+)"' -or $Matches[1] -ne $prefix) {
-            throw "Inno Setup numeric version must match $prefix."
-          }
-          $tag = "desktop-v$version"
-          "version=$version" >> $env:GITHUB_OUTPUT
-          "tag=$tag" >> $env:GITHUB_OUTPUT
+          $version = & ./scripts/get-launcher-version.ps1
+          $tag = $version.Tag
 
-          $published = @(gh release list --repo $env:GITHUB_REPOSITORY --limit 100 --json tagName | ConvertFrom-Json)
-          if ($LASTEXITCODE -ne 0) { throw "Unable to list existing releases." }
-          if (@($published | Where-Object { $_.tagName -eq $tag }).Count -gt 0) {
-            Write-Host "Version $version already published. Skipping."
-            "should-publish=false" >> $env:GITHUB_OUTPUT
-          } else {
-            $existingTag = git ls-remote --tags origin "refs/tags/$tag"
-            if ($LASTEXITCODE -ne 0) { throw "Unable to query remote tags." }
-            if ($existingTag) { throw "Tag $tag already exists without an accessible release." }
-            "should-publish=true" >> $env:GITHUB_OUTPUT
+          $tags = @(gh api --paginate "repos/$env:GITHUB_REPOSITORY/releases" --jq '.[].tag_name')
+          if ($LASTEXITCODE -ne 0) { throw 'Unable to list existing releases.' }
+          $published = $tags -contains $tag
+
+          $desktopTags = @($tags | Where-Object { $_ -like 'desktop-v*' -and $_ -ne $tag })
+          $previous = if ($desktopTags.Count -gt 0) { $desktopTags[0] } else { '' }
+
+          if (-not $published) {
+            $remoteTag = git ls-remote --tags origin "refs/tags/$tag"
+            if ($LASTEXITCODE -ne 0) { throw 'Unable to query remote tags.' }
+            if ($remoteTag) { throw "Tag $tag already exists without a release. Resolve it by hand; it is never replaced." }
           }
+
+          "version=$($version.Full)" >> $env:GITHUB_OUTPUT
+          "prefix=$($version.Prefix)" >> $env:GITHUB_OUTPUT
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+          "previous-tag=$previous" >> $env:GITHUB_OUTPUT
+          "should-publish=$(if ($published) { 'false' } else { 'true' })" >> $env:GITHUB_OUTPUT
+
+          $summary = @("## Desktop release plan", "", "| | |", "|---|---|",
+            "| Version | ``$($version.Full)`` |", "| Tag | ``$tag`` |",
+            "| Already published | $(if ($published) { 'yes' } else { 'no' }) |")
+
+          if ($env:EVENT_NAME -eq 'pull_request') {
+            $changed = @(git diff --name-only "$env:BASE_SHA...HEAD")
+            $shipped = @($changed | Where-Object { $_ -match '^(src|installer|scripts)/' })
+            if ($published -and $shipped.Count -gt 0) {
+              Write-Host "::warning title=Desktop version not raised::This PR changes shipped files but $tag is already published, so merging it will not create a desktop release. Raise LauncherVersionPrefix or LauncherVersionSuffix in src/LauncherVersion.props to ship it."
+              $summary += "| On merge | nothing is published (version unchanged) |"
+            } elseif (-not $published) {
+              Write-Host "::notice title=Desktop release on merge::Merging this PR into master publishes $tag."
+              $summary += "| On merge | publishes ``$tag`` |"
+            } else {
+              $summary += "| On merge | nothing is published |"
+            }
+          }
+
+          $summary -join "`n" >> $env:GITHUB_STEP_SUMMARY
+
+  publish:
+    name: Publish desktop release
+    needs: plan
+    if: >-
+      github.event_name != 'pull_request'
+      && github.ref == 'refs/heads/master'
+      && needs.plan.outputs.should-publish == 'true'
+    runs-on: windows-2025
+    permissions:
+      contents: write
+    concurrency:
+      group: desktop-release-master
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
-        if: steps.release.outputs.should-publish == 'true'
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
 
       - name: Restore, build and test
-        if: steps.release.outputs.should-publish == 'true'
         shell: pwsh
         run: |
           dotnet restore
@@ -85,7 +120,6 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw "Tests failed." }
 
       - name: Check Windows installer compiler
-        if: steps.release.outputs.should-publish == 'true'
         shell: pwsh
         run: |
           if (-not (Test-Path -LiteralPath 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe')) {
@@ -93,22 +127,31 @@ jobs:
           }
 
       - name: Publish desktop and engine
-        if: steps.release.outputs.should-publish == 'true'
         shell: pwsh
         run: scripts/publish-launcher.ps1
 
+      - name: Verify the published launcher reports the planned version
+        shell: pwsh
+        env:
+          RELEASE_PREFIX: ${{ needs.plan.outputs.prefix }}
+        run: |
+          $exe = 'artifacts/launcher/staging/OrzioClashReport.Launcher.Desktop.exe'
+          $productVersion = (Get-Item -LiteralPath $exe).VersionInfo.ProductVersion
+          if (-not $productVersion.StartsWith($env:RELEASE_PREFIX)) {
+            throw "Launcher product version '$productVersion' does not start with the planned version $env:RELEASE_PREFIX."
+          }
+          Write-Host "Launcher product version: $productVersion"
+
       - name: Package desktop installer
-        if: steps.release.outputs.should-publish == 'true'
         shell: pwsh
         run: scripts/package-launcher.ps1
 
       - name: Generate verified update manifest
         id: package
-        if: steps.release.outputs.should-publish == 'true'
         shell: pwsh
         env:
-          RELEASE_VERSION: ${{ steps.release.outputs.version }}
-          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+          RELEASE_VERSION: ${{ needs.plan.outputs.version }}
+          RELEASE_TAG: ${{ needs.plan.outputs.tag }}
         run: |
           $ErrorActionPreference = 'Stop'
           $installerName = "orzio-clash-report-desktop-v$($env:RELEASE_VERSION)-win-x64-setup.exe"
@@ -143,10 +186,9 @@ jobs:
           "manifest=$manifestPath" >> $env:GITHUB_OUTPUT
 
       - name: Retain installer artifact
-        if: steps.release.outputs.should-publish == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: orzio-clash-desktop-${{ steps.release.outputs.version }}
+          name: orzio-clash-desktop-${{ needs.plan.outputs.version }}
           path: |
             ${{ steps.package.outputs.installer }}
             ${{ steps.package.outputs.checksum }}
@@ -155,12 +197,12 @@ jobs:
           retention-days: 30
 
       - name: Create official desktop GitHub release
-        if: steps.release.outputs.should-publish == 'true'
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ steps.release.outputs.tag }}
-          RELEASE_VERSION: ${{ steps.release.outputs.version }}
+          RELEASE_TAG: ${{ needs.plan.outputs.tag }}
+          RELEASE_VERSION: ${{ needs.plan.outputs.version }}
+          PREVIOUS_TAG: ${{ needs.plan.outputs.previous-tag }}
           INSTALLER: ${{ steps.package.outputs.installer }}
           CHECKSUM: ${{ steps.package.outputs.checksum }}
           MANIFEST: ${{ steps.package.outputs.manifest }}
@@ -183,7 +225,9 @@ jobs:
             '--repo', $env:GITHUB_REPOSITORY,
             '--target', $env:GITHUB_SHA,
             '--title', "Orzio Clash Report desktop $env:RELEASE_VERSION",
-            '--notes-file', $notes)
+            '--notes-file', $notes,
+            '--generate-notes')
+          if ($env:PREVIOUS_TAG) { $arguments += @('--notes-start-tag', $env:PREVIOUS_TAG) }
           if ($env:RELEASE_VERSION.Contains('-')) { $arguments += '--prerelease' }
           & gh @arguments
           if ($LASTEXITCODE -ne 0) { throw "Desktop release publication failed." }

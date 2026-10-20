@@ -31,18 +31,25 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             EngineStatusViewModel engineStatus,
             IRecentItemsStore recentItemsStore,
             IOutputRevealer outputRevealer,
-            Action<LauncherSection> navigate)
+            Action<LauncherSection> navigate,
+            UpdatesViewModel updates)
         {
             EngineStatus = engineStatus ?? throw new ArgumentNullException(nameof(engineStatus));
             _recentItemsStore = recentItemsStore ?? throw new ArgumentNullException(nameof(recentItemsStore));
             _outputRevealer = outputRevealer ?? throw new ArgumentNullException(nameof(outputRevealer));
             _navigate = navigate ?? throw new ArgumentNullException(nameof(navigate));
+            Updates = updates ?? throw new ArgumentNullException(nameof(updates));
         }
+
+        public UpdatesViewModel Updates { get; }
 
         public EngineStatusViewModel EngineStatus { get; }
 
         public ObservableCollection<RecentOutputViewModel> RecentOutputs { get; } =
             new ObservableCollection<RecentOutputViewModel>();
+
+        [RelayCommand]
+        private void GoToSettings() => _navigate(LauncherSection.Settings);
 
         [RelayCommand]
         private void GoToQuickReport() => _navigate(LauncherSection.QuickReport);

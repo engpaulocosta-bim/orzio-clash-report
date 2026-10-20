@@ -5,7 +5,7 @@
              x:DataType="vm:SectionPlaceholderViewModel">
 
   <ScrollViewer>
-    <StackPanel Classes="stack-lg">
+    <StackPanel Classes="page">
 
       <StackPanel Classes="stack-xs">
         <TextBlock Classes="display" Text="{Binding Title}" />

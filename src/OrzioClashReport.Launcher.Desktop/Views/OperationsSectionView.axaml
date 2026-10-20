@@ -6,14 +6,14 @@
              x:DataType="vm:OperationsSectionViewModel">
 
   <ScrollViewer>
-    <StackPanel Classes="stack-lg">
+    <StackPanel Classes="page">
 
       <StackPanel Classes="stack-xs">
         <TextBlock Classes="display" Text="{Binding Title}" />
         <TextBlock Classes="secondary" Text="{Binding Description}" />
       </StackPanel>
 
-      <ListBox Classes="navigation"
+      <ListBox Classes="tabs"
                ItemsSource="{Binding Forms}"
                SelectedItem="{Binding SelectedForm, Mode=TwoWay}">
         <ListBox.ItemsPanel>

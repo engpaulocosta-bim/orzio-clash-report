@@ -11,7 +11,7 @@
 
       <StackPanel Classes="stack-xs">
         <TextBlock Classes="display" Text="Definições" />
-        <TextBlock Classes="secondary" Text="Aparência, dados locais e estado do motor." />
+        <TextBlock Classes="secondary" Text="Aparência, atualizações, dados locais e estado do motor." />
       </StackPanel>
 
       <Border Classes="card">
@@ -50,6 +50,17 @@
             <TextBlock Classes="caption" Text="Versão da aplicação" />
             <TextBlock Classes="monospace" Text="{Binding LauncherVersion}" />
           </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card">
+        <StackPanel Classes="stack-md">
+          <TextBlock Classes="title" Text="Atualizações" />
+          <TextBlock Classes="secondary"
+                     Text="Verifique manualmente se existe uma nova versão oficial do Orzio Clash Report no GitHub. A instalação só começa com a sua autorização." />
+          <Button Content="Procurar atualizações" HorizontalAlignment="Left"
+                  Click="CheckUpdates_Click" />
+          <TextBlock x:Name="UpdateStatus" Classes="secondary" TextWrapping="Wrap" />
         </StackPanel>
       </Border>
 
@@ -120,7 +131,7 @@
         <StackPanel Classes="stack-sm">
           <TextBlock Classes="title" Text="O que esta aplicação não faz" />
           <TextBlock Classes="secondary"
-                     Text="Não recolhe telemetria, não envia nada para a internet, não usa conta e funciona sem ligação. Os registos locais não guardam caminhos absolutos nem conteúdo dos seus ficheiros." />
+                     Text="Não recolhe telemetria e não envia os seus ficheiros. Funciona offline, exceto ao procurar ou descarregar atualizações a pedido do utilizador. Os registos locais não guardam caminhos absolutos nem conteúdo dos seus ficheiros." />
         </StackPanel>
       </Border>
 

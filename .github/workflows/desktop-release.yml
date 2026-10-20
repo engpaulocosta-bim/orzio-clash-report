@@ -55,8 +55,9 @@ jobs:
           "version=$version" >> $env:GITHUB_OUTPUT
           "tag=$tag" >> $env:GITHUB_OUTPUT
 
-          $null = gh release view $tag --repo $env:GITHUB_REPOSITORY --json tagName 2>$null
-          if ($LASTEXITCODE -eq 0) {
+          $published = @(gh release list --repo $env:GITHUB_REPOSITORY --limit 100 --json tagName | ConvertFrom-Json)
+          if ($LASTEXITCODE -ne 0) { throw "Unable to list existing releases." }
+          if (@($published | Where-Object { $_.tagName -eq $tag }).Count -gt 0) {
             Write-Host "Version $version already published. Skipping."
             "should-publish=false" >> $env:GITHUB_OUTPUT
           } else {

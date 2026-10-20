@@ -214,7 +214,7 @@ namespace OrzioClashReport.Launcher.Infrastructure.Updates
                 }
 
                 File.Move(temporary, installer, overwrite: true);
-                using var started = System.Diagnostics.Process.Start(new ProcessStartInfo(installer) { UseShellExecute = true });
+                using var started = System.Diagnostics.Process.Start(new ProcessStartInfo(installer) { UseShellExecute = false });
                 if (started is null)
                 {
                     throw new InvalidOperationException("Windows did not start the installer.");

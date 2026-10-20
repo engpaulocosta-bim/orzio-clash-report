@@ -9,8 +9,15 @@
 ; their own folders, and are never touched.
 
 #define LauncherName "Orzio Clash Report"
-#define LauncherVersion "0.2.1"
-#define LauncherFullVersion "0.2.1-launcher-preview.1"
+; The version is not written here. scripts/package-launcher.ps1 reads src/LauncherVersion.props and
+; passes /DLauncherVersion=<prefix> and /DLauncherFullVersion=<prefix>-<suffix>, so the installer can
+; never disagree with the application or the release tag.
+#ifndef LauncherVersion
+  #error LauncherVersion is not defined. Build the installer with scripts/package-launcher.ps1.
+#endif
+#ifndef LauncherFullVersion
+  #error LauncherFullVersion is not defined. Build the installer with scripts/package-launcher.ps1.
+#endif
 #define LauncherPublisher "Orzio"
 #define LauncherExeName "OrzioClashReport.Launcher.Desktop.exe"
 

@@ -64,7 +64,8 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             EngineStatusViewModel engineStatus,
             string dataDirectory,
             string launcherVersion,
-            Action<LauncherThemePreference> applyTheme)
+            Action<LauncherThemePreference> applyTheme,
+            UpdatesViewModel updates)
         {
             _settingsStore = settingsStore ?? throw new ArgumentNullException(nameof(settingsStore));
             _diagnosticsBundleBuilder = diagnosticsBundleBuilder
@@ -75,7 +76,11 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             _dataDirectory = dataDirectory ?? throw new ArgumentNullException(nameof(dataDirectory));
             LauncherVersion = launcherVersion ?? throw new ArgumentNullException(nameof(launcherVersion));
             _applyTheme = applyTheme ?? throw new ArgumentNullException(nameof(applyTheme));
+            Updates = updates ?? throw new ArgumentNullException(nameof(updates));
         }
+
+        /// <summary>The user-initiated update flow, shared with the sidebar and the home screen.</summary>
+        public UpdatesViewModel Updates { get; }
 
         public EngineStatusViewModel EngineStatus { get; }
 

@@ -152,7 +152,12 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
 
             ShellViewModel? created = null;
 
-            var home = new HomeViewModel(engineStatus, recentItems, revealer, section => created?.Navigate(section));
+            var updates = new UpdatesViewModel(
+                new FakeDesktopUpdateClient(), new ActiveJobTracker(), new FixedClock(),
+                "0.2.0-launcher-preview.1", _ => { }, () => { });
+
+            var home = new HomeViewModel(
+                engineStatus, recentItems, revealer, section => created?.Navigate(section), updates);
 
             var settings = new SettingsViewModel(
                 new InMemorySettingsStore(),
@@ -162,7 +167,8 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
                 engineStatus,
                 Path.GetTempPath(),
                 "0.2.0-launcher-preview.1",
-                _ => { });
+                _ => { },
+                updates);
 
             var content = new Dictionary<LauncherSection, object>
             {

@@ -1319,6 +1319,14 @@
           </clashresult>
         </clashresults>
       </clashtest>
+      <clashtest name="Synthetic Zero-Result Test" test_type="hard" status="ok" tolerance="0.001" merge_composites="1">
+        <summary total="0" new="0" active="0" reviewed="0" approved="0" resolved="0">
+          <testtype>Hard</testtype>
+          <teststatus>OK</teststatus>
+        </summary>
+        <clashresults>
+        </clashresults>
+      </clashtest>
     </clashtests>
     <selectionsets/>
   </batchtest>

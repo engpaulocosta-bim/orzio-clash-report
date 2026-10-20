@@ -132,7 +132,8 @@ namespace OrzioClashReport.Launcher.Infrastructure.Updates
                 .ConfigureAwait(false);
 
             if (manifest is null || !string.Equals(manifest.Version, bestVersion, StringComparison.Ordinal)
-                || !IsTrustedInstaller(manifest) || !Regex.IsMatch(manifest.Sha256, @"\A[0-9a-fA-F]{64}\z"))
+                || !IsTrustedInstaller(manifest) || string.IsNullOrWhiteSpace(manifest.Sha256)
+                || !Regex.IsMatch(manifest.Sha256, @"\A[0-9a-fA-F]{64}\z"))
             {
                 throw new InvalidDataException($"Release {bestTag} has an invalid update manifest.");
             }
@@ -213,7 +214,7 @@ namespace OrzioClashReport.Launcher.Infrastructure.Updates
                 }
 
                 File.Move(temporary, installer, overwrite: true);
-                Process.Start(new ProcessStartInfo(installer) { UseShellExecute = true })
+                System.Diagnostics.Process.Start(new ProcessStartInfo(installer) { UseShellExecute = true })
                     ?? throw new InvalidOperationException("Windows did not start the installer.");
                 return installer;
             }

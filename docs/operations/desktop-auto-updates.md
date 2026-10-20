@@ -11,19 +11,24 @@ The desktop updater ignores engine/CLI releases. It searches for a newer desktop
 
 ## Publishing
 
-Every push to master checks the desktop version. A new desktop release is produced only when the versioned release does not already exist, after successful restore/build/tests, publish and Inno Setup packaging. An existing tag without a release is treated as an error, not silently replaced. Workflow dispatch on master can retry a failed release, but cannot overwrite a published version.
+Every push to master runs a fast plan job that reads the desktop version. A new desktop release is produced only when that versioned release does not already exist, after successful restore/build/tests, publish and Inno Setup packaging on Windows. An existing tag without a release is treated as an error, not silently replaced. Workflow dispatch on master can retry a failed release, but cannot overwrite a published version.
 
-On any desired desktop update, advance the launcher version consistently in:
+The desktop version has a single source, src/LauncherVersion.props:
 
-1. src/OrzioClashReport.Launcher.Desktop/OrzioClashReport.Launcher.Desktop.csproj: VersionPrefix / VersionSuffix.
-2. src/OrzioClashReport.Launcher.Application/LauncherBuildInfo.cs: LauncherVersion.
-3. installer/windows/OrzioClashReportLauncher.iss: LauncherVersion (numeric) and LauncherFullVersion.
+```xml
+<LauncherVersionPrefix>0.2.1</LauncherVersionPrefix>
+<LauncherVersionSuffix>launcher-preview.1</LauncherVersionSuffix>
+```
 
-The release workflow rejects mismatches. For example, version 0.2.1-launcher-preview.1 yields tag desktop-v0.2.1-launcher-preview.1 and installer:
+The desktop and launcher-application projects import it, LauncherBuildInfo reads it from the assembly, scripts/package-launcher.ps1 passes it to Inno Setup (/DLauncherVersion and /DLauncherFullVersion), and the workflow reads it through scripts/get-launcher-version.ps1. No other file carries the version; DesktopVersionContractTests fails if one does.
+
+To ship a desktop update: raise LauncherVersionSuffix (for example launcher-preview.1 to launcher-preview.2) or LauncherVersionPrefix in that file, in the same pull request as the change, and merge it to master. Version 0.2.1-launcher-preview.1 yields tag desktop-v0.2.1-launcher-preview.1 and installer:
 
 orzio-clash-report-desktop-v0.2.1-launcher-preview.1-win-x64-setup.exe
 
-Do not reuse an existing version for changed published bytes. Bump the numeric version for a new installer upgrade. Changes in master without a version bump run CI but do not create additional releases.
+On every pull request the plan job writes a summary with the tag a merge would publish. When a pull request changes shipped files (src/, installer/, scripts/) but the version is already published, it emits a warning: merging it will not create a release until the version is raised.
+
+Do not reuse an existing version for changed published bytes. Changes in master without a version bump run CI but do not create additional releases.
 
 When the workflow runs successfully, the release contains:
 
@@ -35,11 +40,11 @@ The workflow makes preview versions GitHub prereleases. All release assets stay 
 
 ## How the application checks and installs
 
-The user opens Settings and clicks "Procurar atualizações." Only then the application makes network requests to the official public GitHub Releases API. It selects the highest applicable desktop-v version, compares it against LauncherBuildInfo, and retrieves the published manifest from that same release.
+The user clicks "Procurar atualizações", available in the sidebar footer and in Definições. Only then the application makes network requests to the official public GitHub Releases API. It selects the highest applicable desktop-v version, compares it against LauncherBuildInfo.LauncherVersion, and retrieves the published manifest from that same release. When a newer version exists, the sidebar and the home screen show it; nothing is downloaded yet.
 
 Before offering the update, the application checks that the manifest version matches the release and that the installer URL points to the exact expected asset path in engpaulocosta-bim/orzio-clash-report. The manifest must contain a 64-digit hexadecimal SHA-256.
 
-The user must explicitly choose "Instalar atualização" in a confirmation window. The application then downloads the installer to the user's local Orzio update directory, enforces a 250 MiB maximum, checks SHA-256 and opens the normal Inno Setup wizard. A hash mismatch prevents execution. The installer targets the existing application identity and preserves local user project files, reports and exports. Its normal close-applications prompt is enabled; finish any active processing before accepting the upgrade.
+The user must explicitly choose "Instalar atualização" in Definições, which also links to the release notes. The button is disabled while an engine job is running. The application then downloads the installer to the user's local Orzio update directory with visible progress, enforces a 250 MiB maximum, checks SHA-256 and starts the normal Inno Setup wizard directly (no shell intermediary). A hash mismatch prevents execution. Once the verified installer has started, the application closes itself so the installer can replace its files. The installer targets the existing application identity and preserves local user project files, reports and exports.
 
 Internet connectivity is not required for any normal reporting operation. Update errors are shown in Settings. No files from the user's projects or reports are sent to GitHub.
 

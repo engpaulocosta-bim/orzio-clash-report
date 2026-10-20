@@ -725,9 +725,10 @@ by parsing and grouping tests. See [samples/README.md](samples/README.md).
   integration tests that drive a real child process through success, failure, timeout,
   cancellation, oversized output and undecodable output.
 - **Desktop launcher, installed and run on Windows**: not yet. The Inno Setup script and
-  the publish, package and smoke scripts exist and are covered by contract tests, but the
-  installer has not been compiled or executed, and `scripts/smoke-launcher.ps1` has not
-  been run on a clean machine.
+  the publish, package and smoke scripts exist and are covered by contract tests. The
+  installer is compiled and checksum-verified by Windows GitHub Actions; actual installation,
+  in-place upgrade, and `scripts/smoke-launcher.ps1` on a clean Windows machine are still
+  pending human validation.
 
 ## CI
 

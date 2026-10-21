@@ -504,16 +504,40 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
-        public void Assemble_EmptyDocument_WithDeclaredExecutedTest_ProducesEmptyRun()
+        public void Assemble_EmptyDocument_WithDeclaredExecutedTest_FailsBecauseTheTestIsAbsentFromTheExport()
         {
             var document = MakeDocument();
+            var manifest = MakeManifest("run-1", new[] { Sigma, Alfa }, StandardTest);
+
+            var ex = Assert.Throws<CoordinationRunAssemblyException>(() => Assembler.Assemble(document, manifest));
+
+            Assert.Contains("run-1", ex.Message);
+            Assert.Contains("'Test 1'", ex.Message);
+            Assert.Contains("absent from the export", ex.Message);
+        }
+
+        [Fact]
+        public void Assemble_DeclaredTestMissingWhileAnotherTestIsExported_Fails()
+        {
+            var other = TestFor("Other Test", Sigma, Alfa);
+            var document = MakeDocument(MakeBatch("Other Test"));
+            var manifest = MakeManifest("run-1", new[] { Sigma, Alfa }, StandardTest, other);
+
+            var ex = Assert.Throws<CoordinationRunAssemblyException>(() => Assembler.Assemble(document, manifest));
+
+            Assert.Contains("'Test 1'", ex.Message);
+            Assert.DoesNotContain("'Other Test'", ex.Message);
+        }
+
+        [Fact]
+        public void Assemble_DeclaredTestPresenceIsCaseInsensitive()
+        {
+            var document = MakeDocument(MakeBatch("TEST 1"));
             var manifest = MakeManifest("run-1", new[] { Sigma, Alfa }, StandardTest);
 
             var run = Assembler.Assemble(document, manifest);
 
             Assert.Empty(run.Occurrences);
-            Assert.Same(manifest, run.Manifest);
-            Assert.Single(run.ExecutedClashTests);
         }
 
         [Fact]

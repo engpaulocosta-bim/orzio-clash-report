@@ -15,8 +15,9 @@ namespace OrzioClashReport.Core.Assembly
     /// zero matching manifest models, or more than one distinct matching manifest model are all assembly
     /// failures; there is no first-match fallback. Batch and clash order are preserved flat
     /// (batch-major, clash-minor), duplicates are preserved as separate occurrences, and A/B sides are never
-    /// swapped. <see cref="CoordinationRun"/> remains the final authority for executed-clash-test coverage;
-    /// this type does not duplicate that rule.
+    /// swapped. Every declared executed clash test must also be present as a batch in the export, so a
+    /// declaration can never stand in for results that were not exported. <see cref="CoordinationRun"/>
+    /// remains the final authority for occurrence-to-test coverage; this type does not duplicate that rule.
     /// </summary>
     public sealed class ExactSourceModelCoordinationRunAssembler : ICoordinationRunAssembler
     {
@@ -63,6 +64,8 @@ namespace OrzioClashReport.Core.Assembly
                 }
             }
 
+            RequireDeclaredTestsPresentInExport(document, manifest);
+
             try
             {
                 return new CoordinationRun(manifest, occurrences);
@@ -72,6 +75,45 @@ namespace OrzioClashReport.Core.Assembly
                 throw new CoordinationRunAssemblyException(
                     $"Failed to assemble coordination run '{manifest.RunId}': {ex.Message}",
                     ex);
+            }
+        }
+
+        /// <summary>
+        /// Every clash test the manifest declares as executed must appear as a batch in the export. The
+        /// manifest proves that a test ran; the export is the only evidence of what that run returned. A
+        /// declared test that is absent from the export (a partial export, a renamed test, or a structure
+        /// the reader did not recognise) carries no result at all, and treating it as "ran and returned
+        /// zero clashes" would let lifecycle classification report every previous occurrence of that test
+        /// as resolved. A present batch with no results is still valid zero-result coverage.
+        /// </summary>
+        private static void RequireDeclaredTestsPresentInExport(ClashReportDocument document, RunManifest manifest)
+        {
+            var exportedTestNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var batch in document.Batches)
+            {
+                if (!string.IsNullOrWhiteSpace(batch.Name))
+                {
+                    exportedTestNames.Add(batch.Name!);
+                }
+            }
+
+            var missing = new List<string>();
+            var reported = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var executedTest in manifest.ExecutedClashTests)
+            {
+                if (!exportedTestNames.Contains(executedTest.Name) && reported.Add(executedTest.Name))
+                {
+                    missing.Add(executedTest.Name);
+                }
+            }
+
+            if (missing.Count > 0)
+            {
+                throw new CoordinationRunAssemblyException(
+                    $"Run '{manifest.RunId}' declares executed clash test(s) that are absent from the export: "
+                    + $"'{string.Join("', '", missing)}'. A declared test must be present in the XML export, "
+                    + "with an empty result list when it returned zero clashes; otherwise its coverage cannot be "
+                    + "proven and earlier occurrences could be misreported as resolved.");
             }
         }
 

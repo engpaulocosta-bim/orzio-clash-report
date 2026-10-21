@@ -419,6 +419,42 @@ namespace OrzioClashReport.Tests
             Assert.Contains("no manifest model matched SourceFileName or SourceFilePath", result.StdErr);
         }
 
+        [Fact]
+        public void Main_CompareMode_CurrentExportWithoutDeclaredTest_FailsInsteadOfReportingResolved()
+        {
+            string tempDirectory = CreateTempDirectory();
+            string currentXmlPath = Path.Combine(tempDirectory, "current-without-tests.xml");
+
+            try
+            {
+                var export = System.Xml.Linq.XDocument.Load(SampleClashXmlPath);
+                foreach (var clashTests in System.Xml.Linq.Extensions.Elements(export.Root!.Elements("batchtest"), "clashtests"))
+                {
+                    clashTests.RemoveNodes();
+                }
+
+                export.Save(currentXmlPath);
+
+                var result = InvokeMain(
+                    "compare",
+                    "--previous-xml", SampleClashXmlPath,
+                    "--previous-manifest", SampleClashManifestPath,
+                    "--current-xml", currentXmlPath,
+                    "--current-manifest", SampleClashManifestPath);
+
+                Assert.Equal(1, result.ExitCode);
+                Assert.DoesNotContain("Resolved:", result.StdOut);
+                Assert.Contains("Failed to compare runs:", result.StdErr);
+                Assert.Contains("absent from the export", result.StdErr);
+                Assert.Contains("'Teste 01'", result.StdErr);
+            }
+            finally
+            {
+                DeleteFileIfExists(currentXmlPath);
+                DeleteDirectoryIfExists(tempDirectory);
+            }
+        }
+
         private static MethodInfo ResolveMainMethod()
         {
             var programType = typeof(ConsoleAppLog).Assembly.GetType("OrzioClashReport.Cli.Program", throwOnError: true)!;

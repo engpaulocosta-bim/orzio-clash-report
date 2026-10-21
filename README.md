@@ -743,12 +743,14 @@ Tag-triggered runs for matching `v*` tags verify that the tag matches `orzioclas
 --version`, verify that the tagged commit belongs to `origin/master`, package the ZIP and
 checksum, and create a prerelease without overwriting an existing release.
 
-The desktop launcher has a **separate release channel**. After a new launcher version is merged
-into master, .github/workflows/desktop-release.yml builds/tests the Windows installer and
-publishes a versioned desktop-v* GitHub prerelease with its SHA-256 and update manifest.
-The Settings page offers "Procurar atualizações"; only an explicit user request contacts the
-public GitHub Releases API, and downloads are verified before the normal Inno Setup wizard
-is launched. This does not change the existing CLI preview release procedure. See
+The desktop launcher has a **separate release channel**. Its version lives only in
+`src/LauncherVersion.props`. After a raised launcher version is merged into master,
+.github/workflows/desktop-release.yml builds/tests the Windows installer and publishes a
+versioned desktop-v* GitHub prerelease with its SHA-256 and update manifest; on pull requests
+the same workflow only reports the tag a merge would publish.
+"Procurar atualizações" (sidebar footer and Definições) is the only thing that contacts the
+public GitHub Releases API; "Instalar atualização" downloads the installer, verifies its
+SHA-256, starts the normal Inno Setup wizard and closes the application. This does not change the existing CLI preview release procedure. See
 [desktop update operations](docs/operations/desktop-auto-updates.md). Real Windows
 upgrade acceptance is still required before broader distribution.
 

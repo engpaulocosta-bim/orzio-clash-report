@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using OrzioClashReport.Launcher.Application.Localization;
 
 namespace OrzioClashReport.Launcher.Desktop.Platform
 {
@@ -101,56 +102,56 @@ namespace OrzioClashReport.Launcher.Desktop.Platform
 
         private static IReadOnlyList<FilePickerFileType> FiltersFor(FilePickerFileKind kind)
         {
-            var all = new FilePickerFileType("Todos os ficheiros") { Patterns = new[] { "*" } };
+            var all = new FilePickerFileType(Loc.T("picker.filter.all")) { Patterns = new[] { "*" } };
 
             switch (kind)
             {
                 case FilePickerFileKind.NavisworksClashXml:
                     return new[]
                     {
-                        new FilePickerFileType("Export XML do Clash Detective") { Patterns = new[] { "*.xml" } },
+                        new FilePickerFileType(Loc.T("picker.filter.clashXml")) { Patterns = new[] { "*.xml" } },
                         all,
                     };
 
                 case FilePickerFileKind.HtmlReport:
                     return new[]
                     {
-                        new FilePickerFileType("Relatório HTML") { Patterns = new[] { "*.html" } },
+                        new FilePickerFileType(Loc.T("picker.filter.htmlReport")) { Patterns = new[] { "*.html" } },
                         all,
                     };
 
                 case FilePickerFileKind.RunManifestJson:
                     return new[]
                     {
-                        new FilePickerFileType("Run manifest JSON") { Patterns = new[] { "*.json" } },
+                        new FilePickerFileType(Loc.T("picker.filter.runManifest")) { Patterns = new[] { "*.json" } },
                         all,
                     };
 
                 case FilePickerFileKind.RunSnapshotJson:
                     return new[]
                     {
-                        new FilePickerFileType("Run snapshot JSON") { Patterns = new[] { "*.json" } },
+                        new FilePickerFileType(Loc.T("picker.filter.runSnapshot")) { Patterns = new[] { "*.json" } },
                         all,
                     };
 
                 case FilePickerFileKind.RunIndexJson:
                     return new[]
                     {
-                        new FilePickerFileType("Run index JSON") { Patterns = new[] { "*.json" } },
+                        new FilePickerFileType(Loc.T("picker.filter.runIndex")) { Patterns = new[] { "*.json" } },
                         all,
                     };
 
                 case FilePickerFileKind.ProjectCatalogJson:
                     return new[]
                     {
-                        new FilePickerFileType("Catálogo de projeto JSON") { Patterns = new[] { "*.json" } },
+                        new FilePickerFileType(Loc.T("picker.filter.projectCatalog")) { Patterns = new[] { "*.json" } },
                         all,
                     };
 
                 case FilePickerFileKind.IdentityGovernanceJson:
                     return new[]
                     {
-                        new FilePickerFileType("Governança de identidade JSON") { Patterns = new[] { "*.json" } },
+                        new FilePickerFileType(Loc.T("picker.filter.identityGovernance")) { Patterns = new[] { "*.json" } },
                         all,
                     };
 

@@ -109,7 +109,7 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
             Assert.True(tracker.TryAcquire());
         }
 
-        private static IReadOnlyList<OperationFormViewModel> AllForms()
+        internal static IReadOnlyList<OperationFormViewModel> AllForms()
         {
             var engineStatus = new EngineStatusViewModel();
             var dialogs = new NullFileDialogService();
@@ -138,7 +138,7 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
                 new EngineIntegrityResult(EngineIntegrityVerdict.Verified, "abc", "abc"),
                 "Motor verificado.");
 
-        private static JobViewModel CreateJob()
+        internal static JobViewModel CreateJob()
         {
             var executor = new LauncherOperationExecutor(
                 new UnusedEngineGateway(),
@@ -153,7 +153,7 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
             return new JobViewModel(executor, new NullOutputRevealer(), new ActiveJobTracker());
         }
 
-        private sealed class NullFileDialogService : IFileDialogService
+        internal sealed class NullFileDialogService : IFileDialogService
         {
             public Task<string?> PickOpenFileAsync(string title, FilePickerFileKind kind, string? startDirectory) =>
                 Task.FromResult<string?>(null);

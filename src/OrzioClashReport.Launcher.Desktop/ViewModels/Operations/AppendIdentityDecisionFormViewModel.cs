@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using OrzioClashReport.Launcher.Application.Engine;
+using OrzioClashReport.Launcher.Application.Localization;
 using OrzioClashReport.Launcher.Application.Operations;
 using OrzioClashReport.Launcher.Application.Presentation;
 using OrzioClashReport.Launcher.Contracts.Operations;
@@ -31,67 +32,67 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
             JobViewModel job, EngineStatusViewModel engineStatus, IFileDialogService dialogs)
             : base(
                 LauncherOperationKind.AppendIdentityDecision,
-                "Registar decisão",
-                "Regista uma decisão humana explícita sobre duas ocorrências. Nenhuma sugestão do algoritmo se torna decisão sozinha.",
+                "op.appendDecision.title",
+                "op.appendDecision.description",
                 job,
                 engineStatus)
         {
             _governance = new PathFieldViewModel(
-                "Documento de governança", "O identity-governance.json onde a decisão será acrescentada.",
+                "op.appendDecision.governance.label", "op.appendDecision.governance.description",
                 dialogs, FilePickerFileKind.IdentityGovernanceJson, onChanged: NotifyFieldsChanged);
 
             _decisionId = new TextFieldViewModel(
-                "Identificador da decisão", "O seu identificador para esta decisão.", "d-001", NotifyFieldsChanged);
+                "op.appendDecision.decisionId.label", "op.appendDecision.decisionId.description", "d-001", NotifyFieldsChanged);
 
             _kind = new ChoiceFieldViewModel(
-                "Decisão",
-                "Confirmar regista que são o mesmo clash. Rejeitar regista que não são.",
+                "op.appendDecision.kind.label",
+                "op.appendDecision.kind.description",
                 Enum.GetValues<IdentityDecisionKind>()
                     .Select(kind => IdentityDecisionPresentation.For(kind))
                     .Select(presentation => new ChoiceOptionViewModel(
                         presentation.CanonicalValue,
-                        presentation.Label,
+                        () => presentation.Label,
                         presentation.Glyph,
-                        presentation.Description,
+                        () => presentation.Description,
                         presentation.Severity))
                     .ToList(),
                 OnKindChanged);
 
             _leftRunId = new TextFieldViewModel(
-                "Run id (esquerda)", "O run da primeira ocorrência.", "run-001", NotifyFieldsChanged);
+                "op.appendDecision.leftRun.label", "op.appendDecision.leftRun.description", "run-001", NotifyFieldsChanged);
 
             _leftOccurrenceIndex = new TextFieldViewModel(
-                "Índice da ocorrência (esquerda)",
-                "Zero-based: a primeira ocorrência do run é 0.",
+                "op.appendDecision.leftIndex.label",
+                "op.appendDecision.occurrenceIndex.description",
                 "0",
                 NotifyFieldsChanged,
                 validate: ValidateOccurrenceIndex);
 
             _rightRunId = new TextFieldViewModel(
-                "Run id (direita)", "O run da segunda ocorrência.", "run-002", NotifyFieldsChanged);
+                "op.appendDecision.rightRun.label", "op.appendDecision.rightRun.description", "run-002", NotifyFieldsChanged);
 
             _rightOccurrenceIndex = new TextFieldViewModel(
-                "Índice da ocorrência (direita)",
-                "Zero-based: a primeira ocorrência do run é 0.",
+                "op.appendDecision.rightIndex.label",
+                "op.appendDecision.occurrenceIndex.description",
                 "0",
                 NotifyFieldsChanged,
                 validate: ValidateOccurrenceIndex);
 
             _reviewerAlias = new TextFieldViewModel(
-                "Alias do revisor",
-                "Um alias basta. Não é pedido nome real, email nem login.",
-                "coordenador-a",
-                NotifyFieldsChanged);
+                "op.appendDecision.alias.label",
+                "op.appendDecision.alias.description",
+                watermarkKey: "op.appendDecision.alias.example",
+                onChanged: NotifyFieldsChanged);
 
             _persistentIdentityId = new TextFieldViewModel(
-                "Identificador persistente",
-                "Obrigatório apenas numa confirmação. Uma rejeição nunca o transporta.",
+                "op.appendDecision.persistentId.label",
+                "op.appendDecision.persistentId.description",
                 "clash-042",
                 NotifyFieldsChanged,
                 isOptional: true);
 
             _reason = new TextFieldViewModel(
-                "Motivo", "Opcional. Fica registado tal como o escrever.", string.Empty,
+                "op.appendDecision.reason.label", "op.appendDecision.reason.description", string.Empty,
                 NotifyFieldsChanged, isOptional: true);
 
             RegisterField(_governance);
@@ -105,8 +106,8 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
             RegisterField(_persistentIdentityId);
             RegisterField(_reason);
 
-            Notes.Add("Uma confiança 'High' do algoritmo não é uma confirmação humana. A decisão é sempre sua.");
-            Notes.Add("A existência dos runs e das ocorrências é verificada pelo motor, não por esta janela.");
+            AddNote("op.appendDecision.note.1");
+            AddNote("op.appendDecision.note.2");
         }
 
         /// <summary>There is no destination: the engine replaces the governance file it already owns.</summary>
@@ -135,16 +136,16 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
         protected override LauncherOperationRequest BuildRequest(OutputCollisionDecision decision)
         {
             IdentityDecisionKind kind = SelectedKind()
-                ?? throw new ArgumentException("Escolha confirmar ou rejeitar antes de registar a decisão.");
+                ?? throw new ArgumentException("op.appendDecision.error.chooseKind");
 
             if (!IdentityDecisionDraft.TryParseOccurrenceIndex(_leftOccurrenceIndex.Value, out int left))
             {
-                throw new ArgumentException("O índice de ocorrência da esquerda tem de ser um inteiro maior ou igual a zero.");
+                throw new ArgumentException(Loc.T("op.appendDecision.error.leftIndex"));
             }
 
             if (!IdentityDecisionDraft.TryParseOccurrenceIndex(_rightOccurrenceIndex.Value, out int right))
             {
-                throw new ArgumentException("O índice de ocorrência da direita tem de ser um inteiro maior ou igual a zero.");
+                throw new ArgumentException(Loc.T("op.appendDecision.error.rightIndex"));
             }
 
             var draft = new IdentityDecisionDraft(
@@ -193,6 +194,6 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
         private static string? ValidateOccurrenceIndex(string value) =>
             IdentityDecisionDraft.TryParseOccurrenceIndex(value, out _)
                 ? null
-                : "Tem de ser um inteiro maior ou igual a zero.";
+                : Loc.T("op.appendDecision.validation.occurrenceIndex");
     }
 }

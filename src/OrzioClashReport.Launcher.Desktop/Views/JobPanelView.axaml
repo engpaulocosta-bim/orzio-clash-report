@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:OrzioClashReport.Launcher.Desktop.Localization"
              xmlns:vm="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels"
              x:Class="OrzioClashReport.Launcher.Desktop.Views.JobPanelView"
              x:DataType="vm:JobViewModel">
@@ -26,7 +27,7 @@
           </ItemsControl>
         </ScrollViewer>
 
-        <Button Content="Cancelar" HorizontalAlignment="Left" Command="{Binding CancelCommand}" />
+        <Button Content="{loc:Loc job.cancel}" HorizontalAlignment="Left" Command="{Binding CancelCommand}" />
       </StackPanel>
     </Border>
 
@@ -53,10 +54,10 @@
             <Button Classes="primary" Command="{Binding OpenArtifactCommand}">
               <StackPanel Orientation="Horizontal" Classes="stack-sm">
                 <PathIcon Classes="small" Data="{DynamicResource OrzioIconOpenExternal}" />
-                <TextBlock Text="Abrir" />
+                <TextBlock Text="{loc:Loc common.open}" />
               </StackPanel>
             </Button>
-            <Button Content="Mostrar na pasta" Command="{Binding RevealArtifactCommand}" />
+            <Button Content="{loc:Loc common.revealInFolder}" Command="{Binding RevealArtifactCommand}" />
           </StackPanel>
         </StackPanel>
 
@@ -78,7 +79,7 @@
           </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <Expander Header="Saída do motor" IsVisible="{Binding HasEngineOutput}">
+        <Expander Header="{loc:Loc job.engineOutput}" IsVisible="{Binding HasEngineOutput}">
           <ScrollViewer MaxHeight="{DynamicResource OrzioEngineOutputMaxHeight}">
             <SelectableTextBlock Classes="monospace" Text="{Binding EngineOutput}" />
           </ScrollViewer>

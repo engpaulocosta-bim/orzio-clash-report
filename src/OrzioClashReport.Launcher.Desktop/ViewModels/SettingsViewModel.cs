@@ -1,23 +1,32 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using OrzioClashReport.Launcher.Application.Localization;
 using OrzioClashReport.Launcher.Contracts.Diagnostics;
 using OrzioClashReport.Launcher.Contracts.Engine;
 using OrzioClashReport.Launcher.Contracts.Platform;
 using OrzioClashReport.Launcher.Contracts.Settings;
+using OrzioClashReport.Launcher.Desktop.Localization;
 
 namespace OrzioClashReport.Launcher.Desktop.ViewModels
 {
     /// <summary>
-    /// Definições: appearance, where local data lives, what the engine is, and what the application
-    /// deliberately does not do.
+    /// Definições: language and appearance, where local data lives, what the engine is, and what the
+    /// application deliberately does not do.
     /// </summary>
-    public sealed partial class SettingsViewModel : ObservableObject
+    /// <remarks>
+    /// Sentences are held as keys and read in the active language. Choosing a language applies it at once
+    /// and stores the preference; loading the stored preference at startup applies it without writing the
+    /// settings file back.
+    /// </remarks>
+    public sealed partial class SettingsViewModel : LocalizedObservableObject
     {
         private readonly ISettingsStore _settingsStore;
         private readonly IRecentItemsStore _recentItemsStore;
@@ -31,21 +40,21 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         private bool _isLoading;
         private EngineInfo? _engine;
         private string? _lastBundlePath;
+        private EngineIntegrityVerdict? _integrityVerdict;
+        private string _statusKey = string.Empty;
+        private object?[] _statusArguments = Array.Empty<object?>();
 
         [ObservableProperty]
         private LauncherThemePreference _theme = LauncherThemePreference.System;
+
+        [ObservableProperty]
+        private LauncherLanguagePreference _language = LauncherLanguagePreference.System;
 
         [ObservableProperty]
         private bool _showExperimentalWarnings = true;
 
         [ObservableProperty]
         private string _engineVersion = string.Empty;
-
-        [ObservableProperty]
-        private string _engineIntegrity = string.Empty;
-
-        [ObservableProperty]
-        private string _statusMessage = string.Empty;
 
         [ObservableProperty]
         private string _redactedLogPreview = string.Empty;
@@ -89,12 +98,62 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         /// <summary>Shown so a user can find their own data; it is inside their profile, never in the installation.</summary>
         public string DataDirectory => _dataDirectory;
 
-        public IReadOnlyList<LauncherThemePreference> Themes { get; } = new[]
+        /// <summary>What the engine's integrity check concluded, in the active language.</summary>
+        public string EngineIntegrity => _integrityVerdict switch
         {
-            LauncherThemePreference.System,
-            LauncherThemePreference.Light,
-            LauncherThemePreference.Dark,
+            EngineIntegrityVerdict.Verified => Loc.T("settings.integrity.verified"),
+            EngineIntegrityVerdict.Mismatch => Loc.T("settings.integrity.mismatch"),
+            EngineIntegrityVerdict.ManifestUnavailable => Loc.T("settings.integrity.manifestUnavailable"),
+            _ => Loc.T("settings.integrity.notChecked"),
         };
+
+        /// <summary>A short message about the last thing the user did here, in the active language.</summary>
+        public string StatusMessage => _statusKey.Length == 0 ? string.Empty : Loc.T(_statusKey, _statusArguments);
+
+        public IReadOnlyList<LocalizedOption<LauncherThemePreference>> ThemeOptions { get; } = new[]
+        {
+            new LocalizedOption<LauncherThemePreference>(LauncherThemePreference.System, "settings.theme.system"),
+            new LocalizedOption<LauncherThemePreference>(LauncherThemePreference.Light, "settings.theme.light"),
+            new LocalizedOption<LauncherThemePreference>(LauncherThemePreference.Dark, "settings.theme.dark"),
+        };
+
+        public IReadOnlyList<LocalizedOption<LauncherLanguagePreference>> LanguageOptions { get; } = new[]
+        {
+            new LocalizedOption<LauncherLanguagePreference>(LauncherLanguagePreference.System, "settings.language.system"),
+            new LocalizedOption<LauncherLanguagePreference>(LauncherLanguagePreference.Portuguese, "settings.language.portuguese"),
+            new LocalizedOption<LauncherLanguagePreference>(LauncherLanguagePreference.English, "settings.language.english"),
+        };
+
+        public LocalizedOption<LauncherThemePreference> SelectedThemeOption
+        {
+            get => ThemeOptions.First(option => option.Value == Theme);
+            set
+            {
+                if (value != null)
+                {
+                    Theme = value.Value;
+                }
+            }
+        }
+
+        public LocalizedOption<LauncherLanguagePreference> SelectedLanguageOption
+        {
+            get => LanguageOptions.First(option => option.Value == Language);
+            set
+            {
+                if (value != null)
+                {
+                    Language = value.Value;
+                }
+            }
+        }
+
+        private void SetStatus(string key, params object?[] arguments)
+        {
+            _statusKey = key;
+            _statusArguments = arguments;
+            OnPropertyChanged(nameof(StatusMessage));
+        }
 
         public async Task LoadAsync(CancellationToken cancellationToken)
         {
@@ -104,6 +163,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             try
             {
                 Theme = settings.Theme;
+                Language = settings.Language;
                 ShowExperimentalWarnings = settings.ShowExperimentalWarnings;
             }
             finally
@@ -114,36 +174,26 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             // Applied explicitly rather than through the change handler: loading must restore the
             // stored theme without writing the settings file back on every start.
             _applyTheme(settings.Theme);
+            ApplyLanguage(settings.Language);
         }
 
         /// <summary>What a diagnostic bundle would contain, shown before anything is written.</summary>
-        public ObservableCollection<DiagnosticBundleItem> DiagnosticPlan { get; } =
-            new ObservableCollection<DiagnosticBundleItem>();
+        public ObservableCollection<DiagnosticItemViewModel> DiagnosticPlan { get; } =
+            new ObservableCollection<DiagnosticItemViewModel>();
 
         public void UpdateEngine(EngineInfo info)
         {
             _engine = info;
             EngineVersion = info.ReportedVersion ?? "—";
 
-            switch (info.Integrity.Verdict)
-            {
-                case EngineIntegrityVerdict.Verified:
-                    EngineIntegrity = "SHA-256 verificado contra o manifesto instalado.";
-                    break;
-                case EngineIntegrityVerdict.Mismatch:
-                    EngineIntegrity = "SHA-256 diferente do manifesto instalado.";
-                    break;
-                case EngineIntegrityVerdict.ManifestUnavailable:
-                    EngineIntegrity = "Manifesto do motor indisponível: integridade não verificada.";
-                    break;
-                default:
-                    EngineIntegrity = "Integridade ainda não verificada.";
-                    break;
-            }
+            _integrityVerdict = info.Integrity.Verdict;
+            OnPropertyChanged(nameof(EngineIntegrity));
         }
 
         partial void OnThemeChanged(LauncherThemePreference value)
         {
+            OnPropertyChanged(nameof(SelectedThemeOption));
+
             if (_isLoading)
             {
                 return;
@@ -152,6 +202,27 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             _applyTheme(value);
             _ = PersistAsync();
         }
+
+        partial void OnLanguageChanged(LauncherLanguagePreference value)
+        {
+            OnPropertyChanged(nameof(SelectedLanguageOption));
+
+            if (_isLoading)
+            {
+                return;
+            }
+
+            ApplyLanguage(value);
+            _ = PersistAsync();
+        }
+
+        /// <summary>
+        /// Turns the stored preference into a concrete language and makes it the active one. "System"
+        /// follows the operating system's display language, read now so a changed system language is
+        /// picked up the next time the application starts.
+        /// </summary>
+        private static void ApplyLanguage(LauncherLanguagePreference preference) =>
+            Loc.Language = Loc.Resolve(preference, CultureInfo.CurrentUICulture);
 
         partial void OnShowExperimentalWarningsChanged(bool value)
         {
@@ -173,7 +244,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         private async Task ClearRecentOutputsAsync()
         {
             await _recentItemsStore.ClearAsync(CancellationToken.None).ConfigureAwait(true);
-            StatusMessage = "Lista de relatórios recentes limpa. Nenhum ficheiro foi apagado.";
+            SetStatus("settings.data.recentCleared");
         }
 
         /// <summary>
@@ -186,7 +257,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             DiagnosticPlan.Clear();
             foreach (DiagnosticBundleItem item in _diagnosticsBundleBuilder.Plan())
             {
-                DiagnosticPlan.Add(item);
+                DiagnosticPlan.Add(new DiagnosticItemViewModel(item));
             }
 
             RedactedLogPreview = await _diagnosticsBundleBuilder
@@ -195,7 +266,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
             HasDiagnosticsPreview = true;
             CanRevealDiagnosticsBundle = false;
-            StatusMessage = string.Empty;
+            SetStatus(string.Empty);
         }
 
         [RelayCommand]
@@ -203,7 +274,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         {
             if (_engine == null)
             {
-                StatusMessage = "Espere que a verificação do motor termine antes de gerar o diagnóstico.";
+                SetStatus("settings.diagnostics.waitForEngine");
                 return;
             }
 
@@ -214,15 +285,15 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
                     .ConfigureAwait(true);
 
                 CanRevealDiagnosticsBundle = true;
-                StatusMessage = "Pacote de diagnóstico criado em " + Path.GetFileName(_lastBundlePath) + ".";
+                SetStatus("settings.diagnostics.created", Path.GetFileName(_lastBundlePath));
             }
             catch (IOException exception)
             {
-                StatusMessage = "Não foi possível criar o pacote de diagnóstico: " + exception.Message;
+                SetStatus("settings.diagnostics.failed", exception.Message);
             }
             catch (UnauthorizedAccessException)
             {
-                StatusMessage = "Não foi possível criar o pacote de diagnóstico: sem permissão de escrita.";
+                SetStatus("settings.diagnostics.noPermission");
             }
         }
 
@@ -242,9 +313,39 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
             LauncherSettings updated = current
                 .WithTheme(Theme)
+                .WithLanguage(Language)
                 .WithShowExperimentalWarnings(ShowExperimentalWarnings);
 
             await _settingsStore.SaveAsync(updated, CancellationToken.None).ConfigureAwait(true);
+        }
+    }
+
+    /// <summary>
+    /// One file a diagnostic bundle may contain. The name is fixed; the description is looked up by that
+    /// name, because the allow-list is closed and every entry has a translation.
+    /// </summary>
+    public sealed class DiagnosticItemViewModel : LocalizedObservableObject
+    {
+        private readonly DiagnosticBundleItem _item;
+
+        public DiagnosticItemViewModel(DiagnosticBundleItem item)
+        {
+            _item = item ?? throw new ArgumentNullException(nameof(item));
+        }
+
+        public string FileName => _item.FileName;
+
+        /// <summary>
+        /// The description in the active language. Falls back to the contract's own text if an entry were
+        /// ever added to the allow-list without a translation; a test makes that impossible to merge.
+        /// </summary>
+        public string Description
+        {
+            get
+            {
+                string key = "diagnostics.item." + _item.FileName;
+                return Loc.IsDefined(key) ? Loc.T(key) : _item.Description;
+            }
         }
     }
 }

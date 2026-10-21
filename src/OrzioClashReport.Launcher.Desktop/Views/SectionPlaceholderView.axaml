@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:OrzioClashReport.Launcher.Desktop.Localization"
              xmlns:vm="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels"
              x:Class="OrzioClashReport.Launcher.Desktop.Views.SectionPlaceholderView"
              x:DataType="vm:SectionPlaceholderViewModel">
@@ -14,9 +15,9 @@
 
       <Border Classes="card">
         <StackPanel Classes="stack-md">
-          <TextBlock Classes="title" Text="Operações desta secção" />
+          <TextBlock Classes="title" Text="{loc:Loc placeholder.title}" />
           <TextBlock Classes="secondary"
-                     Text="Estas operações ainda não estão ligadas nesta build. Continuam disponíveis através do motor." />
+                     Text="{loc:Loc placeholder.body}" />
 
           <ItemsControl ItemsSource="{Binding PlannedOperations}">
             <ItemsControl.ItemTemplate>

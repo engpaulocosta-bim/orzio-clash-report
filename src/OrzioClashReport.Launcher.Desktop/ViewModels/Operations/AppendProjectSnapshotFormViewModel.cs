@@ -26,25 +26,25 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
             Action<string> offerRender)
             : base(
                 LauncherOperationKind.AppendProjectSnapshot,
-                "Acrescentar run ao projeto",
-                "Acrescenta um snapshot no fim do índice do projeto. Nada é reordenado nem removido.",
+                "op.appendSnapshot.title",
+                "op.appendSnapshot.description",
                 job,
                 engineStatus)
         {
             _offerRender = offerRender ?? throw new ArgumentNullException(nameof(offerRender));
 
             _project = new PathFieldViewModel(
-                "Catálogo do projeto", "O project.json do projeto a atualizar.",
+                "op.appendSnapshot.project.label", "op.appendSnapshot.project.description",
                 dialogs, FilePickerFileKind.ProjectCatalogJson, onChanged: NotifyFieldsChanged);
 
             _snapshot = new PathFieldViewModel(
-                "Snapshot a acrescentar", "O run que passa a ser o último da sequência.",
+                "op.appendSnapshot.snapshot.label", "op.appendSnapshot.snapshot.description",
                 dialogs, FilePickerFileKind.RunSnapshotJson, onChanged: NotifyFieldsChanged);
 
             RegisterField(_project);
             RegisterField(_snapshot);
 
-            Notes.Add("Esta operação altera apenas o índice. O relatório não é regenerado automaticamente.");
+            AddNote("op.appendSnapshot.note.1");
         }
 
         /// <summary>There is no destination: the engine owns the index it updates.</summary>
@@ -61,11 +61,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
 
         protected override void OnSucceeded(EngineJobResult result)
         {
-            FollowUpMessage =
-                "O índice foi atualizado. O relatório longitudinal continua a mostrar a versão anterior "
-                + "até o regenerar.";
-
-            HasFollowUp = true;
+            ShowFollowUp("op.appendSnapshot.followUp");
 
             _offerRender(_project.Value);
         }

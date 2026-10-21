@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OrzioClashReport.Launcher.Application.Presentation;
+using OrzioClashReport.Launcher.Desktop.Localization;
 
 namespace OrzioClashReport.Launcher.Desktop.ViewModels
 {
@@ -10,7 +11,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
     /// A navigation section that hosts several operation forms, one selected at a time. Keeping one
     /// form visible is what stops the screen from becoming a wall of every flag the engine accepts.
     /// </summary>
-    public sealed partial class OperationsSectionViewModel : ObservableObject
+    public sealed partial class OperationsSectionViewModel : LocalizedObservableObject
     {
         [ObservableProperty]
         private OperationFormViewModel? _selectedForm;
@@ -27,10 +28,8 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
                 throw new ArgumentException("A section needs at least one form.", nameof(forms));
             }
 
-            LauncherSectionPresentation presentation = LauncherSectionPresentation.For(section);
+            _presentation = LauncherSectionPresentation.For(section);
             Section = section;
-            Title = presentation.Label;
-            Description = presentation.Description;
 
             foreach (OperationFormViewModel form in forms)
             {
@@ -42,9 +41,11 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public LauncherSection Section { get; }
 
-        public string Title { get; }
+        private readonly LauncherSectionPresentation _presentation;
 
-        public string Description { get; }
+        public string Title => _presentation.Label;
+
+        public string Description => _presentation.Description;
 
         public ObservableCollection<OperationFormViewModel> Forms { get; } =
             new ObservableCollection<OperationFormViewModel>();

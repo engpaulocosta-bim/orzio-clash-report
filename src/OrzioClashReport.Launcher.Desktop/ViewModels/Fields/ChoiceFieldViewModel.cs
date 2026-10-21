@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using OrzioClashReport.Launcher.Application.Presentation;
+using OrzioClashReport.Launcher.Desktop.Localization;
 
 namespace OrzioClashReport.Launcher.Desktop.ViewModels.Fields
 {
@@ -20,11 +21,11 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Fields
         private ChoiceOptionViewModel? _selected;
 
         public ChoiceFieldViewModel(
-            string label,
-            string description,
+            string labelKey,
+            string descriptionKey,
             IReadOnlyList<ChoiceOptionViewModel> options,
             Action? onChanged = null)
-            : base(label, description)
+            : base(labelKey, descriptionKey)
         {
             if (options == null)
             {
@@ -92,18 +93,24 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Fields
     }
 
     /// <summary>One option of a <see cref="ChoiceFieldViewModel"/>.</summary>
-    public sealed partial class ChoiceOptionViewModel : ObservableObject
+    public sealed partial class ChoiceOptionViewModel : LocalizedObservableObject
     {
+        private readonly Func<string> _label;
+        private readonly Func<string> _description;
+
         [ObservableProperty]
         private bool _isSelected;
 
+        /// <param name="value">The canonical value sent to the engine. Never translated.</param>
+        /// <param name="label">Reads the option's label in the active language, each time it is needed.</param>
+        /// <param name="description">Reads the option's description in the active language.</param>
         public ChoiceOptionViewModel(
-            string value, string label, string glyph, string description, LauncherSeverity severity)
+            string value, Func<string> label, string glyph, Func<string> description, LauncherSeverity severity)
         {
             Value = value;
-            Label = label;
+            _label = label ?? throw new ArgumentNullException(nameof(label));
             Glyph = glyph;
-            Description = description;
+            _description = description ?? throw new ArgumentNullException(nameof(description));
 
             IsPositive = severity == LauncherSeverity.Positive;
             IsCaution = severity == LauncherSeverity.Caution;
@@ -114,11 +121,11 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Fields
         /// <summary>The canonical value sent to the engine. Never localised.</summary>
         public string Value { get; }
 
-        public string Label { get; }
+        public string Label => _label();
 
         public string Glyph { get; }
 
-        public string Description { get; }
+        public string Description => _description();
 
         public bool IsPositive { get; }
 

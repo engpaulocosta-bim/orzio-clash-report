@@ -62,9 +62,13 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
         public Task<LauncherSettings> LoadAsync(CancellationToken cancellationToken) =>
             Task.FromResult(_settings);
 
+        /// <summary>How many times the settings were written, so a test can prove loading never writes.</summary>
+        public int SaveCount { get; private set; }
+
         public Task SaveAsync(LauncherSettings settings, CancellationToken cancellationToken)
         {
             _settings = settings;
+            SaveCount++;
             return Task.CompletedTask;
         }
     }

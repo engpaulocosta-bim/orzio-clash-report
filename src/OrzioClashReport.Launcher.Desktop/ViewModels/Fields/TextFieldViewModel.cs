@@ -1,5 +1,6 @@
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
+using OrzioClashReport.Launcher.Application.Localization;
 
 namespace OrzioClashReport.Launcher.Desktop.ViewModels.Fields
 {
@@ -13,34 +14,50 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Fields
         private readonly Action? _onChanged;
         private readonly Func<string, string?>? _validate;
         private readonly bool _isOptional;
+        private readonly string _watermark;
+        private readonly string? _watermarkKey;
 
         [ObservableProperty]
         private string _value = string.Empty;
 
-        [ObservableProperty]
-        private string _validationMessage = string.Empty;
-
-        [ObservableProperty]
-        private bool _hasValidationMessage;
-
+        /// <param name="labelKey">The key of the field's label.</param>
+        /// <param name="descriptionKey">The key of the field's description.</param>
+        /// <param name="watermark">
+        /// An example value shown while the box is empty, such as <c>tower-a</c>. It is shown as written
+        /// and never translated.
+        /// </param>
+        /// <param name="watermarkKey">
+        /// Use instead of <paramref name="watermark"/> when the example is a word in the interface
+        /// language rather than an identifier.
+        /// </param>
         public TextFieldViewModel(
-            string label,
-            string description,
+            string labelKey,
+            string descriptionKey,
             string watermark = "",
             Action? onChanged = null,
             bool isOptional = false,
-            Func<string, string?>? validate = null)
-            : base(label, description)
+            Func<string, string?>? validate = null,
+            string? watermarkKey = null)
+            : base(labelKey, descriptionKey)
         {
-            Watermark = watermark;
+            _watermark = watermark;
+            _watermarkKey = watermarkKey;
             _onChanged = onChanged;
             _isOptional = isOptional;
             _validate = validate;
         }
 
-        public string Watermark { get; }
+        public string Watermark => _watermarkKey != null ? Loc.T(_watermarkKey) : _watermark;
 
         public bool IsOptional => _isOptional;
+
+        /// <summary>
+        /// The validator's message for the current value, computed when read so it follows the language.
+        /// Empty when the value is empty (an empty box is not an error) or valid.
+        /// </summary>
+        public string ValidationMessage => CurrentMessage() ?? string.Empty;
+
+        public bool HasValidationMessage => CurrentMessage() != null;
 
         public override bool IsComplete
         {
@@ -57,15 +74,16 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Fields
             }
         }
 
+        private string? CurrentMessage()
+        {
+            string trimmed = Value.Trim();
+            return trimmed.Length == 0 || _validate == null ? null : _validate(trimmed);
+        }
+
         partial void OnValueChanged(string value)
         {
-            string trimmed = value.Trim();
-
-            string? message = trimmed.Length == 0 || _validate == null ? null : _validate(trimmed);
-
-            ValidationMessage = message ?? string.Empty;
-            HasValidationMessage = message != null;
-
+            OnPropertyChanged(nameof(ValidationMessage));
+            OnPropertyChanged(nameof(HasValidationMessage));
             OnPropertyChanged(nameof(IsComplete));
             _onChanged?.Invoke();
         }

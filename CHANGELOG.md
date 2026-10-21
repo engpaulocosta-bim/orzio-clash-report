@@ -4,6 +4,25 @@ All notable changes for OrzioClashReport are recorded here.
 
 ## Unreleased
 
+### Added
+
+- Desktop launcher: the interface is now available in Portuguese and English. The language follows
+  the operating system by default (Portuguese when the system language is Portuguese, English
+  otherwise) and can be changed under Definições / Settings; the choice applies immediately and is
+  stored with the other launcher settings. Only visible text is translated: the engine receives the
+  same commands, options and canonical values in both languages, so `ConfirmSameIdentity` and
+  `RejectSameIdentity` never change. The uninstall question in the installer is also shown in the
+  language chosen at install time.
+- Tests that fail on a missing key, a missing translation, mismatched placeholders, an unused key,
+  or literal text in a view, and headless tests that switch the language on a live window.
+
+### Changed
+
+- The theme and language pickers in Definições list readable names (System, Light, Dark) instead of
+  the raw option names.
+- Messages the launcher writes about the engine or a form follow the language that was active when
+  they were produced; the engine's own output is always shown exactly as the engine wrote it.
+
 ## 0.2.1-launcher-preview.1
 
 First desktop version published through the automatic desktop release channel

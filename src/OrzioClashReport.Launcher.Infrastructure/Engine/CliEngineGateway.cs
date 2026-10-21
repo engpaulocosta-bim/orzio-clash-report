@@ -1,3 +1,4 @@
+using OrzioClashReport.Launcher.Application.Localization;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -102,7 +103,7 @@ namespace OrzioClashReport.Launcher.Infrastructure.Engine
             {
                 warnings.Add(new LauncherWarning(
                     LauncherWarningKind.EngineOutputTruncated,
-                    "O motor produziu mais texto do que é mostrado. Foram guardados o início e o fim."));
+                    Loc.T("failure.engine.outputTruncated")));
             }
 
             if (process.StartFailure != null)
@@ -111,8 +112,8 @@ namespace OrzioClashReport.Launcher.Infrastructure.Engine
                     request,
                     new LauncherError(
                         LauncherErrorKind.EngineStartFailure,
-                        "O motor não pôde ser iniciado.",
-                        "Verifique o estado do motor em Definições e reinstale se necessário."),
+                        Loc.T("failure.engine.startFailure.message"),
+                        Loc.T("failure.engine.startFailure.nextStep")),
                     process.Duration,
                     process,
                     warnings);
@@ -141,8 +142,8 @@ namespace OrzioClashReport.Launcher.Infrastructure.Engine
                     request,
                     new LauncherError(
                         LauncherErrorKind.EngineTimeout,
-                        "O motor não terminou dentro do tempo permitido e foi interrompido.",
-                        "Tente novamente com um export mais pequeno, ou verifique se o ficheiro de entrada está acessível."),
+                        Loc.T("failure.engine.timeout.message"),
+                        Loc.T("failure.engine.timeout.nextStep")),
                     process.Duration,
                     process,
                     warnings);
@@ -156,8 +157,8 @@ namespace OrzioClashReport.Launcher.Infrastructure.Engine
                     request,
                     new LauncherError(
                         LauncherErrorKind.EngineExecutionFailure,
-                        "O motor terminou com um erro.",
-                        "Leia a saída do motor abaixo: descreve exatamente o que falhou.",
+                        Loc.T("failure.engine.executionFailure.message"),
+                        Loc.T("failure.engine.executionFailure.nextStep"),
                         process.ExitCode),
                     process.Duration,
                     process,
@@ -174,8 +175,8 @@ namespace OrzioClashReport.Launcher.Infrastructure.Engine
                         request,
                         new LauncherError(
                             LauncherErrorKind.OutputMissing,
-                            "O motor terminou com sucesso mas o ficheiro de destino não existe ou está vazio.",
-                            "Confirme que tem permissão de escrita no destino e tente novamente.",
+                            Loc.T("failure.engine.outputMissing.message"),
+                            Loc.T("failure.engine.outputMissing.nextStep"),
                             process.ExitCode),
                         process.Duration,
                         process,
@@ -200,26 +201,26 @@ namespace OrzioClashReport.Launcher.Infrastructure.Engine
                 case EngineStatusKind.Missing:
                     return new LauncherError(
                         LauncherErrorKind.EngineMissing,
-                        "Não existe motor instalado.",
-                        "Reinstale a aplicação para repor o motor.");
+                        Loc.T("failure.unavailable.missing.message"),
+                        Loc.T("failure.unavailable.missing.nextStep"));
 
                 case EngineStatusKind.IntegrityFailure:
                     return new LauncherError(
                         LauncherErrorKind.IntegrityFailure,
-                        "O motor instalado não passou a verificação de integridade.",
-                        "Reinstale a aplicação. Nenhuma operação é executada com um motor por verificar.");
+                        Loc.T("failure.unavailable.integrity.message"),
+                        Loc.T("failure.unavailable.integrity.nextStep"));
 
                 case EngineStatusKind.VersionMismatch:
                     return new LauncherError(
                         LauncherErrorKind.VersionMismatch,
-                        $"O motor instalado reporta {engine.ReportedVersion}, mas esta aplicação foi empacotada com {engine.ExpectedVersion}.",
-                        "Reinstale a aplicação para voltar a um par verificado.");
+                        Loc.T("failure.unavailable.version.message", engine.ReportedVersion, engine.ExpectedVersion),
+                        Loc.T("failure.unavailable.version.nextStep"));
 
                 default:
                     return new LauncherError(
                         LauncherErrorKind.EngineMissing,
-                        "O motor não está disponível.",
-                        "Verifique o estado do motor em Definições.");
+                        Loc.T("failure.unavailable.generic.message"),
+                        Loc.T("failure.unavailable.generic.nextStep"));
             }
         }
 

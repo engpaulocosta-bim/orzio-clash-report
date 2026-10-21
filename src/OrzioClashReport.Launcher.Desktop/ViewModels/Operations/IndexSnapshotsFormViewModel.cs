@@ -19,21 +19,21 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
             JobViewModel job, EngineStatusViewModel engineStatus, IFileDialogService dialogs)
             : base(
                 LauncherOperationKind.IndexSnapshots,
-                "Criar índice ordenado",
-                "Declara explicitamente a ordem dos runs. Esta ordem é a única autoridade de sequência.",
+                "op.indexSnapshots.title",
+                "op.indexSnapshots.description",
                 job,
                 engineStatus)
         {
             _snapshots = new OrderedFilesFieldViewModel(
-                "Snapshots, por ordem",
-                "Use as setas para definir a sequência. Nada é ordenado automaticamente por data, nome ou revisão.",
+                "op.indexSnapshots.snapshots.label",
+                "op.indexSnapshots.snapshots.description",
                 dialogs,
                 FilePickerFileKind.RunSnapshotJson,
                 onChanged: NotifyFieldsChanged);
 
             _output = new PathFieldViewModel(
-                "Destino do índice",
-                "Onde o run-index JSON será criado. O índice é sempre criado de novo.",
+                "op.indexSnapshots.output.label",
+                "op.indexSnapshots.output.description",
                 dialogs,
                 FilePickerFileKind.RunIndexJson,
                 isDestination: true,
@@ -43,7 +43,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
             RegisterField(_snapshots);
             RegisterField(_output);
 
-            Notes.Add("Um snapshot repetido é mantido tal como o declarou; nunca é removido em silêncio.");
+            AddNote("op.indexSnapshots.note.1");
         }
 
         protected override string? OutputPath => _output.Value.Length == 0 ? null : _output.Value;

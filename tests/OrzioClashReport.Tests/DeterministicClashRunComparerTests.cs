@@ -28,6 +28,14 @@ namespace OrzioClashReport.Tests
                 new ClashResult(label, ClashStatus.New, null, null, null, MakeObject(label + "-a"), MakeObject(label + "-b"), null),
                 Sigma, Sigma);
 
+        private static ClashOccurrence MakeSamePairOccurrence(
+            string label, string elementIdA, string elementIdB, ClashPoint? point) =>
+            new ClashOccurrence(
+                "Test 1",
+                new ClashResult(label, ClashStatus.New, null, null, point, MakeObject(elementIdA), MakeObject(elementIdB), null),
+                Sigma,
+                Sigma);
+
         private static ClashOccurrence[] MakeOccurrences(string prefix, int count) =>
             Enumerable.Range(0, count).Select(i => MakeOccurrence($"{prefix}{i}")).ToArray();
 
@@ -543,6 +551,57 @@ namespace OrzioClashReport.Tests
 
             Assert.Equal(2, result.Candidates.Count);
             Assert.Single(result.UnmatchedPrevious);
+        }
+
+        [Fact]
+        public void Compare_ReversedSelfClashPairsAtDistinctPoints_MatchByPhysicalOccurrenceAndAccountForEverySlot()
+        {
+            var previousNear = MakeSamePairOccurrence(
+                "previous-near", "element-1", "element-2", new ClashPoint(0, 0, 0));
+            var previousFar = MakeSamePairOccurrence(
+                "previous-far", "element-1", "element-2", new ClashPoint(10, 0, 0));
+            var currentFarReversed = MakeSamePairOccurrence(
+                "current-far", "element-2", "element-1", new ClashPoint(10, 0, 0));
+            var currentNearReversed = MakeSamePairOccurrence(
+                "current-near", "element-2", "element-1", new ClashPoint(0, 0, 0));
+
+            var result = new DeterministicClashRunComparer(new ConservativeClashMatcher()).Compare(
+                MakeRun("run-1", previousNear, previousFar),
+                MakeRun("run-2", currentFarReversed, currentNearReversed));
+
+            Assert.Equal(4, result.Candidates.Count);
+            Assert.Equal(2, result.SelectedMatches.Count);
+            Assert.Equal(2, result.AlternativeCandidates.Count);
+            Assert.Empty(result.UnmatchedPrevious);
+            Assert.Empty(result.UnmatchedCurrent);
+            Assert.Contains(result.SelectedMatches, candidate => candidate.PreviousIndex == 0 && candidate.CurrentIndex == 1);
+            Assert.Contains(result.SelectedMatches, candidate => candidate.PreviousIndex == 1 && candidate.CurrentIndex == 0);
+            Assert.All(result.SelectedMatches, candidate => Assert.Equal(ClashMatchConfidence.Medium, candidate.Assessment.Confidence));
+            Assert.All(result.AlternativeCandidates, candidate => Assert.Equal(ClashMatchConfidence.Low, candidate.Assessment.Confidence));
+        }
+
+        [Fact]
+        public void Compare_RepeatedPairsWithoutPoints_RemainAuditableWithoutDroppingOccurrenceSlots()
+        {
+            var previousFirst = MakeSamePairOccurrence("previous-1", "element-1", "element-2", null);
+            var previousSecond = MakeSamePairOccurrence("previous-2", "element-2", "element-1", null);
+            var currentFirst = MakeSamePairOccurrence("current-1", "element-1", "element-2", null);
+            var currentSecond = MakeSamePairOccurrence("current-2", "element-2", "element-1", null);
+
+            var result = new DeterministicClashRunComparer(new ConservativeClashMatcher()).Compare(
+                MakeRun("run-1", previousFirst, previousSecond),
+                MakeRun("run-2", currentFirst, currentSecond));
+
+            Assert.Equal(4, result.Candidates.Count);
+            Assert.Equal(2, result.SelectedMatches.Count);
+            Assert.Equal(2, result.AlternativeCandidates.Count);
+            Assert.Empty(result.UnmatchedPrevious);
+            Assert.Empty(result.UnmatchedCurrent);
+            Assert.All(
+                result.Candidates,
+                candidate => Assert.DoesNotContain(
+                    candidate.Assessment.Evidence,
+                    evidence => evidence.Kind == MatchEvidenceKind.SpatialPosition));
         }
 
         // --- 15.10 Empty runs ---

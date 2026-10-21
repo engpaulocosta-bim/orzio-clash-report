@@ -19,33 +19,33 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
             JobViewModel job, EngineStatusViewModel engineStatus, IFileDialogService dialogs)
             : base(
                 LauncherOperationKind.CreateProject,
-                "Criar projeto",
-                "Guarda as referências operacionais do projeto: o índice de runs e o destino do relatório longitudinal.",
+                "op.createProject.title",
+                "op.createProject.description",
                 job,
                 engineStatus)
         {
             _projectId = new TextFieldViewModel(
-                "Identificador do projeto",
-                "Usado para ligar decisões de governança a este projeto. Comparado exatamente, sem normalização.",
+                "op.createProject.projectId.label",
+                "op.createProject.projectId.description",
                 "tower-a",
                 NotifyFieldsChanged);
 
             _displayName = new TextFieldViewModel(
-                "Nome do projeto", "O nome legível mostrado nos relatórios.", "Tower A", NotifyFieldsChanged);
+                "op.createProject.name.label", "op.createProject.name.description", "Tower A", NotifyFieldsChanged);
 
             _index = new PathFieldViewModel(
-                "Índice de runs", "O run-index JSON já criado.",
+                "op.createProject.index.label", "op.createProject.index.description",
                 dialogs, FilePickerFileKind.RunIndexJson, onChanged: NotifyFieldsChanged);
 
             _report = new PathFieldViewModel(
-                "Destino do relatório longitudinal",
-                "Onde o HTML do projeto será escrito. O ficheiro ainda não precisa de existir, mas a pasta sim.",
+                "op.createProject.report.label",
+                "op.createProject.report.description",
                 dialogs, FilePickerFileKind.HtmlReport,
                 isDestination: true, suggestedFileName: "longitudinal.html", onChanged: NotifyFieldsChanged);
 
             _output = new PathFieldViewModel(
-                "Destino do catálogo",
-                "Onde o project.json será criado. O catálogo é sempre criado de novo.",
+                "op.createProject.output.label",
+                "op.createProject.output.description",
                 dialogs, FilePickerFileKind.ProjectCatalogJson,
                 isDestination: true, suggestedFileName: "project.json", onChanged: NotifyFieldsChanged);
 
@@ -55,7 +55,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
             RegisterField(_report);
             RegisterField(_output);
 
-            Notes.Add("O índice, os snapshots e o relatório têm de ficar dentro da árvore de pastas do catálogo.");
+            AddNote("op.createProject.note.1");
         }
 
         protected override string? OutputPath => _output.Value.Length == 0 ? null : _output.Value;

@@ -46,6 +46,11 @@ never the installation directory. It verifies the engine's SHA-256 against the p
 catalog or governance document, and asks for an explicit decision before replacing a
 derived HTML report.
 
+The interface is available in Portuguese and English. The language follows the operating system
+by default and can be changed at any time under Settings (Definições); the change applies at
+once, without restarting. Only visible text changes: the engine receives exactly the same
+commands, options and values in both languages, and the installer already offers both.
+
 See [docs/operations/desktop-pilot.md](docs/operations/desktop-pilot.md) for the private
 pilot guide.
 

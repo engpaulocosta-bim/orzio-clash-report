@@ -1,3 +1,4 @@
+using OrzioClashReport.Launcher.Application.Localization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -124,24 +125,24 @@ namespace OrzioClashReport.Launcher.Application.Operations
             {
                 return new LauncherError(
                     LauncherErrorKind.InvalidInput,
-                    "A operação não tem argumentos.",
-                    "Preencha o formulário e tente novamente.");
+                    Loc.T("failure.request.noArguments.message"),
+                    Loc.T("failure.request.noArguments.nextStep"));
             }
 
             if (!_fileProbe.DirectoryExists(request.WorkingDirectory))
             {
                 return new LauncherError(
                     LauncherErrorKind.InvalidInput,
-                    "A pasta de trabalho da operação não existe.",
-                    "Escolha um destino cuja pasta já exista.");
+                    Loc.T("failure.request.workingDirectoryMissing.message"),
+                    Loc.T("failure.request.workingDirectoryMissing.nextStep"));
             }
 
             if (IsInsideInstallation(request.WorkingDirectory))
             {
                 return new LauncherError(
                     LauncherErrorKind.InvalidInput,
-                    "A operação não pode escrever dentro da pasta de instalação.",
-                    "Escolha um destino na sua pasta de trabalho ou de projeto.");
+                    Loc.T("failure.request.insideInstallation.message"),
+                    Loc.T("failure.request.insideInstallation.nextStep"));
             }
 
             if (request.OutputPath == null)
@@ -153,8 +154,8 @@ namespace OrzioClashReport.Launcher.Application.Operations
             {
                 return new LauncherError(
                     LauncherErrorKind.InvalidInput,
-                    "O destino tem de ser um caminho absoluto.",
-                    "Escolha o destino através do seletor de ficheiros.");
+                    Loc.T("failure.request.notAbsolute.message"),
+                    Loc.T("failure.request.notAbsolute.nextStep"));
             }
 
             if (!_fileProbe.FileExists(request.OutputPath))
@@ -169,16 +170,16 @@ namespace OrzioClashReport.Launcher.Application.Operations
                 // destroy evidence, so the launcher only ever asks for a different name.
                 return new LauncherError(
                     LauncherErrorKind.OutputCollision,
-                    "Já existe um ficheiro neste destino e este tipo de artefacto nunca é substituído.",
-                    "Escolha outro nome. Snapshots, índices, catálogos e governança são sempre criados de novo.");
+                    Loc.T("failure.request.collisionEvidence.message"),
+                    Loc.T("failure.request.collisionEvidence.nextStep"));
             }
 
             if (request.CollisionDecision != OutputCollisionDecision.ReplaceExisting)
             {
                 return new LauncherError(
                     LauncherErrorKind.OutputCollision,
-                    "Já existe um relatório neste destino.",
-                    "Escolha outro nome ou confirme explicitamente que quer substituir o relatório existente.");
+                    Loc.T("failure.request.collisionReport.message"),
+                    Loc.T("failure.request.collisionReport.nextStep"));
             }
 
             return null;

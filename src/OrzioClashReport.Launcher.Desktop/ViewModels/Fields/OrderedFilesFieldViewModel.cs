@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using OrzioClashReport.Launcher.Application.Localization;
 using OrzioClashReport.Launcher.Application.Operations;
 using OrzioClashReport.Launcher.Contracts.Results;
 using OrzioClashReport.Launcher.Desktop.Platform;
@@ -27,12 +28,12 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Fields
         private int _selectedIndex = -1;
 
         public OrderedFilesFieldViewModel(
-            string label,
-            string description,
+            string labelKey,
+            string descriptionKey,
             IFileDialogService fileDialogService,
             FilePickerFileKind kind,
             Action? onChanged = null)
-            : base(label, description)
+            : base(labelKey, descriptionKey)
         {
             _fileDialogService = fileDialogService ?? throw new ArgumentNullException(nameof(fileDialogService));
             _kind = kind;
@@ -52,7 +53,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Fields
         private async Task AddAsync()
         {
             IReadOnlyList<string> picked = await _fileDialogService
-                .PickOpenFilesAsync("Escolher ficheiros", _kind, LastDirectory())
+                .PickOpenFilesAsync(Loc.T("picker.title.chooseFiles"), _kind, LastDirectory())
                 .ConfigureAwait(true);
 
             if (picked.Count == 0)

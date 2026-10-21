@@ -162,7 +162,7 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
             Assert.Equal("0.1.0-preview.3", shell.EngineStatus.ReportedVersion);
         }
 
-        private static ShellViewModel CreateShell(
+        internal static ShellViewModel CreateShell(
             out ShellViewModel shell,
             EngineLocation? engineLocation = null,
             EngineIntegrityResult? integrity = null,

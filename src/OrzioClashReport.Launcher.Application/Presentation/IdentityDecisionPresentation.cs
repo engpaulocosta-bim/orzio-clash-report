@@ -1,4 +1,5 @@
 using System;
+using OrzioClashReport.Launcher.Application.Localization;
 using OrzioClashReport.Launcher.Contracts.Operations;
 
 namespace OrzioClashReport.Launcher.Application.Presentation
@@ -8,32 +9,39 @@ namespace OrzioClashReport.Launcher.Application.Presentation
     /// severity: never by colour alone, because these are the decisions with the most weight in the
     /// whole product and the least room for a misread.
     /// </summary>
+    /// <remarks>
+    /// <see cref="Label"/> and <see cref="Description"/> follow the interface language. The canonical
+    /// value, glyph, severity and the persistent-identity rule do not: they are part of the decision.
+    /// </remarks>
     public sealed class IdentityDecisionPresentation
     {
+        private readonly string _labelKey;
+        private readonly string _descriptionKey;
+
         public IdentityDecisionKind Kind { get; }
 
         /// <summary>The exact value passed to <c>--decision-kind</c>. Never translated.</summary>
         public string CanonicalValue { get; }
 
         public string Glyph { get; }
-        public string Label { get; }
-        public string Description { get; }
+        public string Label => Loc.T(_labelKey);
+        public string Description => Loc.T(_descriptionKey);
         public LauncherSeverity Severity { get; }
         public bool RequiresPersistentIdentityId { get; }
 
         private IdentityDecisionPresentation(
             IdentityDecisionKind kind,
             string glyph,
-            string label,
-            string description,
+            string labelKey,
+            string descriptionKey,
             LauncherSeverity severity,
             bool requiresPersistentIdentityId)
         {
             Kind = kind;
             CanonicalValue = kind.ToString();
             Glyph = glyph;
-            Label = label;
-            Description = description;
+            _labelKey = labelKey;
+            _descriptionKey = descriptionKey;
             Severity = severity;
             RequiresPersistentIdentityId = requiresPersistentIdentityId;
         }
@@ -46,8 +54,8 @@ namespace OrzioClashReport.Launcher.Application.Presentation
                     return new IdentityDecisionPresentation(
                         kind,
                         "✓",
-                        "Confirmar mesma identidade",
-                        "Regista que estas duas ocorrências são, para si, o mesmo clash. Exige um identificador persistente.",
+                        "decision.confirm.label",
+                        "decision.confirm.description",
                         LauncherSeverity.Positive,
                         requiresPersistentIdentityId: true);
 
@@ -55,8 +63,8 @@ namespace OrzioClashReport.Launcher.Application.Presentation
                     return new IdentityDecisionPresentation(
                         kind,
                         "✕",
-                        "Rejeitar mesma identidade",
-                        "Regista que estas duas ocorrências não são o mesmo clash. Nunca transporta identificador persistente.",
+                        "decision.reject.label",
+                        "decision.reject.description",
                         LauncherSeverity.Critical,
                         requiresPersistentIdentityId: false);
 

@@ -69,8 +69,19 @@ namespace OrzioClashReport.Launcher.Infrastructure.Storage
                         showExperimentalWarnings = warningsElement.GetBoolean();
                     }
 
+                    // Absent in files written before the language setting existed: those keep following
+                    // the operating system, exactly as a fresh install does.
+                    LauncherLanguagePreference language = LauncherLanguagePreference.System;
+                    if (root.TryGetProperty("language", out JsonElement languageElement)
+                        && languageElement.ValueKind == JsonValueKind.String
+                        && Enum.TryParse(languageElement.GetString(), ignoreCase: false, out LauncherLanguagePreference parsedLanguage)
+                        && Enum.IsDefined(typeof(LauncherLanguagePreference), parsedLanguage))
+                    {
+                        language = parsedLanguage;
+                    }
+
                     return Task.FromResult(
-                        new LauncherSettings(theme, lastOutputDirectory, showExperimentalWarnings));
+                        new LauncherSettings(theme, lastOutputDirectory, showExperimentalWarnings, language));
                 }
             }
             catch (Exception exception) when (
@@ -98,6 +109,7 @@ namespace OrzioClashReport.Launcher.Infrastructure.Storage
                     writer.WriteStartObject();
                     writer.WriteNumber("schemaVersion", SchemaVersion);
                     writer.WriteString("theme", settings.Theme.ToString());
+                    writer.WriteString("language", settings.Language.ToString());
 
                     if (settings.LastOutputDirectory == null)
                     {

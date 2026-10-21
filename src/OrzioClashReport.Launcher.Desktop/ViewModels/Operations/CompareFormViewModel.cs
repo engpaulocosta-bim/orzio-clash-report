@@ -19,29 +19,29 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
             JobViewModel job, EngineStatusViewModel engineStatus, IFileDialogService dialogs)
             : base(
                 LauncherOperationKind.Compare,
-                "Comparar dois runs",
-                "Compara dois exports com os respetivos manifests. Anterior e atual são papéis explícitos que você declara.",
+                "op.compare.title",
+                "op.compare.description",
                 job,
                 engineStatus)
         {
             _previousXml = new PathFieldViewModel(
-                "XML anterior", "O export do run de partida.",
+                "op.compare.previousXml.label", "op.compare.previousXml.description",
                 dialogs, FilePickerFileKind.NavisworksClashXml, onChanged: NotifyFieldsChanged);
 
             _previousManifest = new PathFieldViewModel(
-                "Manifest anterior", "As revisões declaradas para o run de partida.",
+                "op.compare.previousManifest.label", "op.compare.previousManifest.description",
                 dialogs, FilePickerFileKind.RunManifestJson, onChanged: NotifyFieldsChanged);
 
             _currentXml = new PathFieldViewModel(
-                "XML atual", "O export do run de chegada.",
+                "op.compare.currentXml.label", "op.compare.currentXml.description",
                 dialogs, FilePickerFileKind.NavisworksClashXml, onChanged: NotifyFieldsChanged);
 
             _currentManifest = new PathFieldViewModel(
-                "Manifest atual", "As revisões declaradas para o run de chegada.",
+                "op.compare.currentManifest.label", "op.compare.currentManifest.description",
                 dialogs, FilePickerFileKind.RunManifestJson, onChanged: NotifyFieldsChanged);
 
             _output = new PathFieldViewModel(
-                "Destino do relatório", "O HTML da comparação.",
+                "op.compare.output.label", "op.compare.output.description",
                 dialogs, FilePickerFileKind.HtmlReport,
                 isDestination: true, suggestedFileName: "comparison.html", onChanged: NotifyFieldsChanged);
 
@@ -51,8 +51,8 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
             RegisterField(_currentManifest);
             RegisterField(_output);
 
-            Notes.Add("A ordem cronológica nunca é inferida: os papéis anterior e atual são os que declarar aqui.");
-            Notes.Add("Comparação longitudinal continua experimental: ainda não foi validada em exports reais sequenciais.");
+            AddNote("op.compare.note.1");
+            AddNote("op.compare.note.2");
         }
 
         protected override string? OutputPath => _output.Value.Length == 0 ? null : _output.Value;

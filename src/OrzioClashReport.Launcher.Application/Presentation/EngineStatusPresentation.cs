@@ -1,4 +1,5 @@
 using System;
+using OrzioClashReport.Launcher.Application.Localization;
 using OrzioClashReport.Launcher.Contracts.Engine;
 
 namespace OrzioClashReport.Launcher.Application.Presentation
@@ -37,50 +38,48 @@ namespace OrzioClashReport.Launcher.Application.Presentation
                     return new EngineStatusPresentation(
                         status,
                         "⋯",
-                        "A verificar",
-                        "A confirmar a versão e a integridade do motor.",
+                        Loc.T("engine.checking.label"),
+                        Loc.T("engine.checking.explanation"),
                         LauncherSeverity.Neutral);
 
                 case EngineStatusKind.Ready:
                     return new EngineStatusPresentation(
                         status,
                         "✓",
-                        "Motor pronto",
-                        "O motor respondeu com a versão esperada e passou a verificação de integridade.",
+                        Loc.T("engine.ready.label"),
+                        Loc.T("engine.ready.explanation"),
                         LauncherSeverity.Positive);
 
                 case EngineStatusKind.VersionMismatch:
                     return new EngineStatusPresentation(
                         status,
                         "≠",
-                        "Versão diferente",
-                        "O motor instalado não é a versão com que esta aplicação foi empacotada. "
-                        + "Reinstale para voltar a um par verificado.",
+                        Loc.T("engine.versionMismatch.label"),
+                        Loc.T("engine.versionMismatch.explanation"),
                         LauncherSeverity.Caution);
 
                 case EngineStatusKind.IntegrityFailure:
                     return new EngineStatusPresentation(
                         status,
                         "⚠",
-                        "Integridade falhou",
-                        "O executável do motor não corresponde ao SHA-256 registado na instalação. "
-                        + "Reinstale a aplicação.",
+                        Loc.T("engine.integrityFailure.label"),
+                        Loc.T("engine.integrityFailure.explanation"),
                         LauncherSeverity.Critical);
 
                 case EngineStatusKind.Missing:
                     return new EngineStatusPresentation(
                         status,
                         "✕",
-                        "Motor não encontrado",
-                        "Não existe motor na pasta de instalação. Reinstale a aplicação.",
+                        Loc.T("engine.missing.label"),
+                        Loc.T("engine.missing.explanation"),
                         LauncherSeverity.Critical);
 
                 case EngineStatusKind.Unsupported:
                     return new EngineStatusPresentation(
                         status,
                         "?",
-                        "Motor não suportado",
-                        "O motor não respondeu no formato publicado. Este sistema pode não conseguir executá-lo.",
+                        Loc.T("engine.unsupported.label"),
+                        Loc.T("engine.unsupported.explanation"),
                         LauncherSeverity.Critical);
 
                 default:

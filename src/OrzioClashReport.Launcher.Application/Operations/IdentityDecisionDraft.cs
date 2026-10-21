@@ -1,3 +1,4 @@
+using OrzioClashReport.Launcher.Application.Localization;
 using System;
 using System.Globalization;
 using OrzioClashReport.Launcher.Contracts.Operations;
@@ -38,10 +39,10 @@ namespace OrzioClashReport.Launcher.Application.Operations
                 throw new ArgumentOutOfRangeException(nameof(kind), kind, "Unknown identity decision kind.");
             }
 
-            Require(decisionId, nameof(decisionId), "O identificador da decisão é obrigatório.");
-            Require(leftRunId, nameof(leftRunId), "O run id do lado esquerdo é obrigatório.");
-            Require(rightRunId, nameof(rightRunId), "O run id do lado direito é obrigatório.");
-            Require(reviewerAlias, nameof(reviewerAlias), "O alias do revisor é obrigatório.");
+            Require(decisionId, nameof(decisionId), Loc.T("draft.error.decisionId"));
+            Require(leftRunId, nameof(leftRunId), Loc.T("draft.error.leftRunId"));
+            Require(rightRunId, nameof(rightRunId), Loc.T("draft.error.rightRunId"));
+            Require(reviewerAlias, nameof(reviewerAlias), Loc.T("draft.error.reviewerAlias"));
 
             RequireOccurrenceIndex(leftOccurrenceIndex, nameof(leftOccurrenceIndex));
             RequireOccurrenceIndex(rightOccurrenceIndex, nameof(rightOccurrenceIndex));
@@ -51,7 +52,7 @@ namespace OrzioClashReport.Launcher.Application.Operations
             if (kind == IdentityDecisionKind.ConfirmSameIdentity && persistent == null)
             {
                 throw new ArgumentException(
-                    "Uma confirmação exige um identificador persistente.", nameof(persistentIdentityId));
+                    Loc.T("draft.error.confirmNeedsIdentity"), nameof(persistentIdentityId));
             }
 
             if (kind == IdentityDecisionKind.RejectSameIdentity && persistent != null)
@@ -59,7 +60,7 @@ namespace OrzioClashReport.Launcher.Application.Operations
                 // A rejection asserts that these are not the same clash. Carrying an identity id would
                 // record the opposite of what the reviewer decided.
                 throw new ArgumentException(
-                    "Uma rejeição nunca pode transportar um identificador persistente.", nameof(persistentIdentityId));
+                    Loc.T("draft.error.rejectCarriesIdentity"), nameof(persistentIdentityId));
             }
 
             Kind = kind;
@@ -113,7 +114,7 @@ namespace OrzioClashReport.Launcher.Application.Operations
             if (index < 0)
             {
                 throw new ArgumentOutOfRangeException(
-                    parameterName, index, "O índice de ocorrência é zero-based e nunca pode ser negativo.");
+                    parameterName, index, Loc.T("draft.error.negativeOccurrenceIndex"));
             }
         }
 

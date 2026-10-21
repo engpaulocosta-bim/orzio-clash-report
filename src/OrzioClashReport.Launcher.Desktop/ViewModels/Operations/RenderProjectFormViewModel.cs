@@ -18,19 +18,19 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
             JobViewModel job, EngineStatusViewModel engineStatus, IFileDialogService dialogs)
             : base(
                 LauncherOperationKind.RenderProject,
-                "Renderizar projeto",
-                "Recalcula tudo a partir dos snapshots e reescreve o relatório longitudinal do projeto.",
+                "op.renderProject.title",
+                "op.renderProject.description",
                 job,
                 engineStatus)
         {
             _project = new PathFieldViewModel(
-                "Catálogo do projeto", "O project.json cujo relatório será regenerado.",
+                "op.renderProject.project.label", "op.renderProject.project.description",
                 dialogs, FilePickerFileKind.ProjectCatalogJson, onChanged: NotifyFieldsChanged);
 
             RegisterField(_project);
 
-            Notes.Add("O destino do relatório vem do catálogo do projeto, em leitura apenas.");
-            Notes.Add("Os snapshots e o índice não são alterados.");
+            AddNote("op.renderProject.note.1");
+            AddNote("op.renderProject.note.2");
         }
 
         public void UseProject(string projectPath) => _project.Value = projectPath;

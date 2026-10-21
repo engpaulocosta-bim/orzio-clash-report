@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:OrzioClashReport.Launcher.Desktop.Localization"
              xmlns:controls="clr-namespace:OrzioClashReport.Launcher.Desktop.Controls"
              xmlns:diagnostics="clr-namespace:OrzioClashReport.Launcher.Contracts.Diagnostics;assembly=OrzioClashReport.Launcher.Contracts"
              xmlns:vm="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels"
@@ -10,8 +11,8 @@
     <StackPanel Classes="page">
 
       <StackPanel Classes="stack-xs">
-        <TextBlock Classes="display" Text="Definições" />
-        <TextBlock Classes="secondary" Text="Aparência, atualizações, dados locais e estado do motor." />
+        <TextBlock Classes="display" Text="{loc:Loc nav.settings.label}" />
+        <TextBlock Classes="secondary" Text="{loc:Loc settings.subtitle}" />
       </StackPanel>
 
       <!--
@@ -26,9 +27,9 @@
               <PathIcon Data="{DynamicResource OrzioIconDownload}" />
             </Border>
             <StackPanel Grid.Column="1" Classes="stack-xs" VerticalAlignment="Center">
-              <TextBlock Classes="title" Text="Atualizações" />
+              <TextBlock Classes="title" Text="{loc:Loc settings.updates.title}" />
               <TextBlock Classes="secondary"
-                         Text="Procura uma nova versão oficial no GitHub apenas quando o pedir. A instalação só começa com a sua confirmação." />
+                         Text="{loc:Loc settings.updates.body}" />
             </StackPanel>
             <Border Grid.Column="2" Classes="status-pill" VerticalAlignment="Center">
               <TextBlock Classes="monospace" Text="{Binding CurrentVersion}" />
@@ -46,7 +47,7 @@
 
           <StackPanel Classes="stack-xs" IsVisible="{Binding IsDownloading}">
             <ProgressBar Minimum="0" Maximum="100" Value="{Binding DownloadPercent}" />
-            <TextBlock Classes="caption" Text="{Binding DownloadPercent, StringFormat='{}{0:0}% descarregado'}" />
+            <TextBlock Classes="caption" Text="{Binding DownloadProgressText}" />
           </StackPanel>
 
           <StackPanel Orientation="Horizontal" Classes="stack-sm">
@@ -55,21 +56,21 @@
                     Command="{Binding InstallCommand}">
               <StackPanel Orientation="Horizontal" Classes="stack-sm">
                 <PathIcon Classes="small" Data="{DynamicResource OrzioIconDownload}" />
-                <TextBlock Text="{Binding AvailableVersion, StringFormat='Instalar atualização {0}'}" />
+                <TextBlock Text="{Binding InstallButtonText}" />
               </StackPanel>
             </Button>
             <Button Command="{Binding CheckCommand}">
               <StackPanel Orientation="Horizontal" Classes="stack-sm">
                 <PathIcon Classes="small" Data="{DynamicResource OrzioIconRefresh}"
                           Classes.spin="{Binding IsChecking}" />
-                <TextBlock Text="Procurar atualizações" />
+                <TextBlock Text="{loc:Loc updates.check}" />
               </StackPanel>
             </Button>
             <Button Classes="ghost"
                     IsVisible="{Binding IsUpdateAvailable}"
                     Command="{Binding OpenReleaseNotesCommand}">
               <StackPanel Orientation="Horizontal" Classes="stack-xs">
-                <TextBlock Text="Notas da versão" />
+                <TextBlock Text="{loc:Loc updates.releaseNotes}" />
                 <PathIcon Classes="small" Data="{DynamicResource OrzioIconOpenExternal}" />
               </StackPanel>
             </Button>
@@ -82,38 +83,57 @@
 
       <Border Classes="card">
         <StackPanel Classes="stack-md">
-          <TextBlock Classes="title" Text="Aparência" />
+          <TextBlock Classes="title" Text="{loc:Loc settings.appearance.title}" />
 
           <StackPanel Classes="stack-sm">
-            <TextBlock Text="Tema" />
-            <ComboBox ItemsSource="{Binding Themes}"
-                      SelectedItem="{Binding Theme}"
-                      HorizontalAlignment="Left" />
+            <TextBlock Text="{loc:Loc settings.language.label}" />
+            <ComboBox ItemsSource="{Binding LanguageOptions}"
+                      SelectedItem="{Binding SelectedLanguageOption}"
+                      HorizontalAlignment="Left">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="loc:LocalizedOption">
+                  <TextBlock Text="{Binding Label}" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
+          </StackPanel>
+
+          <StackPanel Classes="stack-sm">
+            <TextBlock Text="{loc:Loc settings.theme.label}" />
+            <ComboBox ItemsSource="{Binding ThemeOptions}"
+                      SelectedItem="{Binding SelectedThemeOption}"
+                      HorizontalAlignment="Left">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="loc:LocalizedOption">
+                  <TextBlock Text="{Binding Label}" />
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
           </StackPanel>
 
           <CheckBox IsChecked="{Binding ShowExperimentalWarnings}"
-                    Content="Mostrar avisos em funcionalidades experimentais" />
+                    Content="{loc:Loc settings.experimentalWarnings}" />
         </StackPanel>
       </Border>
 
       <Border Classes="card">
         <StackPanel Classes="stack-md">
-          <TextBlock Classes="title" Text="Motor" />
+          <TextBlock Classes="title" Text="{loc:Loc settings.engine.title}" />
 
           <controls:EngineStatusBadge DataContext="{Binding EngineStatus}" />
 
           <StackPanel Classes="stack-xs">
-            <TextBlock Classes="caption" Text="Versão reportada" />
+            <TextBlock Classes="caption" Text="{loc:Loc settings.engine.reportedVersion}" />
             <TextBlock Classes="monospace" Text="{Binding EngineVersion}" />
           </StackPanel>
 
           <StackPanel Classes="stack-xs">
-            <TextBlock Classes="caption" Text="Integridade" />
+            <TextBlock Classes="caption" Text="{loc:Loc settings.engine.integrity}" />
             <TextBlock Classes="secondary" Text="{Binding EngineIntegrity}" />
           </StackPanel>
 
           <StackPanel Classes="stack-xs">
-            <TextBlock Classes="caption" Text="Versão da aplicação" />
+            <TextBlock Classes="caption" Text="{loc:Loc settings.engine.applicationVersion}" />
             <TextBlock Classes="monospace" Text="{Binding LauncherVersion}" />
           </StackPanel>
         </StackPanel>
@@ -121,15 +141,15 @@
 
       <Border Classes="card">
         <StackPanel Classes="stack-md">
-          <TextBlock Classes="title" Text="Dados locais" />
+          <TextBlock Classes="title" Text="{loc:Loc settings.data.title}" />
           <TextBlock Classes="secondary"
-                     Text="Definições, lista de recentes, registos e jobs ficam na sua pasta de utilizador. Os relatórios e ficheiros de projeto ficam onde os guardar, e a desinstalação não lhes toca." />
+                     Text="{loc:Loc settings.data.body}" />
 
           <TextBlock Classes="monospace" Text="{Binding DataDirectory}" />
 
           <StackPanel Orientation="Horizontal" Classes="stack-sm">
-            <Button Content="Abrir pasta de dados" Command="{Binding OpenDataFolderCommand}" />
-            <Button Content="Limpar lista de recentes" Command="{Binding ClearRecentOutputsCommand}" />
+            <Button Content="{loc:Loc settings.data.open}" Command="{Binding OpenDataFolderCommand}" />
+            <Button Content="{loc:Loc settings.data.clearRecent}" Command="{Binding ClearRecentOutputsCommand}" />
           </StackPanel>
 
           <TextBlock Classes="caption" Text="{Binding StatusMessage}" />
@@ -138,20 +158,20 @@
 
       <Border Classes="card">
         <StackPanel Classes="stack-md">
-          <TextBlock Classes="title" Text="Diagnóstico" />
+          <TextBlock Classes="title" Text="{loc:Loc settings.diagnostics.title}" />
           <TextBlock Classes="secondary"
-                     Text="Um pacote de diagnóstico é criado apenas quando o pedir, fica na sua pasta de dados e não é enviado para lado nenhum." />
+                     Text="{loc:Loc settings.diagnostics.body}" />
 
-          <Button Content="Ver o que seria incluído" HorizontalAlignment="Left"
+          <Button Content="{loc:Loc settings.diagnostics.preview}" HorizontalAlignment="Left"
                   Command="{Binding PrepareDiagnosticsCommand}" />
 
           <StackPanel Classes="stack-md" IsVisible="{Binding HasDiagnosticsPreview}">
 
             <StackPanel Classes="stack-sm">
-              <TextBlock Classes="subtitle" Text="O pacote contém exatamente estes ficheiros" />
+              <TextBlock Classes="subtitle" Text="{loc:Loc settings.diagnostics.contents}" />
               <ItemsControl ItemsSource="{Binding DiagnosticPlan}">
                 <ItemsControl.ItemTemplate>
-                  <DataTemplate x:DataType="diagnostics:DiagnosticBundleItem">
+                  <DataTemplate x:DataType="vm:DiagnosticItemViewModel">
                     <StackPanel Classes="stack-xs">
                       <TextBlock Classes="monospace" Text="{Binding FileName}" />
                       <TextBlock Classes="caption" Text="{Binding Description}" />
@@ -160,20 +180,20 @@
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
               <TextBlock Classes="secondary"
-                         Text="Nenhum ficheiro seu é incluído: nem XML, nem manifest, nem snapshot, nem governança, nem relatórios." />
+                         Text="{loc:Loc settings.diagnostics.excluded}" />
             </StackPanel>
 
             <StackPanel Classes="stack-sm">
-              <TextBlock Classes="subtitle" Text="Pré-visualização do registo redigido" />
+              <TextBlock Classes="subtitle" Text="{loc:Loc settings.diagnostics.logPreview}" />
               <ScrollViewer MaxHeight="{DynamicResource OrzioEngineOutputMaxHeight}">
                 <SelectableTextBlock Classes="monospace" Text="{Binding RedactedLogPreview}" />
               </ScrollViewer>
             </StackPanel>
 
             <StackPanel Orientation="Horizontal" Classes="stack-sm">
-              <Button Classes="primary" Content="Gerar pacote"
+              <Button Classes="primary" Content="{loc:Loc settings.diagnostics.create}"
                       Command="{Binding CreateDiagnosticsBundleCommand}" />
-              <Button Content="Mostrar na pasta"
+              <Button Content="{loc:Loc common.revealInFolder}"
                       IsVisible="{Binding CanRevealDiagnosticsBundle}"
                       Command="{Binding RevealDiagnosticsBundleCommand}" />
             </StackPanel>
@@ -184,9 +204,9 @@
 
       <Border Classes="card">
         <StackPanel Classes="stack-sm">
-          <TextBlock Classes="title" Text="O que esta aplicação não faz" />
+          <TextBlock Classes="title" Text="{loc:Loc settings.promise.title}" />
           <TextBlock Classes="secondary"
-                     Text="Não recolhe telemetria e não envia os seus ficheiros. Funciona offline, exceto ao procurar ou descarregar atualizações a pedido do utilizador. Os registos locais não guardam caminhos absolutos nem conteúdo dos seus ficheiros." />
+                     Text="{loc:Loc settings.promise.body}" />
         </StackPanel>
       </Border>
 

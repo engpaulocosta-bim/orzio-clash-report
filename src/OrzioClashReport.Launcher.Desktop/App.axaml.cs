@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -8,6 +9,7 @@ using Avalonia.Styling;
 using Avalonia.Threading;
 using OrzioClashReport.Launcher.Application;
 using OrzioClashReport.Launcher.Application.Engine;
+using OrzioClashReport.Launcher.Application.Localization;
 using OrzioClashReport.Launcher.Application.Operations;
 using OrzioClashReport.Launcher.Application.Presentation;
 using OrzioClashReport.Launcher.Contracts.Engine;
@@ -54,6 +56,14 @@ namespace OrzioClashReport.Launcher.Desktop
                 var launcherLog = new JsonLinesLauncherLog(locations.LogsDirectory, clock);
                 ILauncherLog log = launcherLog;
                 ISettingsStore settingsStore = new JsonSettingsStore(locations.SettingsFilePath);
+
+                // The interface language is applied before any view model exists, so the first frame is
+                // already in it. The store reads a local file and returns a completed task, so waiting
+                // here cannot block on anything. "System" follows the operating system's display language.
+                LauncherSettings storedSettings =
+                    settingsStore.LoadAsync(CancellationToken.None).GetAwaiter().GetResult();
+                Loc.Language = Loc.Resolve(storedSettings.Language, CultureInfo.CurrentUICulture);
+
                 IRecentItemsStore recentItemsStore = new JsonRecentItemsStore(locations.RecentItemsFilePath);
                 IOutputRevealer outputRevealer = new TopLevelOutputRevealer(() => _mainWindow);
 

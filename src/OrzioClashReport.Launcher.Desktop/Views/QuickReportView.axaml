@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:OrzioClashReport.Launcher.Desktop.Localization"
              xmlns:controls="clr-namespace:OrzioClashReport.Launcher.Desktop.Controls"
              xmlns:views="clr-namespace:OrzioClashReport.Launcher.Desktop.Views"
              xmlns:vm="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels"
@@ -10,9 +11,9 @@
     <StackPanel Classes="page">
 
       <StackPanel Classes="stack-xs">
-        <TextBlock Classes="display" Text="Relatório rápido" />
+        <TextBlock Classes="display" Text="{loc:Loc nav.quickreport.label}" />
         <TextBlock Classes="secondary"
-                   Text="Um export XML do Clash Detective para um relatório HTML agrupado. Não precisa de manifest nem de projeto." />
+                   Text="{loc:Loc quick.subtitle}" />
       </StackPanel>
 
       <controls:EngineStatusBadge DataContext="{Binding EngineStatus}"
@@ -22,20 +23,20 @@
         <StackPanel Classes="stack-md">
 
           <StackPanel Classes="stack-sm">
-            <TextBlock Classes="subtitle" Text="Ficheiro de entrada" />
-            <TextBlock Classes="secondary" Text="O XML exportado pelo Clash Detective do Navisworks." />
+            <TextBlock Classes="subtitle" Text="{loc:Loc quick.input.title}" />
+            <TextBlock Classes="secondary" Text="{loc:Loc quick.input.description}" />
             <Grid Classes="path-field" ColumnDefinitions="*,Auto">
-              <TextBox Grid.Column="0" Text="{Binding InputXmlPath}" Watermark="Nenhum ficheiro escolhido" />
-              <Button Grid.Column="1" Content="Escolher…" Command="{Binding BrowseInputCommand}" />
+              <TextBox Grid.Column="0" Text="{Binding InputXmlPath}" Watermark="{loc:Loc picker.watermark.noFile}" />
+              <Button Grid.Column="1" Content="{loc:Loc common.browse}" Command="{Binding BrowseInputCommand}" />
             </Grid>
           </StackPanel>
 
           <StackPanel Classes="stack-sm">
-            <TextBlock Classes="subtitle" Text="Destino do relatório" />
-            <TextBlock Classes="secondary" Text="Onde o ficheiro HTML será escrito. Fica sempre onde o escolher." />
+            <TextBlock Classes="subtitle" Text="{loc:Loc quick.output.title}" />
+            <TextBlock Classes="secondary" Text="{loc:Loc quick.output.description}" />
             <Grid Classes="path-field" ColumnDefinitions="*,Auto">
-              <TextBox Grid.Column="0" Text="{Binding OutputHtmlPath}" Watermark="Nenhum destino escolhido" />
-              <Button Grid.Column="1" Content="Escolher…" Command="{Binding BrowseOutputCommand}" />
+              <TextBox Grid.Column="0" Text="{Binding OutputHtmlPath}" Watermark="{loc:Loc picker.watermark.noDestination}" />
+              <Button Grid.Column="1" Content="{loc:Loc common.browse}" Command="{Binding BrowseOutputCommand}" />
             </Grid>
           </StackPanel>
 
@@ -44,7 +45,7 @@
                   Command="{Binding GenerateCommand}">
             <StackPanel Orientation="Horizontal" Classes="stack-sm">
               <PathIcon Classes="small" Data="{DynamicResource OrzioIconQuickReport}" />
-              <TextBlock Text="Gerar relatório" />
+              <TextBlock Text="{loc:Loc quick.generate}" />
             </StackPanel>
           </Button>
 
@@ -59,16 +60,16 @@
         <StackPanel Classes="stack-sm">
           <StackPanel Orientation="Horizontal" Classes="stack-sm">
             <TextBlock Text="⚠" Classes="severity-caution" />
-            <TextBlock Classes="subtitle" Text="Já existe um relatório neste destino" />
+            <TextBlock Classes="subtitle" Text="{loc:Loc quick.collision.title}" />
           </StackPanel>
 
           <TextBlock Classes="monospace" Text="{Binding CollisionFileName}" />
           <TextBlock Classes="secondary"
-                     Text="O relatório é derivado e pode ser gerado de novo, por isso pode ser substituído. Nada mais é substituído por esta aplicação." />
+                     Text="{loc:Loc quick.collision.body}" />
 
           <StackPanel Orientation="Horizontal" Classes="stack-sm">
-            <Button Content="Escolher outro nome" Command="{Binding ChooseAnotherNameCommand}" />
-            <Button Content="Substituir relatório existente" Command="{Binding ReplaceExistingCommand}" />
+            <Button Content="{loc:Loc common.chooseAnotherName}" Command="{Binding ChooseAnotherNameCommand}" />
+            <Button Content="{loc:Loc common.replaceExistingReport}" Command="{Binding ReplaceExistingCommand}" />
           </StackPanel>
         </StackPanel>
       </Border>

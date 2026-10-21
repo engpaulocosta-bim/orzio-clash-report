@@ -69,6 +69,11 @@ UninstallDisplayIcon={app}\{#LauncherExeName}
 Name: "portuguese"; MessagesFile: "compiler:Languages\Portuguese.isl"
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
+[CustomMessages]
+; The uninstall question is shown in the language chosen at install time. %n is a line break.
+portuguese.DeleteLocalDataPrompt=Apagar também as definições, a lista de recentes e os registos locais desta aplicação?%n%nOs seus projetos, snapshots e relatórios NÃO são apagados.%nSe responder Não, estes dados ficam guardados para uma futura reinstalação.
+english.DeleteLocalDataPrompt=Also delete this application's settings, recent list and local logs?%n%nYour projects, snapshots and reports are NOT deleted.%nIf you answer No, this data is kept for a future reinstall.
+
 [Tasks]
 ; Unchecked by default: a desktop shortcut is an opinion about someone else's desktop.
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
@@ -105,11 +110,7 @@ begin
     if DirExists(LocalDataDir) then
     begin
       if SuppressibleMsgBox(
-           'Apagar também as definições, a lista de recentes e os registos locais desta aplicação?'
-           + #13#10#13#10
-           + 'Os seus projetos, snapshots e relatórios NÃO são apagados.'
-           + #13#10
-           + 'Se responder Não, estes dados ficam guardados para uma futura reinstalação.',
+           CustomMessage('DeleteLocalDataPrompt'),
            mbConfirmation, MB_YESNO, IDNO) = IDYES then
       begin
         DelTree(LocalDataDir, True, True, True);

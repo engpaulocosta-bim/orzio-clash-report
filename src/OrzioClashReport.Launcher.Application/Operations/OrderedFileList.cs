@@ -1,3 +1,4 @@
+using OrzioClashReport.Launcher.Application.Localization;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -99,8 +100,7 @@ namespace OrzioClashReport.Launcher.Application.Operations
                 {
                     warnings.Add(new LauncherWarning(
                         LauncherWarningKind.DuplicateOrderedInput,
-                        $"A posição {i + 1} repete a posição {first + 1} ({Path.GetFileName(_paths[i])}). "
-                        + "A repetição é mantida exatamente como declarada."));
+                        Loc.T("orderedFiles.duplicate", i + 1, first + 1, Path.GetFileName(_paths[i]))));
                 }
                 else
                 {

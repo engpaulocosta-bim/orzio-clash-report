@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using OrzioClashReport.Launcher.Application.Localization;
 
 namespace OrzioClashReport.Launcher.Application.Presentation
 {
@@ -8,46 +9,40 @@ namespace OrzioClashReport.Launcher.Application.Presentation
     /// The label and glyph of one navigation section. The glyph never stands alone: the rail keeps the
     /// label as a tooltip and the sidebar shows it as text.
     /// </summary>
+    /// <remarks>
+    /// <see cref="Label"/> and <see cref="Description"/> are looked up each time they are read, so they
+    /// follow the interface language when it changes. The glyph is language-independent.
+    /// </remarks>
     public sealed class LauncherSectionPresentation
     {
-        public LauncherSection Section { get; }
-        public string Label { get; }
-        public string Glyph { get; }
-        public string Description { get; }
+        private readonly string _labelKey;
+        private readonly string _descriptionKey;
 
-        private LauncherSectionPresentation(LauncherSection section, string label, string glyph, string description)
+        public LauncherSection Section { get; }
+        public string Glyph { get; }
+
+        public string Label => Loc.T(_labelKey);
+        public string Description => Loc.T(_descriptionKey);
+
+        private LauncherSectionPresentation(LauncherSection section, string keyPrefix, string glyph)
         {
             Section = section;
-            Label = label;
             Glyph = glyph;
-            Description = description;
+            _labelKey = keyPrefix + ".label";
+            _descriptionKey = keyPrefix + ".description";
         }
 
         /// <summary>The seven sections, in navigation order. This order is the shell's only source of order.</summary>
         public static IReadOnlyList<LauncherSectionPresentation> All { get; } =
             new ReadOnlyCollection<LauncherSectionPresentation>(new[]
             {
-                new LauncherSectionPresentation(
-                    LauncherSection.Home, "Início", "⌂",
-                    "Ações rápidas, estado do motor e últimos relatórios."),
-                new LauncherSectionPresentation(
-                    LauncherSection.QuickReport, "Relatório rápido", "▤",
-                    "Um export XML do Clash Detective para um relatório HTML agrupado."),
-                new LauncherSectionPresentation(
-                    LauncherSection.Snapshots, "Snapshots", "◫",
-                    "Criar snapshots imutáveis e comparar dois snapshots."),
-                new LauncherSectionPresentation(
-                    LauncherSection.Longitudinal, "Longitudinal", "⇉",
-                    "Índice ordenado de runs e comparação de pares adjacentes."),
-                new LauncherSectionPresentation(
-                    LauncherSection.Projects, "Projetos", "❑",
-                    "Catálogo operacional do projeto: criar, acrescentar run e re-renderizar."),
-                new LauncherSectionPresentation(
-                    LauncherSection.Governance, "Governança", "⚖",
-                    "Decisões humanas explícitas de identidade, validação e revisão."),
-                new LauncherSectionPresentation(
-                    LauncherSection.Settings, "Definições", "⚙",
-                    "Tema, dados locais, motor e diagnóstico."),
+                new LauncherSectionPresentation(LauncherSection.Home, "nav.home", "⌂"),
+                new LauncherSectionPresentation(LauncherSection.QuickReport, "nav.quickreport", "▤"),
+                new LauncherSectionPresentation(LauncherSection.Snapshots, "nav.snapshots", "◫"),
+                new LauncherSectionPresentation(LauncherSection.Longitudinal, "nav.longitudinal", "⇉"),
+                new LauncherSectionPresentation(LauncherSection.Projects, "nav.projects", "❑"),
+                new LauncherSectionPresentation(LauncherSection.Governance, "nav.governance", "⚖"),
+                new LauncherSectionPresentation(LauncherSection.Settings, "nav.settings", "⚙"),
             });
 
         public static LauncherSectionPresentation For(LauncherSection section)

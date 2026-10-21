@@ -13,31 +13,44 @@ namespace OrzioClashReport.Launcher.Contracts.Settings
         public string? LastOutputDirectory { get; }
         public bool ShowExperimentalWarnings { get; }
 
+        /// <summary>The interface language. Defaults to following the operating system.</summary>
+        public LauncherLanguagePreference Language { get; }
+
         public LauncherSettings(
             LauncherThemePreference theme,
             string? lastOutputDirectory,
-            bool showExperimentalWarnings)
+            bool showExperimentalWarnings,
+            LauncherLanguagePreference language = LauncherLanguagePreference.System)
         {
             if (!Enum.IsDefined(typeof(LauncherThemePreference), theme))
             {
                 throw new ArgumentOutOfRangeException(nameof(theme), theme, "Unknown theme preference.");
             }
 
+            if (!Enum.IsDefined(typeof(LauncherLanguagePreference), language))
+            {
+                throw new ArgumentOutOfRangeException(nameof(language), language, "Unknown language preference.");
+            }
+
             Theme = theme;
             LastOutputDirectory = string.IsNullOrWhiteSpace(lastOutputDirectory) ? null : lastOutputDirectory;
             ShowExperimentalWarnings = showExperimentalWarnings;
+            Language = language;
         }
 
         public static LauncherSettings Default { get; } =
             new LauncherSettings(LauncherThemePreference.System, null, true);
 
         public LauncherSettings WithTheme(LauncherThemePreference theme) =>
-            new LauncherSettings(theme, LastOutputDirectory, ShowExperimentalWarnings);
+            new LauncherSettings(theme, LastOutputDirectory, ShowExperimentalWarnings, Language);
 
         public LauncherSettings WithLastOutputDirectory(string? directory) =>
-            new LauncherSettings(Theme, directory, ShowExperimentalWarnings);
+            new LauncherSettings(Theme, directory, ShowExperimentalWarnings, Language);
 
         public LauncherSettings WithShowExperimentalWarnings(bool show) =>
-            new LauncherSettings(Theme, LastOutputDirectory, show);
+            new LauncherSettings(Theme, LastOutputDirectory, show, Language);
+
+        public LauncherSettings WithLanguage(LauncherLanguagePreference language) =>
+            new LauncherSettings(Theme, LastOutputDirectory, ShowExperimentalWarnings, language);
     }
 }

@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using OrzioClashReport.Launcher.Desktop.Localization;
 using OrzioClashReport.Launcher.Application.Presentation;
 using OrzioClashReport.Launcher.Contracts.Engine;
 
@@ -8,16 +9,12 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
     /// Presents the engine state. Glyph and label always come from
     /// <see cref="EngineStatusPresentation"/>, so the badge is readable without perceiving colour.
     /// </summary>
-    public sealed partial class EngineStatusViewModel : ObservableObject
+    public sealed partial class EngineStatusViewModel : LocalizedObservableObject
     {
-        [ObservableProperty]
-        private string _glyph = string.Empty;
-
-        [ObservableProperty]
-        private string _label = string.Empty;
-
-        [ObservableProperty]
-        private string _explanation = string.Empty;
+        // The state, not its text: glyph, label and explanation are read from the presentation each time,
+        // so the badge follows the interface language. A detail the probe wrote is kept as it was written.
+        private EngineStatusKind _status = EngineStatusKind.Checking;
+        private string? _detail;
 
         [ObservableProperty]
         private string _reportedVersion = string.Empty;
@@ -45,6 +42,12 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             Apply(EngineStatusKind.Checking);
         }
 
+        public string Glyph => EngineStatusPresentation.For(_status).Glyph;
+
+        public string Label => EngineStatusPresentation.For(_status).Label;
+
+        public string Explanation => _detail ?? EngineStatusPresentation.For(_status).Explanation;
+
         public void Update(EngineInfo info)
         {
             Apply(info.Status);
@@ -55,7 +58,8 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
             if (info.Detail.Length > 0)
             {
-                Explanation = info.Detail;
+                _detail = info.Detail;
+                OnPropertyChanged(nameof(Explanation));
             }
         }
 
@@ -63,9 +67,11 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         {
             EngineStatusPresentation presentation = EngineStatusPresentation.For(status);
 
-            Glyph = presentation.Glyph;
-            Label = presentation.Label;
-            Explanation = presentation.Explanation;
+            _status = status;
+            _detail = null;
+            OnPropertyChanged(nameof(Glyph));
+            OnPropertyChanged(nameof(Label));
+            OnPropertyChanged(nameof(Explanation));
 
             IsNeutral = presentation.Severity == LauncherSeverity.Neutral;
             IsPositive = presentation.Severity == LauncherSeverity.Positive;

@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using CommunityToolkit.Mvvm.ComponentModel;
 using OrzioClashReport.Launcher.Application.Presentation;
+using OrzioClashReport.Launcher.Desktop.Localization;
 
 namespace OrzioClashReport.Launcher.Desktop.ViewModels
 {
@@ -9,20 +9,19 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
     /// A section whose operations are not wired yet. It states plainly what the section will do and
     /// which engine commands stand behind it, rather than showing an empty screen.
     /// </summary>
-    public sealed class SectionPlaceholderViewModel : ObservableObject
+    public sealed class SectionPlaceholderViewModel : LocalizedObservableObject
     {
         public SectionPlaceholderViewModel(LauncherSection section, IReadOnlyList<string> plannedOperations)
         {
-            LauncherSectionPresentation presentation = LauncherSectionPresentation.For(section);
-
-            Title = presentation.Label;
-            Description = presentation.Description;
+            _presentation = LauncherSectionPresentation.For(section);
             PlannedOperations = plannedOperations ?? throw new ArgumentNullException(nameof(plannedOperations));
         }
 
-        public string Title { get; }
+        private readonly LauncherSectionPresentation _presentation;
 
-        public string Description { get; }
+        public string Title => _presentation.Label;
+
+        public string Description => _presentation.Description;
 
         public IReadOnlyList<string> PlannedOperations { get; }
     }

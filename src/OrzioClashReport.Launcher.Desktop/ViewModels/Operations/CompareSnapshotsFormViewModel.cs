@@ -17,28 +17,28 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
             JobViewModel job, EngineStatusViewModel engineStatus, IFileDialogService dialogs)
             : base(
                 LauncherOperationKind.CompareSnapshots,
-                "Comparar dois snapshots",
-                "Compara dois snapshots já criados. Os papéis anterior e atual são seus: nada é ordenado por data, revisão ou nome de ficheiro.",
+                "op.compareSnapshots.title",
+                "op.compareSnapshots.description",
                 job,
                 engineStatus)
         {
             _previous = new PathFieldViewModel(
-                "Snapshot anterior",
-                "O run que serve de ponto de partida.",
+                "op.compareSnapshots.previous.label",
+                "op.compareSnapshots.previous.description",
                 dialogs,
                 FilePickerFileKind.RunSnapshotJson,
                 onChanged: NotifyFieldsChanged);
 
             _current = new PathFieldViewModel(
-                "Snapshot atual",
-                "O run que serve de ponto de chegada.",
+                "op.compareSnapshots.current.label",
+                "op.compareSnapshots.current.description",
                 dialogs,
                 FilePickerFileKind.RunSnapshotJson,
                 onChanged: NotifyFieldsChanged);
 
             _output = new PathFieldViewModel(
-                "Destino do relatório",
-                "O HTML da comparação. É derivado e pode ser gerado de novo.",
+                "op.compareSnapshots.output.label",
+                "op.compareSnapshots.output.description",
                 dialogs,
                 FilePickerFileKind.HtmlReport,
                 isDestination: true,
@@ -49,8 +49,8 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
             RegisterField(_current);
             RegisterField(_output);
 
-            Notes.Add("Matching e lifecycle são recalculados a partir da evidência, e não são guardados.");
-            Notes.Add("Comparação longitudinal continua experimental: ainda não foi validada em exports reais sequenciais.");
+            AddNote("op.compareSnapshots.note.1");
+            AddNote("op.compareSnapshots.note.2");
         }
 
         protected override string? OutputPath => _output.Value.Length == 0 ? null : _output.Value;

@@ -8,7 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using OrzioClashReport.Launcher.Application.Localization;
 using OrzioClashReport.Launcher.Contracts.Platform;
+using OrzioClashReport.Launcher.Desktop.Localization;
 using OrzioClashReport.Launcher.Desktop.Platform;
 using OrzioClashReport.Launcher.Infrastructure.Updates;
 
@@ -30,7 +32,11 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
     /// the user asks to check, and an installer is downloaded only when the user asks to install. A
     /// download is verified against the release's SHA-256 before anything is started.
     /// </summary>
-    public sealed partial class UpdatesViewModel : ObservableObject
+    /// <remarks>
+    /// Every sentence here is held as a key and its arguments, and looked up when read, so the card follows
+    /// the interface language. The text of an unexpected exception is an argument, shown as it was written.
+    /// </remarks>
+    public sealed partial class UpdatesViewModel : LocalizedObservableObject
     {
         private readonly IDesktopUpdateClient _client;
         private readonly ActiveJobTracker _activeJobTracker;
@@ -38,6 +44,9 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         private readonly Action<Uri> _openUri;
         private readonly Action _requestShutdown;
         private DesktopUpdateManifest? _available;
+        private string _statusKey = "updates.status.idle";
+        private object?[] _statusArguments = Array.Empty<object?>();
+        private DateTimeOffset? _lastCheckedLocal;
 
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(IsBusy))]
@@ -53,16 +62,14 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         private UpdateState _state = UpdateState.Idle;
 
         [ObservableProperty]
-        private string _statusText = "Ainda não procurou atualizações nesta sessão.";
-
-        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(InstallButtonText))]
+        [NotifyPropertyChangedFor(nameof(AvailableHeadline))]
+        [NotifyPropertyChangedFor(nameof(AvailableTooltip))]
         private string? _availableVersion;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(DownloadProgressText))]
         private double _downloadPercent;
-
-        [ObservableProperty]
-        private string? _lastCheckedText;
 
         public UpdatesViewModel(
             IDesktopUpdateClient client,
@@ -90,6 +97,38 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public string CurrentVersion { get; }
 
+        /// <summary>The sentence describing where the update flow is, in the active language.</summary>
+        public string StatusText => Loc.T(_statusKey, _statusArguments);
+
+        /// <summary>When the last explicit check finished, or null when there has been none.</summary>
+        public string? LastCheckedText => _lastCheckedLocal == null
+            ? null
+            : Loc.T("updates.status.lastChecked", FormatTime(_lastCheckedLocal.Value));
+
+        /// <summary>The text of the install button, which names the version it would install.</summary>
+        public string InstallButtonText => Loc.T("updates.install", AvailableVersion);
+
+        /// <summary>The headline shown on the home screen when a newer version was found.</summary>
+        public string AvailableHeadline => Loc.T("home.update.title", AvailableVersion);
+
+        /// <summary>The sidebar tooltip when a newer version was found.</summary>
+        public string AvailableTooltip => Loc.T("shell.sidebar.updateTooltip", AvailableVersion);
+
+        public string DownloadProgressText =>
+            Loc.T("updates.downloaded", DownloadPercent.ToString("0", CultureInfo.InvariantCulture));
+
+        private void SetStatus(string key, params object?[] arguments)
+        {
+            _statusKey = key;
+            _statusArguments = arguments;
+            OnPropertyChanged(nameof(StatusText));
+        }
+
+        private static string FormatTime(DateTimeOffset local) =>
+            local.ToString(
+                Loc.Language == UiLanguage.English ? "yyyy-MM-dd HH:mm" : "dd/MM/yyyy HH:mm",
+                CultureInfo.InvariantCulture);
+
         public bool IsBusy => State is UpdateState.Checking or UpdateState.Downloading or UpdateState.Installing;
 
         public bool IsChecking => State == UpdateState.Checking;
@@ -107,12 +146,12 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         /// <summary>A short line for the sidebar footer; the full explanation lives in Definições.</summary>
         public string SidebarStatus => State switch
         {
-            UpdateState.Checking => "A procurar…",
-            UpdateState.UpToDate => "Atualizado · " + CurrentVersion,
-            UpdateState.Downloading => "A descarregar…",
-            UpdateState.Installing => "A instalar…",
-            UpdateState.Failed => "Verificação falhou",
-            _ => "Versão " + CurrentVersion,
+            UpdateState.Checking => Loc.T("updates.sidebar.checking"),
+            UpdateState.UpToDate => Loc.T("updates.sidebar.upToDate", CurrentVersion),
+            UpdateState.Downloading => Loc.T("updates.sidebar.downloading"),
+            UpdateState.Installing => Loc.T("updates.sidebar.installing"),
+            UpdateState.Failed => Loc.T("updates.sidebar.failed"),
+            _ => Loc.T("updates.sidebar.version", CurrentVersion),
         };
 
         /// <summary>A glyph for the state, so it is never conveyed by colour alone.</summary>
@@ -133,7 +172,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         private async Task CheckAsync()
         {
             State = UpdateState.Checking;
-            StatusText = "A procurar atualizações oficiais no GitHub…";
+            SetStatus("updates.status.checking");
             _available = null;
             AvailableVersion = null;
             OnPropertyChanged(nameof(HasReleaseNotes));
@@ -143,13 +182,13 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
                 DesktopUpdateCheckResult result =
                     await _client.CheckAsync(CurrentVersion, CancellationToken.None).ConfigureAwait(true);
 
-                LastCheckedText = "Última verificação: "
-                    + _clock.UtcNow.ToLocalTime().ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
+                _lastCheckedLocal = _clock.UtcNow.ToLocalTime();
+                OnPropertyChanged(nameof(LastCheckedText));
 
                 if (!result.UpdateAvailable || result.Update == null)
                 {
                     State = UpdateState.UpToDate;
-                    StatusText = $"Tem a versão mais recente ({CurrentVersion}).";
+                    SetStatus("updates.status.upToDate", CurrentVersion);
                     return;
                 }
 
@@ -157,11 +196,11 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
                 AvailableVersion = result.Update.Version;
                 OnPropertyChanged(nameof(HasReleaseNotes));
                 State = UpdateState.Available;
-                StatusText = $"Nova versão disponível: {result.Update.Version}. A instalação só começa quando a pedir.";
+                SetStatus("updates.status.available", result.Update.Version);
             }
             catch (Exception exception) when (IsExpectedFailure(exception))
             {
-                Fail(Describe(exception, downloading: false));
+                Fail(DescribeKey(exception, downloading: false), DescribeArguments(exception));
             }
         }
 
@@ -178,7 +217,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
             State = UpdateState.Downloading;
             DownloadPercent = 0;
-            StatusText = $"A descarregar a versão {update.Version}…";
+            SetStatus("updates.status.downloading", update.Version);
 
             var progress = new Progress<double>(fraction => DownloadPercent = Math.Round(fraction * 100, 0));
 
@@ -189,12 +228,12 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
                 DownloadPercent = 100;
                 State = UpdateState.Installing;
-                StatusText = "Instalador verificado (SHA-256) e iniciado. A aplicação vai fechar para a atualização poder substituir os ficheiros.";
+                SetStatus("updates.status.installing");
                 _requestShutdown();
             }
             catch (Exception exception) when (IsExpectedFailure(exception))
             {
-                Fail(Describe(exception, downloading: true));
+                Fail(DescribeKey(exception, downloading: true), DescribeArguments(exception));
             }
         }
 
@@ -208,10 +247,10 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             }
         }
 
-        private void Fail(string message)
+        private void Fail(string key, params object?[] arguments)
         {
             State = UpdateState.Failed;
-            StatusText = message;
+            SetStatus(key, arguments);
         }
 
         private static bool IsExpectedFailure(Exception exception) =>
@@ -219,28 +258,32 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
                 or InvalidDataException or InvalidOperationException or ArgumentException
                 or PlatformNotSupportedException or TaskCanceledException;
 
-        private static string Describe(Exception exception, bool downloading)
+        private static string DescribeKey(Exception exception, bool downloading)
         {
             switch (exception)
             {
                 case HttpRequestException http when http.StatusCode == HttpStatusCode.Forbidden:
-                    return "O GitHub recusou temporariamente o pedido (limite de pedidos). Tente novamente dentro de alguns minutos.";
+                    return "updates.error.rateLimited";
 
                 case HttpRequestException:
                 case TaskCanceledException:
-                    return "Não foi possível contactar o GitHub. Verifique a ligação à internet e tente novamente.";
+                    return "updates.error.unreachable";
 
                 case InvalidDataException:
-                    return downloading
-                        ? "O instalador descarregado não corresponde ao SHA-256 publicado e não foi executado."
-                        : "A release publicada não passou a validação de segurança e foi ignorada.";
+                    return downloading ? "updates.error.installerMismatch" : "updates.error.releaseRejected";
 
                 case PlatformNotSupportedException:
-                    return "A instalação automática só está disponível no Windows.";
+                    return "updates.error.unsupportedPlatform";
 
                 default:
-                    return "Não foi possível concluir a atualização: " + exception.Message;
+                    return "updates.error.generic";
             }
         }
+
+        // Only the unexpected case carries the exception's own text, which is shown as it was written.
+        private static object?[] DescribeArguments(Exception exception) =>
+            DescribeKey(exception, downloading: false) == "updates.error.generic"
+                ? new object?[] { exception.Message }
+                : Array.Empty<object?>();
     }
 }

@@ -6,10 +6,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using OrzioClashReport.Launcher.Application.Localization;
 using OrzioClashReport.Launcher.Application.Operations;
 using OrzioClashReport.Launcher.Contracts.Jobs;
 using OrzioClashReport.Launcher.Contracts.Platform;
 using OrzioClashReport.Launcher.Contracts.Results;
+using OrzioClashReport.Launcher.Desktop.Localization;
 
 namespace OrzioClashReport.Launcher.Desktop.ViewModels
 {
@@ -18,7 +20,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
     /// produced file or an error that says what failed and what to do next. Shared by every form, so
     /// running an operation looks and behaves the same everywhere.
     /// </summary>
-    public sealed partial class JobViewModel : ObservableObject
+    public sealed partial class JobViewModel : LocalizedObservableObject
     {
         /// <summary>The panel shows a rolling window; the complete streams stay in the result.</summary>
         public const int MaximumVisibleLines = 500;
@@ -27,7 +29,20 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         private readonly IOutputRevealer _outputRevealer;
         private readonly ActiveJobTracker _activeJobTracker;
 
+        // Which state the panel is showing. The glyph and the label are derived from it, so the label
+        // follows the interface language; the text of an error is kept as it was produced.
+        private PanelState _panelState = PanelState.None;
+
         private CancellationTokenSource? _cancellation;
+
+        private enum PanelState
+        {
+            None,
+            Running,
+            Succeeded,
+            Canceled,
+            Failed,
+        }
 
         [ObservableProperty]
         private bool _isRunning;
@@ -43,12 +58,6 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         [ObservableProperty]
         private bool _isCanceled;
-
-        [ObservableProperty]
-        private string _stateGlyph = string.Empty;
-
-        [ObservableProperty]
-        private string _stateLabel = string.Empty;
 
         [ObservableProperty]
         private string _errorMessage = string.Empty;
@@ -83,6 +92,31 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             _activeJobTracker = activeJobTracker ?? throw new ArgumentNullException(nameof(activeJobTracker));
         }
 
+        public string StateGlyph => _panelState switch
+        {
+            PanelState.Running => "⋯",
+            PanelState.Succeeded => "✓",
+            PanelState.Canceled => "⊘",
+            PanelState.Failed => "✕",
+            _ => string.Empty,
+        };
+
+        public string StateLabel => _panelState switch
+        {
+            PanelState.Running => Loc.T("job.state.running"),
+            PanelState.Succeeded => Loc.T("job.state.succeeded"),
+            PanelState.Canceled => Loc.T("job.state.canceled"),
+            PanelState.Failed => Loc.T("job.state.failed"),
+            _ => string.Empty,
+        };
+
+        private void SetPanelState(PanelState state)
+        {
+            _panelState = state;
+            OnPropertyChanged(nameof(StateGlyph));
+            OnPropertyChanged(nameof(StateLabel));
+        }
+
         public ObservableCollection<string> OutputLines { get; } = new ObservableCollection<string>();
 
         public ObservableCollection<string> Warnings { get; } = new ObservableCollection<string>();
@@ -96,16 +130,15 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             if (!_activeJobTracker.TryAcquire())
             {
                 ShowRefusal(
-                    "Já existe uma operação em curso nesta janela.",
-                    "Espere que termine, ou cancele-a, antes de iniciar outra.");
+                    Loc.T("job.refusal.busy"),
+                    Loc.T("job.refusal.busyNextStep"));
 
                 return null;
             }
 
             Reset();
             IsRunning = true;
-            StateGlyph = "⋯";
-            StateLabel = "Em execução";
+            SetPanelState(PanelState.Running);
 
             var cancellation = new CancellationTokenSource();
             _cancellation = cancellation;
@@ -160,7 +193,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         /// panel as an engine failure, so the user never meets a raw exception.
         /// </summary>
         public void ShowValidationFailure(string message) =>
-            ShowRefusal(message, "Reveja os campos do formulário e tente novamente.");
+            ShowRefusal(message, Loc.T("job.validation.nextStep"));
 
         public void Reset()
         {
@@ -213,18 +246,15 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
             if (IsSucceeded)
             {
-                StateGlyph = "✓";
-                StateLabel = "Concluído";
+                SetPanelState(PanelState.Succeeded);
             }
             else if (IsCanceled)
             {
-                StateGlyph = "⊘";
-                StateLabel = "Cancelado";
+                SetPanelState(PanelState.Canceled);
             }
             else
             {
-                StateGlyph = "✕";
-                StateLabel = "Falhou";
+                SetPanelState(PanelState.Failed);
             }
 
             if (result.Error != null)
@@ -250,8 +280,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         {
             HasResult = true;
             IsCanceled = true;
-            StateGlyph = "⊘";
-            StateLabel = "Cancelado";
+            SetPanelState(PanelState.Canceled);
         }
 
         private void ShowRefusal(string message, string nextStep)
@@ -260,8 +289,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
             HasResult = true;
             IsFailed = true;
-            StateGlyph = "✕";
-            StateLabel = "Falhou";
+            SetPanelState(PanelState.Failed);
             ErrorMessage = message;
             ErrorNextStep = nextStep;
         }

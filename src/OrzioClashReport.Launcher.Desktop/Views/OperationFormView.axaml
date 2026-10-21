@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:OrzioClashReport.Launcher.Desktop.Localization"
              xmlns:controls="clr-namespace:OrzioClashReport.Launcher.Desktop.Controls"
              xmlns:fields="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels.Fields"
              xmlns:views="clr-namespace:OrzioClashReport.Launcher.Desktop.Views"
@@ -16,7 +17,7 @@
         <TextBlock Classes="secondary" Text="{Binding Description}" />
         <Grid Classes="path-field" ColumnDefinitions="*,Auto">
           <TextBox Grid.Column="0" Text="{Binding Value}" Watermark="{Binding Watermark}" />
-          <Button Grid.Column="1" Content="Escolher…" Command="{Binding BrowseCommand}" />
+          <Button Grid.Column="1" Content="{loc:Loc common.browse}" Command="{Binding BrowseCommand}" />
         </Grid>
       </StackPanel>
     </DataTemplate>
@@ -82,14 +83,14 @@
                 <TextBlock Grid.Column="1" VerticalAlignment="Center" Text="{Binding FileName}"
                            ToolTip.Tip="{Binding Path}" />
                 <Button Grid.Column="2" Classes="ghost" Content="↑"
-                        ToolTip.Tip="Mover para cima"
+                        ToolTip.Tip="{loc:Loc form.moveUp}"
                         Command="{Binding $parent[ItemsControl].((fields:OrderedFilesFieldViewModel)DataContext).MoveUpCommand}"
                         CommandParameter="{Binding}" />
                 <Button Grid.Column="3" Classes="ghost" Content="↓"
-                        ToolTip.Tip="Mover para baixo"
+                        ToolTip.Tip="{loc:Loc form.moveDown}"
                         Command="{Binding $parent[ItemsControl].((fields:OrderedFilesFieldViewModel)DataContext).MoveDownCommand}"
                         CommandParameter="{Binding}" />
-                <Button Grid.Column="4" Classes="ghost" Content="Remover"
+                <Button Grid.Column="4" Classes="ghost" Content="{loc:Loc form.remove}"
                         Command="{Binding $parent[ItemsControl].((fields:OrderedFilesFieldViewModel)DataContext).RemoveCommand}"
                         CommandParameter="{Binding}" />
               </Grid>
@@ -111,8 +112,8 @@
         </ItemsControl>
 
         <StackPanel Orientation="Horizontal" Classes="stack-sm">
-          <Button Content="Acrescentar…" Command="{Binding AddCommand}" />
-          <Button Classes="ghost" Content="Limpar" Command="{Binding ClearCommand}" />
+          <Button Content="{loc:Loc form.add}" Command="{Binding AddCommand}" />
+          <Button Classes="ghost" Content="{loc:Loc form.clear}" Command="{Binding ClearCommand}" />
         </StackPanel>
       </StackPanel>
     </DataTemplate>
@@ -161,7 +162,7 @@
                 Command="{Binding RunCommand}">
           <StackPanel Orientation="Horizontal" Classes="stack-sm">
             <PathIcon Classes="small" Data="{DynamicResource OrzioIconQuickReport}" />
-            <TextBlock Text="Executar" />
+            <TextBlock Text="{loc:Loc form.run}" />
           </StackPanel>
         </Button>
       </StackPanel>
@@ -172,18 +173,18 @@
       <StackPanel Classes="stack-sm">
         <StackPanel Orientation="Horizontal" Classes="stack-sm">
           <TextBlock Text="⚠" Classes="severity-caution" />
-          <TextBlock Classes="subtitle" Text="Já existe um ficheiro neste destino" />
+          <TextBlock Classes="subtitle" Text="{loc:Loc form.collision.title}" />
         </StackPanel>
 
         <TextBlock Classes="monospace" Text="{Binding CollisionFileName}" />
 
         <TextBlock Classes="secondary"
                    IsVisible="{Binding !IsCollisionReplaceable}"
-                   Text="Este artefacto é evidência e nunca é substituído. Escolha outro nome." />
+                   Text="{loc:Loc form.collision.evidence}" />
 
         <StackPanel Orientation="Horizontal" Classes="stack-sm">
-          <Button Content="Escolher outro nome" Command="{Binding DismissCollisionCommand}" />
-          <Button Content="Substituir relatório existente"
+          <Button Content="{loc:Loc common.chooseAnotherName}" Command="{Binding DismissCollisionCommand}" />
+          <Button Content="{loc:Loc common.replaceExistingReport}"
                   IsVisible="{Binding IsCollisionReplaceable}"
                   Command="{Binding ReplaceExistingCommand}" />
         </StackPanel>

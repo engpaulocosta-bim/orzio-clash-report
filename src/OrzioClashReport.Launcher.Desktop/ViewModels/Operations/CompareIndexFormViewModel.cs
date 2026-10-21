@@ -16,25 +16,25 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
             JobViewModel job, EngineStatusViewModel engineStatus, IFileDialogService dialogs)
             : base(
                 LauncherOperationKind.CompareIndex,
-                "Comparar índice",
-                "Percorre apenas pares adjacentes, na ordem declarada no índice.",
+                "op.compareIndex.title",
+                "op.compareIndex.description",
                 job,
                 engineStatus)
         {
             _index = new PathFieldViewModel(
-                "Índice de runs", "O run-index JSON que declara a sequência.",
+                "op.compareIndex.index.label", "op.compareIndex.index.description",
                 dialogs, FilePickerFileKind.RunIndexJson, onChanged: NotifyFieldsChanged);
 
             _output = new PathFieldViewModel(
-                "Destino do relatório", "O HTML longitudinal. É derivado e pode ser gerado de novo.",
+                "op.compareIndex.output.label", "op.compareIndex.output.description",
                 dialogs, FilePickerFileKind.HtmlReport,
                 isDestination: true, suggestedFileName: "longitudinal.html", onChanged: NotifyFieldsChanged);
 
             RegisterField(_index);
             RegisterField(_output);
 
-            Notes.Add("Os caminhos de continuidade são derivados e recalculáveis: não provam que se trata do mesmo clash.");
-            Notes.Add("Comparação longitudinal continua experimental: ainda não foi validada em três exports reais sequenciais.");
+            AddNote("op.compareIndex.note.1");
+            AddNote("op.compareIndex.note.2");
         }
 
         protected override string? OutputPath => _output.Value.Length == 0 ? null : _output.Value;

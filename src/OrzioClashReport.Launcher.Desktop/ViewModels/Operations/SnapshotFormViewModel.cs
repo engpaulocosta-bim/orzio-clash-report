@@ -17,28 +17,28 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
             JobViewModel job, EngineStatusViewModel engineStatus, IFileDialogService dialogs)
             : base(
                 LauncherOperationKind.Snapshot,
-                "Criar snapshot",
-                "Congela um run como evidência imutável. O snapshot nunca é substituído: se o destino já existir, escolha outro nome.",
+                "op.snapshot.title",
+                "op.snapshot.description",
                 job,
                 engineStatus)
         {
             _xml = new PathFieldViewModel(
-                "Export XML",
-                "O ficheiro exportado pelo Clash Detective.",
+                "op.snapshot.xml.label",
+                "op.snapshot.xml.description",
                 dialogs,
                 FilePickerFileKind.NavisworksClashXml,
                 onChanged: NotifyFieldsChanged);
 
             _manifest = new PathFieldViewModel(
-                "Run manifest",
-                "As revisões e os testes executados declarados para este run.",
+                "op.snapshot.manifest.label",
+                "op.snapshot.manifest.description",
                 dialogs,
                 FilePickerFileKind.RunManifestJson,
                 onChanged: NotifyFieldsChanged);
 
             _output = new PathFieldViewModel(
-                "Destino do snapshot",
-                "Onde o snapshot JSON será criado.",
+                "op.snapshot.output.label",
+                "op.snapshot.output.description",
                 dialogs,
                 FilePickerFileKind.RunSnapshotJson,
                 isDestination: true,
@@ -49,7 +49,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Operations
             RegisterField(_manifest);
             RegisterField(_output);
 
-            Notes.Add("O snapshot é evidência: é sempre criado de novo e nunca sobrescrito.");
+            AddNote("op.snapshot.note.1");
         }
 
         protected override string? OutputPath => _output.Value.Length == 0 ? null : _output.Value;

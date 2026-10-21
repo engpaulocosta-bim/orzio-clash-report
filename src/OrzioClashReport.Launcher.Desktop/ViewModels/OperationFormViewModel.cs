@@ -2,24 +2,32 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using OrzioClashReport.Launcher.Application.Localization;
 using OrzioClashReport.Launcher.Application.Operations;
 using OrzioClashReport.Launcher.Contracts.Jobs;
 using OrzioClashReport.Launcher.Contracts.Operations;
 using OrzioClashReport.Launcher.Contracts.Results;
+using OrzioClashReport.Launcher.Desktop.Localization;
 using OrzioClashReport.Launcher.Desktop.ViewModels.Fields;
 
 namespace OrzioClashReport.Launcher.Desktop.ViewModels
 {
     /// <summary>
     /// One typed operation form. The fields are presentation; the request is built in code from named
-    /// values, so no screen ever assembles a command line or guesses a flag.
+    /// values, so no screen ever assembles a command line or guesses a flag. Title, description and notes
+    /// are held as keys and looked up when read, so the form follows the interface language.
     /// </summary>
-    public abstract partial class OperationFormViewModel : ObservableObject
+    public abstract partial class OperationFormViewModel : LocalizedObservableObject
     {
         private readonly EngineStatusViewModel _engineStatus;
+        private readonly string _titleKey;
+        private readonly string _descriptionKey;
+        private readonly List<string> _noteKeys = new List<string>();
+        private string? _followUpKey;
 
         [ObservableProperty]
         private bool _isCollisionPending;
@@ -31,21 +39,18 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         private bool _isCollisionReplaceable;
 
         [ObservableProperty]
-        private string _followUpMessage = string.Empty;
-
-        [ObservableProperty]
         private bool _hasFollowUp;
 
         protected OperationFormViewModel(
             LauncherOperationKind operation,
-            string title,
-            string description,
+            string titleKey,
+            string descriptionKey,
             JobViewModel job,
             EngineStatusViewModel engineStatus)
         {
             Operation = operation;
-            Title = title ?? throw new ArgumentNullException(nameof(title));
-            Description = description ?? throw new ArgumentNullException(nameof(description));
+            _titleKey = titleKey ?? throw new ArgumentNullException(nameof(titleKey));
+            _descriptionKey = descriptionKey ?? throw new ArgumentNullException(nameof(descriptionKey));
             Job = job ?? throw new ArgumentNullException(nameof(job));
             _engineStatus = engineStatus ?? throw new ArgumentNullException(nameof(engineStatus));
 
@@ -55,9 +60,9 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public LauncherOperationKind Operation { get; }
 
-        public string Title { get; }
+        public string Title => Loc.T(_titleKey);
 
-        public string Description { get; }
+        public string Description => Loc.T(_descriptionKey);
 
         public JobViewModel Job { get; }
 
@@ -67,7 +72,21 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             new ObservableCollection<OperationFieldViewModel>();
 
         /// <summary>Notes shown above the form: experimental status, ordering rules, and similar.</summary>
-        public ObservableCollection<string> Notes { get; } = new ObservableCollection<string>();
+        public IReadOnlyList<string> Notes => _noteKeys.Select(key => Loc.T(key)).ToList();
+
+        /// <summary>The follow-up the form offers after a success, or empty when there is none.</summary>
+        public string FollowUpMessage => _followUpKey == null ? string.Empty : Loc.T(_followUpKey);
+
+        /// <summary>Adds a note by key. Notes are read in the active language each time they are shown.</summary>
+        protected void AddNote(string key) => _noteKeys.Add(key);
+
+        /// <summary>Offers the natural next step after a successful run, by key.</summary>
+        protected void ShowFollowUp(string key)
+        {
+            _followUpKey = key;
+            OnPropertyChanged(nameof(FollowUpMessage));
+            HasFollowUp = true;
+        }
 
         /// <summary>Builds the request from the form's own typed fields.</summary>
         protected abstract LauncherOperationRequest BuildRequest(OutputCollisionDecision decision);
@@ -119,7 +138,8 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         {
             IsCollisionPending = false;
             HasFollowUp = false;
-            FollowUpMessage = string.Empty;
+            _followUpKey = null;
+            OnPropertyChanged(nameof(FollowUpMessage));
 
             LauncherOperationRequest request;
             try

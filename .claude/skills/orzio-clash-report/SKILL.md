@@ -862,6 +862,14 @@ engine, never a rewrite of it.
   six-entry allow-list, after the contents and the redacted log have been shown.
 - A job that was running when the application stopped is reported at startup and never resumed
   automatically.
+- The interface is bilingual, Portuguese and English. Every visible sentence is a key with exactly
+  two translations in `Launcher.Application/Localization/UiStrings*.cs`; views write `{loc:Loc key}`
+  and view models hold keys, never sentences. The language changes visible text only: no canonical
+  engine value, command name or option name is ever translated, so `ConfirmSameIdentity` and
+  `RejectSameIdentity` are identical in both languages. The preference (System, Português, English)
+  is stored in the launcher settings beside the theme; `System` follows the operating system's
+  display language and falls back to English. Tests fail on a missing key, a missing translation,
+  mismatched placeholders, or literal text in a view.
 
 ## Anti-patterns that fail review
 

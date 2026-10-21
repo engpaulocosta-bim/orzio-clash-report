@@ -1,3 +1,4 @@
+using OrzioClashReport.Launcher.Application.Localization;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,7 +57,7 @@ namespace OrzioClashReport.Launcher.Application.Engine
                     LauncherBuildInfo.FallbackExpectedEngineVersion,
                     null,
                     EngineIntegrityResult.NotChecked,
-                    "Não foi encontrado nenhum executável do motor na pasta de instalação.");
+                    Loc.T("probe.notFound"));
             }
 
             string expectedVersion = _expectationSource.ReadExpectedVersion(location)
@@ -68,8 +69,8 @@ namespace OrzioClashReport.Launcher.Application.Engine
             if (integrity.Verdict != EngineIntegrityVerdict.Verified)
             {
                 string detail = integrity.Verdict == EngineIntegrityVerdict.Mismatch
-                    ? "O executável do motor não corresponde ao SHA-256 registado na instalação."
-                    : "Não foi possível verificar a integridade do motor: falta o manifesto empacotado.";
+                    ? Loc.T("probe.integrityMismatch")
+                    : Loc.T("probe.manifestMissing");
 
                 // An engine whose bytes could not be confirmed is never executed.
                 return new EngineInfo(
@@ -88,32 +89,32 @@ namespace OrzioClashReport.Launcher.Application.Engine
             if (result.StartFailure != null)
             {
                 return Unsupported(location, expectedVersion, integrity,
-                    "O motor não pôde ser iniciado neste sistema.");
+                    Loc.T("probe.startFailure"));
             }
 
             if (result.TimedOut)
             {
                 return Unsupported(location, expectedVersion, integrity,
-                    "O motor não respondeu a --version dentro de cinco segundos.");
+                    Loc.T("probe.timeout"));
             }
 
             if (result.Canceled)
             {
                 return new EngineInfo(
                     EngineStatusKind.Checking, null, expectedVersion, location, integrity,
-                    "A verificação do motor foi interrompida.");
+                    Loc.T("probe.interrupted"));
             }
 
             if (result.ExitCode != 0)
             {
                 return Unsupported(location, expectedVersion, integrity,
-                    $"O motor terminou com o código {result.ExitCode} ao responder a --version.");
+                    Loc.T("probe.exitCode", result.ExitCode));
             }
 
             if (!EngineVersionParser.TryParse(result.StandardOutput, out string reportedVersion))
             {
                 return Unsupported(location, expectedVersion, integrity,
-                    "O motor não respondeu no formato publicado de --version.");
+                    Loc.T("probe.unexpectedFormat"));
             }
 
             if (!EngineVersionParser.Matches(reportedVersion, expectedVersion))
@@ -124,7 +125,7 @@ namespace OrzioClashReport.Launcher.Application.Engine
                     expectedVersion,
                     location,
                     integrity,
-                    $"O motor reporta {reportedVersion}, mas esta aplicação foi empacotada com {expectedVersion}.");
+                    Loc.T("probe.versionMismatch", reportedVersion, expectedVersion));
             }
 
             return new EngineInfo(
@@ -133,7 +134,7 @@ namespace OrzioClashReport.Launcher.Application.Engine
                 expectedVersion,
                 location,
                 integrity,
-                $"Motor {reportedVersion} verificado.");
+                Loc.T("probe.ready", reportedVersion));
         }
 
         private static EngineInfo Unsupported(

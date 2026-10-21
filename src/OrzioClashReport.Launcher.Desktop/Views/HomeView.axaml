@@ -1,5 +1,6 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:OrzioClashReport.Launcher.Desktop.Localization"
              xmlns:controls="clr-namespace:OrzioClashReport.Launcher.Desktop.Controls"
              xmlns:vm="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels"
              x:Class="OrzioClashReport.Launcher.Desktop.Views.HomeView"
@@ -12,21 +13,21 @@
       <Border Classes="hero">
         <Grid ColumnDefinitions="*,Auto">
           <StackPanel Grid.Column="0" Classes="stack-md">
-            <TextBlock Classes="overline" Text="COORDENAÇÃO BIM · NAVISWORKS CLASH DETECTIVE" />
+            <TextBlock Classes="overline" Text="{loc:Loc home.overline}" />
             <TextBlock Classes="hero-title"
-                       Text="Do export de clashes a um relatório pronto para a reunião." />
+                       Text="{loc:Loc home.hero.title}" />
             <TextBlock Classes="on-hero-muted"
-                       Text="Transforma exports do Navisworks Clash Detective em relatórios de coordenação, comparações entre revisões e decisões humanas explícitas." />
+                       Text="{loc:Loc home.hero.body}" />
             <StackPanel Orientation="Horizontal" Classes="stack-sm">
               <Button Classes="on-hero" Command="{Binding GoToQuickReportCommand}">
                 <StackPanel Orientation="Horizontal" Classes="stack-sm">
                   <PathIcon Classes="small" Data="{DynamicResource OrzioIconQuickReport}" />
-                  <TextBlock Text="Gerar relatório rápido" />
+                  <TextBlock Text="{loc:Loc home.hero.quickReport}" />
                 </StackPanel>
               </Button>
               <Button Classes="on-hero-ghost" Command="{Binding GoToLongitudinalCommand}">
                 <StackPanel Orientation="Horizontal" Classes="stack-sm">
-                  <TextBlock Text="Comparar revisões" />
+                  <TextBlock Text="{loc:Loc home.hero.compare}" />
                   <PathIcon Classes="small" Data="{DynamicResource OrzioIconArrowRight}" />
                 </StackPanel>
               </Button>
@@ -47,17 +48,17 @@
           </Border>
           <StackPanel Grid.Column="1" Classes="stack-xs" VerticalAlignment="Center">
             <TextBlock Classes="subtitle"
-                       Text="{Binding Updates.AvailableVersion, StringFormat='Nova versão disponível: {0}'}" />
+                       Text="{Binding Updates.AvailableHeadline}" />
             <TextBlock Classes="secondary"
-                       Text="A instalação só começa quando a confirmar em Definições." />
+                       Text="{loc:Loc home.update.body}" />
           </StackPanel>
           <Button Grid.Column="2" Classes="primary" VerticalAlignment="Center"
-                  Content="Ver atualização" Command="{Binding GoToSettingsCommand}" />
+                  Content="{loc:Loc home.update.view}" Command="{Binding GoToSettingsCommand}" />
         </Grid>
       </Border>
 
       <StackPanel Classes="stack-md">
-        <TextBlock Classes="title" Text="Começar" />
+        <TextBlock Classes="title" Text="{loc:Loc home.start}" />
 
         <Grid Classes="tiles" ColumnDefinitions="*,*,*">
 
@@ -67,14 +68,14 @@
                 <PathIcon Data="{DynamicResource OrzioIconQuickReport}" />
               </Border>
               <StackPanel Classes="stack-xs">
-                <TextBlock Classes="subtitle" Text="Relatório rápido" />
+                <TextBlock Classes="subtitle" Text="{loc:Loc nav.quickreport.label}" />
                 <TextBlock Classes="secondary"
-                           Text="Um export XML para um relatório HTML agrupado. Não precisa de manifest." />
+                           Text="{loc:Loc home.tile.quick.body}" />
               </StackPanel>
               <Button Classes="link" HorizontalAlignment="Left"
                       Command="{Binding GoToQuickReportCommand}">
                 <StackPanel Orientation="Horizontal" Classes="stack-xs">
-                  <TextBlock Text="Gerar relatório" />
+                  <TextBlock Text="{loc:Loc quick.generate}" />
                   <PathIcon Classes="small" Data="{DynamicResource OrzioIconArrowRight}" />
                 </StackPanel>
               </Button>
@@ -87,14 +88,14 @@
                 <PathIcon Data="{DynamicResource OrzioIconSnapshots}" />
               </Border>
               <StackPanel Classes="stack-xs">
-                <TextBlock Classes="subtitle" Text="Criar snapshot" />
+                <TextBlock Classes="subtitle" Text="{loc:Loc home.tile.snapshot.title}" />
                 <TextBlock Classes="secondary"
-                           Text="Congela um run como evidência imutável, a partir do XML e do manifest declarado." />
+                           Text="{loc:Loc home.tile.snapshot.body}" />
               </StackPanel>
               <Button Classes="link" HorizontalAlignment="Left"
                       Command="{Binding GoToSnapshotsCommand}">
                 <StackPanel Orientation="Horizontal" Classes="stack-xs">
-                  <TextBlock Text="Ir para Snapshots" />
+                  <TextBlock Text="{loc:Loc home.tile.snapshot.action}" />
                   <PathIcon Classes="small" Data="{DynamicResource OrzioIconArrowRight}" />
                 </StackPanel>
               </Button>
@@ -107,14 +108,14 @@
                 <PathIcon Data="{DynamicResource OrzioIconLongitudinal}" />
               </Border>
               <StackPanel Classes="stack-xs">
-                <TextBlock Classes="subtitle" Text="Comparar revisões" />
+                <TextBlock Classes="subtitle" Text="{loc:Loc home.hero.compare}" />
                 <TextBlock Classes="secondary"
-                           Text="Compara pares adjacentes na ordem que declarar. Nada é ordenado por data, nome ou revisão." />
+                           Text="{loc:Loc home.tile.compare.body}" />
               </StackPanel>
               <Button Classes="link" HorizontalAlignment="Left"
                       Command="{Binding GoToLongitudinalCommand}">
                 <StackPanel Orientation="Horizontal" Classes="stack-xs">
-                  <TextBlock Text="Ir para Longitudinal" />
+                  <TextBlock Text="{loc:Loc home.tile.compare.action}" />
                   <PathIcon Classes="small" Data="{DynamicResource OrzioIconArrowRight}" />
                 </StackPanel>
               </Button>
@@ -126,14 +127,14 @@
 
       <Border Classes="card">
         <StackPanel Classes="stack-md">
-          <TextBlock Classes="title" Text="Últimos relatórios" />
+          <TextBlock Classes="title" Text="{loc:Loc home.recent.title}" />
 
           <StackPanel Orientation="Horizontal" Classes="stack-md" IsVisible="{Binding !HasRecentOutputs}">
             <Border Classes="icon-chip">
               <PathIcon Data="{DynamicResource OrzioIconFile}" />
             </Border>
             <TextBlock Classes="secondary" VerticalAlignment="Center"
-                       Text="Ainda não gerou nenhum ficheiro. O que gerar aparece aqui, e fica onde o guardou." />
+                       Text="{loc:Loc home.recent.empty}" />
           </StackPanel>
 
           <ItemsControl ItemsSource="{Binding RecentOutputs}" IsVisible="{Binding HasRecentOutputs}">
@@ -159,7 +160,7 @@
                           Command="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).OpenRecentCommand}"
                           CommandParameter="{Binding}">
                     <StackPanel Orientation="Horizontal" Classes="stack-xs">
-                      <TextBlock Text="Abrir" />
+                      <TextBlock Text="{loc:Loc common.open}" />
                       <PathIcon Classes="small" Data="{DynamicResource OrzioIconOpenExternal}" />
                     </StackPanel>
                   </Button>

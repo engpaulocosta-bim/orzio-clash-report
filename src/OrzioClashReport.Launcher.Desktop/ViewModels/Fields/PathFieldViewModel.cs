@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using OrzioClashReport.Launcher.Application.Localization;
 using OrzioClashReport.Launcher.Desktop.Platform;
 
 namespace OrzioClashReport.Launcher.Desktop.ViewModels.Fields
@@ -23,14 +24,14 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Fields
         private string _value = string.Empty;
 
         public PathFieldViewModel(
-            string label,
-            string description,
+            string labelKey,
+            string descriptionKey,
             IFileDialogService fileDialogService,
             FilePickerFileKind kind,
             bool isDestination = false,
             string suggestedFileName = "",
             Action? onChanged = null)
-            : base(label, description)
+            : base(labelKey, descriptionKey)
         {
             _fileDialogService = fileDialogService ?? throw new ArgumentNullException(nameof(fileDialogService));
             _kind = kind;
@@ -43,7 +44,8 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Fields
 
         public override bool IsComplete => Value.Length > 0;
 
-        public string Watermark => _isDestination ? "Nenhum destino escolhido" : "Nenhum ficheiro escolhido";
+        public string Watermark =>
+            Loc.T(_isDestination ? "picker.watermark.noDestination" : "picker.watermark.noFile");
 
         [RelayCommand]
         private async Task BrowseAsync()
@@ -52,10 +54,10 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels.Fields
 
             string? picked = _isDestination
                 ? await _fileDialogService
-                    .PickSaveFileAsync("Escolher destino", _kind, _suggestedFileName, startDirectory)
+                    .PickSaveFileAsync(Loc.T("picker.title.chooseDestination"), _kind, _suggestedFileName, startDirectory)
                     .ConfigureAwait(true)
                 : await _fileDialogService
-                    .PickOpenFileAsync("Escolher ficheiro", _kind, startDirectory)
+                    .PickOpenFileAsync(Loc.T("picker.title.chooseFile"), _kind, startDirectory)
                     .ConfigureAwait(true);
 
             if (picked != null)

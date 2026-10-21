@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OrzioClashReport.Launcher.Application.Engine;
+using OrzioClashReport.Launcher.Application.Localization;
 using OrzioClashReport.Launcher.Application.Presentation;
 using OrzioClashReport.Launcher.Contracts.Engine;
 using OrzioClashReport.Launcher.Contracts.Jobs;
 using OrzioClashReport.Launcher.Contracts.Logging;
 using OrzioClashReport.Launcher.Contracts.Platform;
+using OrzioClashReport.Launcher.Desktop.Localization;
 
 namespace OrzioClashReport.Launcher.Desktop.ViewModels
 {
@@ -18,7 +20,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
     /// The application shell: exactly seven sections, the engine badge, and the status bar. There is
     /// no basic/advanced mode and no hidden section.
     /// </summary>
-    public sealed partial class ShellViewModel : ObservableObject
+    public sealed partial class ShellViewModel : LocalizedObservableObject
     {
         private readonly EngineProbe _engineProbe;
         private readonly IJobJournal _journal;
@@ -33,8 +35,17 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         [ObservableProperty]
         private bool _isRailMode;
 
-        [ObservableProperty]
-        private string _statusMessage = "A verificar o motor.";
+        // What the status bar is showing. The initial text and a section's description follow the interface
+        // language; the detail the engine probe wrote is kept as it was written.
+        private StatusSource _statusSource = StatusSource.Initial;
+        private string _engineDetail = string.Empty;
+
+        private enum StatusSource
+        {
+            Initial,
+            SelectedSection,
+            EngineDetail,
+        }
 
         [ObservableProperty]
         private bool _hasInterruptedOperations;
@@ -76,6 +87,20 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             }
 
             SelectedSection = _sectionsBySection[LauncherSection.Home];
+        }
+
+        /// <summary>The status bar text.</summary>
+        public string StatusMessage => _statusSource switch
+        {
+            StatusSource.SelectedSection => SelectedSection?.Description ?? string.Empty,
+            StatusSource.EngineDetail => _engineDetail,
+            _ => Loc.T("shell.status.checkingEngine"),
+        };
+
+        private void SetStatusSource(StatusSource source)
+        {
+            _statusSource = source;
+            OnPropertyChanged(nameof(StatusMessage));
         }
 
         public ObservableCollection<NavigationItemViewModel> Sections { get; } =
@@ -137,8 +162,8 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
                 InterruptedOperations.Add(
                     entry.OutputFileName == null
-                        ? $"{entry.Operation} — iniciada em {when}"
-                        : $"{entry.Operation} — {entry.OutputFileName}, iniciada em {when}");
+                        ? Loc.T("shell.interrupted.entry", entry.Operation, when)
+                        : Loc.T("shell.interrupted.entryWithFile", entry.Operation, entry.OutputFileName, when));
             }
 
             HasInterruptedOperations = InterruptedOperations.Count > 0;
@@ -173,7 +198,8 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
             EngineStatus.Update(info);
             Settings.UpdateEngine(info);
-            StatusMessage = info.Detail;
+            _engineDetail = info.Detail;
+            SetStatusSource(StatusSource.EngineDetail);
 
             _log.Write(new LauncherLogEntry(
                 _clock.UtcNow,
@@ -196,7 +222,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
                 return;
             }
 
-            StatusMessage = value.Description;
+            SetStatusSource(StatusSource.SelectedSection);
         }
     }
 }

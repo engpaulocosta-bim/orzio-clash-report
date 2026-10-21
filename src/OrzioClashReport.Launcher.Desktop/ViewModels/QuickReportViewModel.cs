@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using OrzioClashReport.Launcher.Application.Engine;
+using OrzioClashReport.Launcher.Application.Localization;
 using OrzioClashReport.Launcher.Application.Operations;
 using OrzioClashReport.Launcher.Contracts.Jobs;
 using OrzioClashReport.Launcher.Contracts.Operations;
@@ -61,7 +62,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         private async Task BrowseInputAsync()
         {
             string? picked = await _fileDialogService.PickOpenFileAsync(
-                "Escolher o export XML do Clash Detective",
+                Loc.T("picker.title.chooseXml"),
                 FilePickerFileKind.NavisworksClashXml,
                 DirectoryOf(InputXmlPath)).ConfigureAwait(true);
 
@@ -83,7 +84,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         private async Task BrowseOutputAsync()
         {
             string? picked = await _fileDialogService.PickSaveFileAsync(
-                "Escolher onde guardar o relatório",
+                Loc.T("picker.title.chooseReportDestination"),
                 FilePickerFileKind.HtmlReport,
                 SuggestedFileName(),
                 DirectoryOf(OutputHtmlPath) ?? await LastOutputDirectoryAsync().ConfigureAwait(true))

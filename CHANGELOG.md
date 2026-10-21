@@ -4,15 +4,45 @@ All notable changes for OrzioClashReport are recorded here.
 
 ## Unreleased
 
+## 0.2.1-launcher-preview.1
+
+First desktop version published through the automatic desktop release channel
+(`desktop-v0.2.1-launcher-preview.1`). The bundled engine keeps its `0.1.0-preview.3` version
+string but carries the run-assembly coverage fix below.
+
+### Added
+
+- User-initiated updates: "Procurar atualizações" in the sidebar footer and in Definições checks
+  the official GitHub releases of this repository, only when clicked. A newer version is announced
+  in the sidebar and on the home screen; "Instalar atualização" downloads it with visible progress,
+  verifies its SHA-256 against the release manifest, starts the installer directly and closes the
+  application so the installer can replace its files. Installation is refused while a job runs.
+- Automatic desktop releases: merging a raised version in `src/LauncherVersion.props` into master
+  publishes `desktop-v<version>` with the installer, its checksum and the update manifest. Pull
+  requests show the tag a merge would publish, and warn when shipped files change without a new
+  version.
+- A refreshed interface: brand header, vector icons, a gradient hero with the main actions, action
+  tiles that lift under the pointer, segmented tabs for the forms of a section, cross-fading section
+  changes, a progress bar while the engine runs, and status pills that fit the status bar.
+
+### Changed
+
+- The desktop version has a single source, `src/LauncherVersion.props`, read by the application,
+  the installer and the release workflow.
+
 ### Fixed
 
-- Run assembly (`snapshot`, `compare`, and every command that builds a run from XML) now fails when
+- Dark mode now darkens the application's own surfaces. Colour tokens defined outside the theme
+  dictionaries used to override the dark palette, so dark toolkit controls were drawn on light
+  surfaces and some labels became unreadable.
+- The engine badge in the status bar is no longer clipped.
+- Engine: run assembly (`snapshot`, `compare`, and every command that builds a run from XML) now fails when
   the manifest declares an executed clash test that is absent from the XML export. Previously a
   partial export, a renamed test, or an unrecognized XML structure was accepted as "executed with
   zero results", and the comparison then classified every earlier occurrence of that test as
   `Resolved` with exit code 0. A declared test that really returned zero clashes is still valid,
   provided the export contains its `<clashtest>` with an empty result list.
-- `samples/sample-clash.xml` now carries the empty `Synthetic Zero-Result Test` declared by its
+- Engine: `samples/sample-clash.xml` now carries the empty `Synthetic Zero-Result Test` declared by its
   companion manifest.
 
 ## 0.2.0-launcher-preview.1

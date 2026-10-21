@@ -78,6 +78,9 @@ if (-not (Test-Path -LiteralPath $InnoSetupCompiler -PathType Leaf)) {
     throw "Inno Setup compiler was not found at '$InnoSetupCompiler'. Install Inno Setup 6 or pass -InnoSetupCompiler."
 }
 
+$launcherVersion = & (Join-Path $PSScriptRoot 'get-launcher-version.ps1')
+Write-Host "Launcher version: $($launcherVersion.Full) (numeric $($launcherVersion.Prefix))"
+
 New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
 
 Write-Host 'Building the installer...'
@@ -85,19 +88,23 @@ Write-Host 'Building the installer...'
 & $InnoSetupCompiler `
     "/DStagingDir=$((Resolve-Path $StagingDirectory).Path)" `
     "/DOutputDir=$((Resolve-Path $OutputDirectory).Path)" `
+    "/DLauncherVersion=$($launcherVersion.Prefix)" `
+    "/DLauncherFullVersion=$($launcherVersion.Full)" `
     $scriptPath
 
 if ($LASTEXITCODE -ne 0) {
     throw 'Inno Setup failed to build the installer.'
 }
 
-$installer = Get-ChildItem -LiteralPath $OutputDirectory -Filter '*.exe' |
-    Sort-Object LastWriteTimeUtc -Descending |
-    Select-Object -First 1
-
-if ($null -eq $installer) {
-    throw "No installer was produced in $OutputDirectory."
+# The name is derived from the version, never discovered: a stale installer from an earlier build left
+# in the output directory must not be checksummed and published in place of this one.
+$expectedInstallerName = "orzio-clash-report-desktop-v$($launcherVersion.Full)-win-x64-setup.exe"
+$installerPath = Join-Path $OutputDirectory $expectedInstallerName
+if (-not (Test-Path -LiteralPath $installerPath -PathType Leaf)) {
+    throw "The installer '$expectedInstallerName' was not produced in $OutputDirectory."
 }
+
+$installer = Get-Item -LiteralPath $installerPath
 
 $installerHash = (Get-FileHash -LiteralPath $installer.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
 $checksumPath = "$($installer.FullName).sha256"

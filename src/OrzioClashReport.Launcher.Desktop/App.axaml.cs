@@ -5,6 +5,7 @@ using System.Threading;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using OrzioClashReport.Launcher.Application;
 using OrzioClashReport.Launcher.Application.Engine;
 using OrzioClashReport.Launcher.Application.Operations;
@@ -23,6 +24,7 @@ using OrzioClashReport.Launcher.Infrastructure.Logging;
 using OrzioClashReport.Launcher.Infrastructure.Platform;
 using OrzioClashReport.Launcher.Infrastructure.Process;
 using OrzioClashReport.Launcher.Infrastructure.Storage;
+using OrzioClashReport.Launcher.Infrastructure.Updates;
 
 namespace OrzioClashReport.Launcher.Desktop
 {
@@ -117,11 +119,20 @@ namespace OrzioClashReport.Launcher.Desktop
                 OperationsSectionViewModel governance = BuildGovernanceSection(
                     executor, outputRevealer, activeJobTracker, engineStatus, fileDialogService);
 
+                var updates = new UpdatesViewModel(
+                    new GitHubDesktopUpdateClient(new DesktopUpdateService()),
+                    activeJobTracker,
+                    clock,
+                    LauncherBuildInfo.LauncherVersion,
+                    uri => _ = _mainWindow?.Launcher.LaunchUriAsync(uri),
+                    () => Dispatcher.UIThread.Post(() => desktop.Shutdown()));
+
                 var home = new HomeViewModel(
                     engineStatus,
                     recentItemsStore,
                     outputRevealer,
-                    section => shell?.Navigate(section));
+                    section => shell?.Navigate(section),
+                    updates);
 
                 var settings = new SettingsViewModel(
                     settingsStore,
@@ -131,7 +142,8 @@ namespace OrzioClashReport.Launcher.Desktop
                     engineStatus,
                     locations.RootDirectory,
                     LauncherBuildInfo.LauncherVersion,
-                    ApplyTheme);
+                    ApplyTheme,
+                    updates);
 
                 shell = new ShellViewModel(
                     engineProbe,

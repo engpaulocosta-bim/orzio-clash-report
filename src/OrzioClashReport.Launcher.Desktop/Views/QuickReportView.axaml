@@ -7,7 +7,7 @@
              x:DataType="vm:QuickReportViewModel">
 
   <ScrollViewer>
-    <StackPanel Classes="stack-lg">
+    <StackPanel Classes="page">
 
       <StackPanel Classes="stack-xs">
         <TextBlock Classes="display" Text="Relatório rápido" />
@@ -24,7 +24,7 @@
           <StackPanel Classes="stack-sm">
             <TextBlock Classes="subtitle" Text="Ficheiro de entrada" />
             <TextBlock Classes="secondary" Text="O XML exportado pelo Clash Detective do Navisworks." />
-            <Grid ColumnDefinitions="*,Auto">
+            <Grid Classes="path-field" ColumnDefinitions="*,Auto">
               <TextBox Grid.Column="0" Text="{Binding InputXmlPath}" Watermark="Nenhum ficheiro escolhido" />
               <Button Grid.Column="1" Content="Escolher…" Command="{Binding BrowseInputCommand}" />
             </Grid>
@@ -33,16 +33,20 @@
           <StackPanel Classes="stack-sm">
             <TextBlock Classes="subtitle" Text="Destino do relatório" />
             <TextBlock Classes="secondary" Text="Onde o ficheiro HTML será escrito. Fica sempre onde o escolher." />
-            <Grid ColumnDefinitions="*,Auto">
+            <Grid Classes="path-field" ColumnDefinitions="*,Auto">
               <TextBox Grid.Column="0" Text="{Binding OutputHtmlPath}" Watermark="Nenhum destino escolhido" />
               <Button Grid.Column="1" Content="Escolher…" Command="{Binding BrowseOutputCommand}" />
             </Grid>
           </StackPanel>
 
           <Button Classes="primary"
-                  Content="Gerar relatório"
                   HorizontalAlignment="Left"
-                  Command="{Binding GenerateCommand}" />
+                  Command="{Binding GenerateCommand}">
+            <StackPanel Orientation="Horizontal" Classes="stack-sm">
+              <PathIcon Classes="small" Data="{DynamicResource OrzioIconQuickReport}" />
+              <TextBlock Text="Gerar relatório" />
+            </StackPanel>
+          </Button>
 
         </StackPanel>
       </Border>
@@ -51,7 +55,7 @@
         Collision. Replacing is never the default and never automatic: both options are explicit, and
         the file being replaced is named.
       -->
-      <Border Classes="notice" IsVisible="{Binding IsCollisionPending}">
+      <Border Classes="notice caution" IsVisible="{Binding IsCollisionPending}">
         <StackPanel Classes="stack-sm">
           <StackPanel Orientation="Horizontal" Classes="stack-sm">
             <TextBlock Text="⚠" Classes="severity-caution" />

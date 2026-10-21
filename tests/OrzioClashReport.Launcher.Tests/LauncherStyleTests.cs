@@ -89,18 +89,36 @@ namespace OrzioClashReport.Launcher.Tests
             string tokens = File.ReadAllText(Path.Combine(ThemesDirectory, "Tokens.axaml"));
 
             int themeStart = tokens.IndexOf("<ResourceDictionary.ThemeDictionaries>", StringComparison.Ordinal);
+            int themeEnd = tokens.IndexOf("</ResourceDictionary.ThemeDictionaries>", StringComparison.Ordinal);
+            int defaultStart = tokens.IndexOf("x:Key=\"Default\"", StringComparison.Ordinal);
             int darkStart = tokens.IndexOf("x:Key=\"Dark\"", StringComparison.Ordinal);
-            int darkEnd = tokens.IndexOf("</ResourceDictionary>", darkStart, StringComparison.Ordinal);
 
-            Assert.True(themeStart > 0, "The theme dictionaries block is missing.");
-            Assert.True(darkStart > themeStart, "The dark theme dictionary is missing.");
+            Assert.True(themeStart > 0 && themeEnd > themeStart, "The theme dictionaries block is missing.");
+            Assert.True(defaultStart > themeStart && defaultStart < themeEnd, "The default (light) theme dictionary is missing.");
+            Assert.True(darkStart > defaultStart && darkStart < themeEnd, "The dark theme dictionary is missing.");
 
-            List<string> lightBrushes = BrushKeys(tokens.Substring(0, themeStart));
-            List<string> darkBrushes = BrushKeys(tokens.Substring(darkStart, darkEnd - darkStart));
+            List<string> lightBrushes = BrushKeys(tokens.Substring(defaultStart, darkStart - defaultStart));
+            List<string> darkBrushes = BrushKeys(tokens.Substring(darkStart, themeEnd - darkStart));
 
-            // The light palette is the base, so every brush it defines must have a dark counterpart in
-            // the same order: a token that exists in only one variant is a theme bug waiting to ship.
+            // Every brush must exist in both variants, in the same order: a token that exists in only one
+            // variant is a theme bug waiting to ship.
+            Assert.NotEmpty(lightBrushes);
             Assert.Equal(lightBrushes, darkBrushes);
+        }
+
+        [Fact]
+        public void NoColourIsDefinedOutsideTheThemeDictionaries()
+        {
+            string tokens = File.ReadAllText(Path.Combine(ThemesDirectory, "Tokens.axaml"));
+
+            int themeStart = tokens.IndexOf("<ResourceDictionary.ThemeDictionaries>", StringComparison.Ordinal);
+            int themeEnd = tokens.IndexOf("</ResourceDictionary.ThemeDictionaries>", StringComparison.Ordinal);
+            string outside = tokens.Substring(0, themeStart) + tokens.Substring(themeEnd);
+
+            // A colour at the root of the dictionary is found before the theme dictionaries and silently
+            // overrides the dark palette.
+            Assert.DoesNotContain("<SolidColorBrush", outside, StringComparison.Ordinal);
+            Assert.DoesNotContain("GradientBrush", outside, StringComparison.Ordinal);
         }
 
         private static List<string> BrushKeys(string markup) =>

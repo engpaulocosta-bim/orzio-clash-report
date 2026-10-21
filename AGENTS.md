@@ -313,6 +313,9 @@ case-insensitive by test name and unordered by model pair, while the declaration
 A/B order. Every `ClashOccurrence` in a `CoordinationRun` must correspond to a declared
 executed test and model pair. An executed test may have zero occurrences -- that is how a
 run proves it executed a test and got zero results, rather than never running it at all.
+A declared executed test must also be present in the XML export as a batch (possibly with
+an empty result list); `ExactSourceModelCoordinationRunAssembler` rejects a run whose export
+lacks a declared test, so a missing export can never read as zero results.
 Lifecycle test coverage must come only from the explicit manifest declaration, never from
 observed occurrences: `ConservativeClashLifecycleClassifier` consults
 `RunManifest.ExecutedClashTests`, not `CoordinationRun.Occurrences`, to decide whether a

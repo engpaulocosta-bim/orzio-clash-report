@@ -26,14 +26,19 @@ namespace OrzioClashReport.Tests
         }
 
         [Fact]
-        public void Read_ParsesOneBatchWithFiveClashes()
+        public void Read_ParsesFiveClashBatchAndZeroResultBatch()
         {
             var document = ReadSample();
 
-            var batch = Assert.Single(document.Batches);
+            Assert.Equal(2, document.Batches.Count);
+            var batch = document.Batches[0];
             Assert.Equal("Teste 01", batch.Name);
             Assert.Equal(0.001, batch.Tolerance);
             Assert.Equal(5, batch.Clashes.Count);
+
+            var zeroResultBatch = document.Batches[1];
+            Assert.Equal("Synthetic Zero-Result Test", zeroResultBatch.Name);
+            Assert.Empty(zeroResultBatch.Clashes);
         }
 
         [Fact]

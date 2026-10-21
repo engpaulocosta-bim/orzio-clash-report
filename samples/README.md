@@ -34,7 +34,10 @@ tests for `ExactSourceModelCoordinationRunAssembler`.
   `ExecutedClashTest` for `"Teste 01"`.
 - The second synthetic model (`Beta_Architecture_R10.nwc`) and the "Synthetic Zero-Result
   Test" declaration are illustrative only. They demonstrate a valid executed test with no
-  matching occurrence.
+  matching occurrence. Because a declared test must be present in the export, `sample-clash.xml`
+  carries a matching synthetic `<clashtest name="Synthetic Zero-Result Test">` with an empty
+  `<clashresults>` element. That empty test was added by hand to the anonymized export; the
+  `"Teste 01"` clashes are unchanged.
 
 ## `run-index.template.json`
 

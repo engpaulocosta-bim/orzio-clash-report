@@ -7,7 +7,8 @@ All notable changes for OrzioClashReport are recorded here.
 ## 0.2.1-launcher-preview.1
 
 First desktop version published through the automatic desktop release channel
-(`desktop-v0.2.1-launcher-preview.1`). The engine is unchanged.
+(`desktop-v0.2.1-launcher-preview.1`). The bundled engine keeps its `0.1.0-preview.3` version
+string but carries the run-assembly coverage fix below.
 
 ### Added
 
@@ -35,6 +36,14 @@ First desktop version published through the automatic desktop release channel
   dictionaries used to override the dark palette, so dark toolkit controls were drawn on light
   surfaces and some labels became unreadable.
 - The engine badge in the status bar is no longer clipped.
+- Engine: run assembly (`snapshot`, `compare`, and every command that builds a run from XML) now fails when
+  the manifest declares an executed clash test that is absent from the XML export. Previously a
+  partial export, a renamed test, or an unrecognized XML structure was accepted as "executed with
+  zero results", and the comparison then classified every earlier occurrence of that test as
+  `Resolved` with exit code 0. A declared test that really returned zero clashes is still valid,
+  provided the export contains its `<clashtest>` with an empty result list.
+- Engine: `samples/sample-clash.xml` now carries the empty `Synthetic Zero-Result Test` declared by its
+  companion manifest.
 
 ## 0.2.0-launcher-preview.1
 

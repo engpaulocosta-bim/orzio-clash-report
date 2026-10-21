@@ -820,7 +820,12 @@ separate from, and independent of, observed clash occurrences:
 4. A declaration may exist without any corresponding occurrence. This is valid, and it is
    how a run proves a clash test executed and returned zero clashes rather than never
    executing at all.
-5. The lifecycle classifier uses only this explicit declaration to decide whether a clash
+5. Every declared test must still be present in the XML export as a `<clashtest>`, with an
+   empty result list when it returned zero clashes. Assembly fails when a declared test is
+   absent from the export: a partial export, a renamed test, or an unrecognized structure
+   carries no results, and accepting it would let every earlier occurrence of that test be
+   classified `Resolved`.
+6. The lifecycle classifier uses only this explicit declaration to decide whether a clash
    test was observed in the other run. It never scans occurrences for coverage.
 
 The parser (`OrzioClashReport.Input.RunManifestJson`) validates JSON structure and schema,

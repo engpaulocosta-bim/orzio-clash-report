@@ -6,79 +6,163 @@
              x:DataType="vm:HomeViewModel">
 
   <ScrollViewer>
-    <StackPanel Classes="stack-lg">
+    <StackPanel Classes="page">
 
-      <StackPanel Classes="stack-xs">
-        <TextBlock Classes="display" Text="Orzio Clash Report" />
-        <TextBlock Classes="secondary"
-                   Text="Transforma exports do Navisworks Clash Detective em relatórios de coordenação, comparações entre revisões e decisões humanas explícitas." />
-      </StackPanel>
-
-      <controls:EngineStatusBadge DataContext="{Binding EngineStatus}" />
-
-      <Border Classes="card">
-        <StackPanel Classes="stack-md">
-          <TextBlock Classes="title" Text="Começar" />
-
-          <StackPanel Classes="stack-sm">
-            <TextBlock Classes="subtitle" Text="Relatório rápido" />
-            <TextBlock Classes="secondary"
-                       Text="Um export XML para um relatório HTML agrupado. É o caminho mais curto e não precisa de manifest." />
-            <Button Classes="primary"
-                    Content="Gerar relatório rápido"
-                    HorizontalAlignment="Left"
-                    Command="{Binding GoToQuickReportCommand}" />
+      <!-- Hero: what the tool is for, and the one action most coordinators come for. -->
+      <Border Classes="hero">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Grid.Column="0" Classes="stack-md">
+            <TextBlock Classes="overline" Text="COORDENAÇÃO BIM · NAVISWORKS CLASH DETECTIVE" />
+            <TextBlock Classes="hero-title"
+                       Text="Do export de clashes a um relatório pronto para a reunião." />
+            <TextBlock Classes="on-hero-muted"
+                       Text="Transforma exports do Navisworks Clash Detective em relatórios de coordenação, comparações entre revisões e decisões humanas explícitas." />
+            <StackPanel Orientation="Horizontal" Classes="stack-sm">
+              <Button Classes="on-hero" Command="{Binding GoToQuickReportCommand}">
+                <StackPanel Orientation="Horizontal" Classes="stack-sm">
+                  <PathIcon Classes="small" Data="{DynamicResource OrzioIconQuickReport}" />
+                  <TextBlock Text="Gerar relatório rápido" />
+                </StackPanel>
+              </Button>
+              <Button Classes="on-hero-ghost" Command="{Binding GoToLongitudinalCommand}">
+                <StackPanel Orientation="Horizontal" Classes="stack-sm">
+                  <TextBlock Text="Comparar revisões" />
+                  <PathIcon Classes="small" Data="{DynamicResource OrzioIconArrowRight}" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
           </StackPanel>
 
-          <Separator />
-
-          <StackPanel Classes="stack-sm">
-            <TextBlock Classes="subtitle" Text="Criar snapshot" />
-            <TextBlock Classes="secondary"
-                       Text="Congela um run como evidência imutável, a partir do XML e do respetivo manifest declarado." />
-            <Button Content="Ir para Snapshots"
-                    HorizontalAlignment="Left"
-                    Command="{Binding GoToSnapshotsCommand}" />
-          </StackPanel>
-
-          <Separator />
-
-          <StackPanel Classes="stack-sm">
-            <TextBlock Classes="subtitle" Text="Comparar revisões" />
-            <TextBlock Classes="secondary"
-                       Text="Compara pares adjacentes na ordem que declarar. A ordem é sempre sua: nada é ordenado por data, nome ou revisão." />
-            <Button Content="Ir para Longitudinal"
-                    HorizontalAlignment="Left"
-                    Command="{Binding GoToLongitudinalCommand}" />
-          </StackPanel>
-        </StackPanel>
+          <controls:EngineStatusBadge Grid.Column="1"
+                                      VerticalAlignment="Top"
+                                      DataContext="{Binding EngineStatus}" />
+        </Grid>
       </Border>
+
+      <!-- A newer version was found by an explicit check. Nothing is downloaded from here. -->
+      <Border Classes="notice" IsVisible="{Binding Updates.IsUpdateAvailable}">
+        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="{DynamicResource OrzioGapMd}">
+          <Border Grid.Column="0" Classes="icon-chip">
+            <PathIcon Data="{DynamicResource OrzioIconDownload}" />
+          </Border>
+          <StackPanel Grid.Column="1" Classes="stack-xs" VerticalAlignment="Center">
+            <TextBlock Classes="subtitle"
+                       Text="{Binding Updates.AvailableVersion, StringFormat='Nova versão disponível: {0}'}" />
+            <TextBlock Classes="secondary"
+                       Text="A instalação só começa quando a confirmar em Definições." />
+          </StackPanel>
+          <Button Grid.Column="2" Classes="primary" VerticalAlignment="Center"
+                  Content="Ver atualização" Command="{Binding GoToSettingsCommand}" />
+        </Grid>
+      </Border>
+
+      <StackPanel Classes="stack-md">
+        <TextBlock Classes="title" Text="Começar" />
+
+        <Grid Classes="tiles" ColumnDefinitions="*,*,*">
+
+          <Border Grid.Column="0" Classes="card interactive">
+            <StackPanel Classes="stack-md">
+              <Border Classes="icon-chip" HorizontalAlignment="Left">
+                <PathIcon Data="{DynamicResource OrzioIconQuickReport}" />
+              </Border>
+              <StackPanel Classes="stack-xs">
+                <TextBlock Classes="subtitle" Text="Relatório rápido" />
+                <TextBlock Classes="secondary"
+                           Text="Um export XML para um relatório HTML agrupado. Não precisa de manifest." />
+              </StackPanel>
+              <Button Classes="link" HorizontalAlignment="Left"
+                      Command="{Binding GoToQuickReportCommand}">
+                <StackPanel Orientation="Horizontal" Classes="stack-xs">
+                  <TextBlock Text="Gerar relatório" />
+                  <PathIcon Classes="small" Data="{DynamicResource OrzioIconArrowRight}" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" Classes="card interactive">
+            <StackPanel Classes="stack-md">
+              <Border Classes="icon-chip" HorizontalAlignment="Left">
+                <PathIcon Data="{DynamicResource OrzioIconSnapshots}" />
+              </Border>
+              <StackPanel Classes="stack-xs">
+                <TextBlock Classes="subtitle" Text="Criar snapshot" />
+                <TextBlock Classes="secondary"
+                           Text="Congela um run como evidência imutável, a partir do XML e do manifest declarado." />
+              </StackPanel>
+              <Button Classes="link" HorizontalAlignment="Left"
+                      Command="{Binding GoToSnapshotsCommand}">
+                <StackPanel Orientation="Horizontal" Classes="stack-xs">
+                  <TextBlock Text="Ir para Snapshots" />
+                  <PathIcon Classes="small" Data="{DynamicResource OrzioIconArrowRight}" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="2" Classes="card interactive">
+            <StackPanel Classes="stack-md">
+              <Border Classes="icon-chip" HorizontalAlignment="Left">
+                <PathIcon Data="{DynamicResource OrzioIconLongitudinal}" />
+              </Border>
+              <StackPanel Classes="stack-xs">
+                <TextBlock Classes="subtitle" Text="Comparar revisões" />
+                <TextBlock Classes="secondary"
+                           Text="Compara pares adjacentes na ordem que declarar. Nada é ordenado por data, nome ou revisão." />
+              </StackPanel>
+              <Button Classes="link" HorizontalAlignment="Left"
+                      Command="{Binding GoToLongitudinalCommand}">
+                <StackPanel Orientation="Horizontal" Classes="stack-xs">
+                  <TextBlock Text="Ir para Longitudinal" />
+                  <PathIcon Classes="small" Data="{DynamicResource OrzioIconArrowRight}" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
+          </Border>
+
+        </Grid>
+      </StackPanel>
 
       <Border Classes="card">
         <StackPanel Classes="stack-md">
           <TextBlock Classes="title" Text="Últimos relatórios" />
 
-          <TextBlock Classes="secondary"
-                     IsVisible="{Binding !HasRecentOutputs}"
-                     Text="Ainda não gerou nenhum ficheiro. O que gerar aparece aqui, e fica onde o guardou." />
+          <StackPanel Orientation="Horizontal" Classes="stack-md" IsVisible="{Binding !HasRecentOutputs}">
+            <Border Classes="icon-chip">
+              <PathIcon Data="{DynamicResource OrzioIconFile}" />
+            </Border>
+            <TextBlock Classes="secondary" VerticalAlignment="Center"
+                       Text="Ainda não gerou nenhum ficheiro. O que gerar aparece aqui, e fica onde o guardou." />
+          </StackPanel>
 
           <ItemsControl ItemsSource="{Binding RecentOutputs}" IsVisible="{Binding HasRecentOutputs}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:RecentOutputViewModel">
-                <Grid ColumnDefinitions="*,Auto">
-                  <StackPanel Grid.Column="0" Classes="stack-xs">
-                    <TextBlock Text="{Binding FileName}" />
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="{DynamicResource OrzioGapMd}"
+                      Margin="{DynamicResource OrzioListRowPadding}">
+                  <Border Grid.Column="0" Classes="icon-chip">
+                    <PathIcon Data="{DynamicResource OrzioIconFile}" />
+                  </Border>
+                  <StackPanel Grid.Column="1" Classes="stack-xs" VerticalAlignment="Center">
+                    <TextBlock FontWeight="SemiBold" Text="{Binding FileName}" />
                     <StackPanel Orientation="Horizontal" Classes="stack-sm">
                       <TextBlock Classes="caption" Text="{Binding FolderName}" />
+                      <TextBlock Classes="caption" Text="·" />
                       <TextBlock Classes="caption" Text="{Binding CompletedAt}" />
                     </StackPanel>
                   </StackPanel>
 
-                  <Button Grid.Column="1"
-                          Classes="ghost"
-                          Content="Abrir"
+                  <Button Grid.Column="2"
+                          Classes="ghost compact"
+                          VerticalAlignment="Center"
                           Command="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).OpenRecentCommand}"
-                          CommandParameter="{Binding}" />
+                          CommandParameter="{Binding}">
+                    <StackPanel Orientation="Horizontal" Classes="stack-xs">
+                      <TextBlock Text="Abrir" />
+                      <PathIcon Classes="small" Data="{DynamicResource OrzioIconOpenExternal}" />
+                    </StackPanel>
+                  </Button>
                 </Grid>
               </DataTemplate>
             </ItemsControl.ItemTemplate>

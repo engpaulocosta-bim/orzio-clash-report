@@ -9,8 +9,15 @@
 ; their own folders, and are never touched.
 
 #define LauncherName "Orzio Clash Report"
-#define LauncherVersion "0.2.0"
-#define LauncherFullVersion "0.2.0-launcher-preview.1"
+; The version is not written here. scripts/package-launcher.ps1 reads src/LauncherVersion.props and
+; passes /DLauncherVersion=<prefix> and /DLauncherFullVersion=<prefix>-<suffix>, so the installer can
+; never disagree with the application or the release tag.
+#ifndef LauncherVersion
+  #error LauncherVersion is not defined. Build the installer with scripts/package-launcher.ps1.
+#endif
+#ifndef LauncherFullVersion
+  #error LauncherFullVersion is not defined. Build the installer with scripts/package-launcher.ps1.
+#endif
 #define LauncherPublisher "Orzio"
 #define LauncherExeName "OrzioClashReport.Launcher.Desktop.exe"
 
@@ -41,6 +48,8 @@ DisableProgramGroupPage=yes
 ; The application never needs elevation: it writes only to the user's own local application data.
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
+CloseApplications=yes
+RestartApplications=no
 
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible

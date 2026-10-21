@@ -90,6 +90,12 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public SettingsViewModel Settings { get; }
 
+        public UpdatesViewModel Updates => Settings.Updates;
+
+        /// <summary>Opens Definições, where the update card explains what an update will do.</summary>
+        [RelayCommand]
+        private void ShowUpdates() => Navigate(LauncherSection.Settings);
+
         public void Navigate(LauncherSection section)
         {
             if (_sectionsBySection.TryGetValue(section, out NavigationItemViewModel? item))

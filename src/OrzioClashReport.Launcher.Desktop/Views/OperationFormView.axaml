@@ -14,7 +14,7 @@
       <StackPanel Classes="stack-sm">
         <TextBlock Classes="subtitle" Text="{Binding Label}" />
         <TextBlock Classes="secondary" Text="{Binding Description}" />
-        <Grid ColumnDefinitions="*,Auto">
+        <Grid Classes="path-field" ColumnDefinitions="*,Auto">
           <TextBox Grid.Column="0" Text="{Binding Value}" Watermark="{Binding Watermark}" />
           <Button Grid.Column="1" Content="Escolher…" Command="{Binding BrowseCommand}" />
         </Grid>
@@ -127,6 +127,11 @@
     </StackPanel>
 
     <ItemsControl ItemsSource="{Binding Notes}">
+      <ItemsControl.ItemsPanel>
+        <ItemsPanelTemplate>
+          <StackPanel Classes="stack-sm" />
+        </ItemsPanelTemplate>
+      </ItemsControl.ItemsPanel>
       <ItemsControl.ItemTemplate>
         <DataTemplate x:DataType="x:String">
           <Border Classes="notice">
@@ -143,17 +148,27 @@
 
     <Border Classes="card">
       <StackPanel Classes="stack-md">
-        <ItemsControl ItemsSource="{Binding Fields}" />
+        <ItemsControl ItemsSource="{Binding Fields}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <StackPanel Classes="stack-lg" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+        </ItemsControl>
 
         <Button Classes="primary"
-                Content="Executar"
                 HorizontalAlignment="Left"
-                Command="{Binding RunCommand}" />
+                Command="{Binding RunCommand}">
+          <StackPanel Orientation="Horizontal" Classes="stack-sm">
+            <PathIcon Classes="small" Data="{DynamicResource OrzioIconQuickReport}" />
+            <TextBlock Text="Executar" />
+          </StackPanel>
+        </Button>
       </StackPanel>
     </Border>
 
     <!-- Collision. Replacing is offered only for a derived report, and never by default. -->
-    <Border Classes="notice" IsVisible="{Binding IsCollisionPending}">
+    <Border Classes="notice caution" IsVisible="{Binding IsCollisionPending}">
       <StackPanel Classes="stack-sm">
         <StackPanel Orientation="Horizontal" Classes="stack-sm">
           <TextBlock Text="⚠" Classes="severity-caution" />

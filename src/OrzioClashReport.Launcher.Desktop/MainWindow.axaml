@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:OrzioClashReport.Launcher.Desktop.Controls"
+        xmlns:converters="clr-namespace:OrzioClashReport.Launcher.Desktop.Converters"
         xmlns:views="clr-namespace:OrzioClashReport.Launcher.Desktop.Views"
         xmlns:vm="clr-namespace:OrzioClashReport.Launcher.Desktop.ViewModels"
         x:Class="OrzioClashReport.Launcher.Desktop.MainWindow"
@@ -11,6 +12,10 @@
         MinWidth="{DynamicResource OrzioWindowMinWidth}"
         MinHeight="{DynamicResource OrzioWindowMinHeight}"
         Background="{DynamicResource OrzioCanvasBrush}">
+
+  <Window.Resources>
+    <converters:SectionIconConverter x:Key="SectionIcon" />
+  </Window.Resources>
 
   <Window.DataTemplates>
     <DataTemplate DataType="vm:HomeViewModel">
@@ -35,26 +40,76 @@
     <Grid Grid.Row="0" ColumnDefinitions="Auto,*">
 
       <!--
-        Navigation. Below the rail breakpoint the same list collapses to icons; the label stays as a
-        tooltip so an icon is never the only way to know what a section is.
+        Navigation. Below the rail breakpoint the same list collapses to icons; every label stays as
+        a tooltip so an icon is never the only way to know what a section is.
       -->
       <Border Grid.Column="0"
               Classes="sidebar"
               Classes.rail="{Binding IsRailMode}">
-        <ListBox Classes="navigation"
-                 ItemsSource="{Binding Sections}"
-                 SelectedItem="{Binding SelectedSection, Mode=TwoWay}">
-          <ListBox.ItemTemplate>
-            <DataTemplate x:DataType="vm:NavigationItemViewModel">
-              <StackPanel Orientation="Horizontal"
-                          Classes="stack-sm"
-                          ToolTip.Tip="{Binding Label}">
-                <TextBlock Text="{Binding Glyph}" />
-                <TextBlock Classes="nav-label" Text="{Binding Label}" />
+        <DockPanel>
+
+          <Border DockPanel.Dock="Top" Classes="sidebar-header">
+            <StackPanel Orientation="Horizontal" Classes="stack-md">
+              <Border Classes="brand-mark" ToolTip.Tip="Orzio Clash Report">
+                <TextBlock Text="OC" />
+              </Border>
+              <StackPanel Classes="nav-label" VerticalAlignment="Center">
+                <TextBlock Classes="brand-title" Text="Orzio Clash Report" />
+                <TextBlock Classes="caption" Text="Coordenação BIM" />
               </StackPanel>
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
+            </StackPanel>
+          </Border>
+
+          <!--
+            Updates. Checking is always a deliberate click: nothing here contacts the network on its
+            own. When a newer version is found, the pulsing entry leads to Definições, where the
+            installation is explained and confirmed.
+          -->
+          <Border DockPanel.Dock="Bottom" Classes="sidebar-footer">
+            <StackPanel Classes="stack-xs">
+              <Button Classes="update-available"
+                      IsVisible="{Binding Updates.IsUpdateAvailable}"
+                      Command="{Binding ShowUpdatesCommand}"
+                      ToolTip.Tip="{Binding Updates.AvailableVersion, StringFormat='Nova versão {0}. Ver detalhes em Definições.'}">
+                <StackPanel Orientation="Horizontal" Classes="stack-sm">
+                  <Ellipse Classes="dot pulse" />
+                  <TextBlock Classes="nav-label" Text="Atualização disponível" />
+                </StackPanel>
+              </Button>
+
+              <Button Classes="sidebar-action"
+                      Command="{Binding Updates.CheckCommand}"
+                      ToolTip.Tip="Procurar atualizações no GitHub">
+                <StackPanel Orientation="Horizontal" Classes="stack-sm">
+                  <PathIcon Data="{DynamicResource OrzioIconRefresh}"
+                            Classes.spin="{Binding Updates.IsChecking}" />
+                  <TextBlock Classes="nav-label" Text="Procurar atualizações" />
+                </StackPanel>
+              </Button>
+
+              <TextBlock Classes="caption nav-label"
+                         TextTrimming="CharacterEllipsis"
+                         TextWrapping="NoWrap"
+                         Text="{Binding Updates.SidebarStatus}" />
+            </StackPanel>
+          </Border>
+
+          <ListBox Classes="navigation"
+                   ItemsSource="{Binding Sections}"
+                   SelectedItem="{Binding SelectedSection, Mode=TwoWay}">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="vm:NavigationItemViewModel">
+                <StackPanel Orientation="Horizontal"
+                            Classes="stack-md"
+                            ToolTip.Tip="{Binding Label}">
+                  <PathIcon Data="{Binding Section, Converter={StaticResource SectionIcon}}" />
+                  <TextBlock Classes="nav-label" Text="{Binding Label}" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+        </DockPanel>
       </Border>
 
       <Border Grid.Column="1" Classes="content">
@@ -64,7 +119,7 @@
             An operation that was still running when the application last stopped. It is reported,
             never resumed: what to do about it is a human decision.
           -->
-          <Border DockPanel.Dock="Top" Classes="notice" IsVisible="{Binding HasInterruptedOperations}">
+          <Border DockPanel.Dock="Top" Classes="notice caution" IsVisible="{Binding HasInterruptedOperations}">
             <StackPanel Classes="stack-sm">
               <StackPanel Orientation="Horizontal" Classes="stack-sm">
                 <TextBlock Text="⚠" Classes="severity-caution" />
@@ -87,7 +142,11 @@
             </StackPanel>
           </Border>
 
-          <ContentControl Content="{Binding SelectedSection.Content}" />
+          <TransitioningContentControl Content="{Binding SelectedSection.Content}">
+            <TransitioningContentControl.PageTransition>
+              <CrossFade Duration="0:0:0.22" />
+            </TransitioningContentControl.PageTransition>
+          </TransitioningContentControl>
         </DockPanel>
       </Border>
 
@@ -99,6 +158,7 @@
                    Classes="caption"
                    VerticalAlignment="Center"
                    TextTrimming="CharacterEllipsis"
+                   TextWrapping="NoWrap"
                    Text="{Binding StatusMessage}" />
 
         <controls:EngineStatusBadge Grid.Column="1"

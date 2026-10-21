@@ -68,7 +68,8 @@ choose to save them**. The application never moves them and the uninstaller neve
 
 ## 5. What the application does not do
 
-- No telemetry, no upload, no account, no internet connection required.
+- No telemetry, no project-file upload, no account, and no internet connection required for reporting.
+- The optional Settings action "Procurar atualizações" connects to public GitHub Releases only at the user's request; downloading and launching an update additionally requires explicit confirmation and SHA-256 verification.
 - Local logs never record an absolute path. A path appears only as its file name, its extension, a
   SHA-256 of the full path, and the kind of location it came from.
 - A diagnostic bundle is produced only when you ask for one, and only after you have been shown the

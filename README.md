@@ -725,9 +725,10 @@ by parsing and grouping tests. See [samples/README.md](samples/README.md).
   integration tests that drive a real child process through success, failure, timeout,
   cancellation, oversized output and undecodable output.
 - **Desktop launcher, installed and run on Windows**: not yet. The Inno Setup script and
-  the publish, package and smoke scripts exist and are covered by contract tests, but the
-  installer has not been compiled or executed, and `scripts/smoke-launcher.ps1` has not
-  been run on a clean machine.
+  the publish, package and smoke scripts exist and are covered by contract tests. The
+  installer is compiled and checksum-verified by Windows GitHub Actions; actual installation,
+  in-place upgrade, and `scripts/smoke-launcher.ps1` on a clean Windows machine are still
+  pending human validation.
 
 ## CI
 
@@ -741,6 +742,17 @@ Windows packaging smoke job that publishes the `win-x64` self-contained single-f
 Tag-triggered runs for matching `v*` tags verify that the tag matches `orzioclash
 --version`, verify that the tagged commit belongs to `origin/master`, package the ZIP and
 checksum, and create a prerelease without overwriting an existing release.
+
+The desktop launcher has a **separate release channel**. Its version lives only in
+`src/LauncherVersion.props`. After a raised launcher version is merged into master,
+.github/workflows/desktop-release.yml builds/tests the Windows installer and publishes a
+versioned desktop-v* GitHub prerelease with its SHA-256 and update manifest; on pull requests
+the same workflow only reports the tag a merge would publish.
+"Procurar atualizações" (sidebar footer and Definições) is the only thing that contacts the
+public GitHub Releases API; "Instalar atualização" downloads the installer, verifies its
+SHA-256, starts the normal Inno Setup wizard and closes the application. This does not change the existing CLI preview release procedure. See
+[desktop update operations](docs/operations/desktop-auto-updates.md). Real Windows
+upgrade acceptance is still required before broader distribution.
 
 ## Run Manifest
 

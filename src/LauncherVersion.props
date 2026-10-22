@@ -9,7 +9,7 @@
     (tag desktop-v<prefix>-<suffix>). A merge that leaves the version unchanged publishes nothing.
   -->
   <PropertyGroup>
-    <LauncherVersionPrefix>0.2.1</LauncherVersionPrefix>
+    <LauncherVersionPrefix>0.2.2</LauncherVersionPrefix>
     <LauncherVersionSuffix>launcher-preview.1</LauncherVersionSuffix>
   </PropertyGroup>
 

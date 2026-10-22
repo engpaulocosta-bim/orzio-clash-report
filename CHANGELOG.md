@@ -4,6 +4,12 @@ All notable changes for OrzioClashReport are recorded here.
 
 ## Unreleased
 
+## 0.2.2-launcher-preview.1
+
+Second desktop version published through the automatic desktop release channel
+(`desktop-v0.2.2-launcher-preview.1`). The bundled engine keeps its `0.1.0-preview.3` version
+string but carries the matcher fix below.
+
 ### Added
 
 - Desktop launcher: the interface is now available in Portuguese and English. The language follows
@@ -22,6 +28,17 @@ All notable changes for OrzioClashReport are recorded here.
   the raw option names.
 - Messages the launcher writes about the engine or a form follow the language that was active when
   they were produced; the engine's own output is always shown exactly as the engine wrote it.
+
+### Fixed
+
+- Engine: clash matching now uses the clash position to tell apart physically distinct clashes
+  that share the same element pair, typically in self-clash tests. Points more than `1e-6`
+  model units apart form a `Low` candidate that stays auditable but no longer counts as a
+  plausible competitor, so a correct match is no longer degraded to `Unverifiable`; if such a
+  candidate is the only one, the result stays `Unverifiable` instead of a false `Resolved` and
+  `New` pair. A point missing on either side keeps the candidate and is recorded as unavailable
+  evidence. This can change lifecycle results on existing data (fewer false `Unverifiable`).
+  Not yet validated on sequential real exports.
 
 ## 0.2.1-launcher-preview.1
 

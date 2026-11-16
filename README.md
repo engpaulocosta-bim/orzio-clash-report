@@ -716,7 +716,7 @@ by parsing and grouping tests. See [samples/README.md](samples/README.md).
 ## Validation Status
 
 - **Compiles**: `dotnet build -c Release` passes without warnings.
-- **Runs**: `dotnet test -c Release` is green and the CLI generates HTML from the fixtures
+- **Tests and CLI pass**: `dotnet test -c Release` is green and the CLI generates HTML from the fixtures
   in `samples/`, including the synthetic compare smoke test with lifecycle HTML.
 - **Validated on a real model, single-run execution**: yes. One private real export from
   the final revision was human-validated for parsing, raw count, group coverage, grouping,

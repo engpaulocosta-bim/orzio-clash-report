@@ -68,10 +68,15 @@ Two facts pin the whole design:
 In scope for the MVP: XML parsing, rule-based grouping, deterministic light-theme HTML with
 per-discipline color accents, CLI, tests.
 
+Reopened and built, each bounded by its own section below: persisted run snapshots, the
+ordered run index, the project catalog, run comparison with lifecycle and longitudinal
+HTML, human identity governance evidence, and the Windows desktop launcher.
+
 Out of scope until explicitly reopened, log any request to a README backlog instead of
-building it: clash images/viewpoint capture, PDF, licensing/keys/payment, WPF or any GUI,
-the live Navisworks-API adapter, status editing, responsible-party assignment, comments,
-history, database, CDE/BIM 360 integration, LLM grouping, DI container, config framework.
+building it: clash images/viewpoint capture, PDF, licensing/keys/payment, any GUI other
+than the desktop launcher, the live Navisworks-API adapter, status editing,
+responsible-party assignment, comments, history beyond the persisted files above, database,
+CDE/BIM 360 integration, LLM grouping, DI container, config framework.
 Image support, when it eventually lands, reuses Navisworks-exported viewpoint images; it
 does not generate images from scratch.
 
@@ -80,7 +85,7 @@ does not generate images from scratch.
 Three different claims. Never conflate them, and never report a higher one than you verified.
 
 - **Compiles**: `dotnet build` succeeds.
-- **Runs**: `dotnet test` is green AND the CLI produced an HTML file from the sample fixture.
+- **Tests and CLI pass**: `dotnet test` is green AND the CLI produced an HTML file from the sample fixture.
 - **Validated on a real model**: a human ran it on a real, anonymized Navisworks export and
   confirmed the grouped report matches reality.
 

@@ -52,7 +52,8 @@
           <Border DockPanel.Dock="Top" Classes="sidebar-header">
             <StackPanel Orientation="Horizontal" Classes="stack-md">
               <Border Classes="brand-mark" ToolTip.Tip="Orzio Clash Report">
-                <TextBlock Text="OC" />
+                <Image Source="/Assets/orzio-symbol-128.png" Stretch="Uniform"
+                       AutomationProperties.Name="Orzio" />
               </Border>
               <StackPanel Classes="nav-label" VerticalAlignment="Center">
                 <TextBlock Classes="brand-title" Text="Orzio Clash Report" />

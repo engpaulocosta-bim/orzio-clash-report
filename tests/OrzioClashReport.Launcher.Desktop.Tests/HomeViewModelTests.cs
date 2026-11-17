@@ -11,18 +11,21 @@ namespace OrzioClashReport.Launcher.Desktop.Tests;
 
 public sealed class HomeViewModelTests
 {
-    [Fact]
-    public async Task RealCorruptHistoryShowsTheErrorStateAndPreservesTheFile()
+    [Theory]
+    [InlineData("{ corrupt history")]
+    [InlineData("{\"schemaVersion\":2,\"items\":[]}")]
+    [InlineData("{\"schemaVersion\":1,\"items\":[{}]}")]
+    public async Task RealCorruptHistoryShowsTheErrorStateAndPreservesTheFile(string history)
     {
         string path = Path.Combine(Path.GetTempPath(), "orzio-history-" + Guid.NewGuid() + ".json");
-        await File.WriteAllTextAsync(path, "{ corrupt history");
+        await File.WriteAllTextAsync(path, history);
         try
         {
             HomeViewModel home = Create(new OrzioClashReport.Launcher.Infrastructure.Storage.JsonRecentItemsStore(path));
             await home.RefreshRecentOutputsAsync(CancellationToken.None);
             Assert.True(home.HasRecentError);
             Assert.False(home.IsRecentEmpty);
-            Assert.Equal("{ corrupt history", await File.ReadAllTextAsync(path));
+            Assert.Equal(history, await File.ReadAllTextAsync(path));
         }
         finally { File.Delete(path); }
     }

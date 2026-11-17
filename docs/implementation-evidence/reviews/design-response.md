@@ -14,3 +14,5 @@ Reviewer: independent Claude CLI, read-only; original report in `design-initial.
 12. No unverified Windows version floor or installation-scope policy changes. Existing machine-wide/per-user coexistence and unsigned-installer limits remain native release gates.
 
 Initial red tests: corrupt history and installer start failures both failed (exit 1). After fixes, targeted history/engine/update tests passed. A cancellation fixture initially returned HTTP 503 without observing its token; corrected the fake to honor cancellation. A live candidate process also locked Release outputs; the process launched for QA was stopped before final checks. Final suite results are in T16.
+
+Follow-up audit caught missing InvalidDataException handling for structurally invalid history (it is not an IOException). Reproduced through both Home and real-process executor with unsupported schema and invalid items: four failures, exit 1. Added the explicit exception to both handlers and expanded real-file tests. This also covers startup/return-to-overview paths; no catch-all was introduced.

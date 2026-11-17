@@ -117,7 +117,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
                 HasRecentOutputs = RecentOutputs.Count > 0;
             }
             catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException
-                or System.Security.SecurityException)
+                or InvalidDataException or System.Security.SecurityException)
             {
                 RecentErrorKey = "home.recent.loadFailed";
             }

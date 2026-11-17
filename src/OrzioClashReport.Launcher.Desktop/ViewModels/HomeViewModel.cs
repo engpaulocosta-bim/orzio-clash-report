@@ -85,7 +85,18 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
                 return;
             }
 
-            await _outputRevealer.OpenAsync(recent.Item.Path, CancellationToken.None).ConfigureAwait(true);
+            RecentErrorKey = null;
+            try
+            {
+                if (!await _outputRevealer.OpenAsync(recent.Item.Path, CancellationToken.None).ConfigureAwait(true))
+                {
+                    RecentErrorKey = "home.recent.openFailed";
+                }
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
+            {
+                RecentErrorKey = "home.recent.openFailed";
+            }
         }
 
         public async Task RefreshRecentOutputsAsync(CancellationToken cancellationToken)

@@ -1,9 +1,7 @@
 # Gate 5 — Release
 
-Status: BLOCKED / NOT_PUBLISHED.
+Status: PREPARED / AWAITING_AUTHORIZATION; NOT_PUBLISHED.
 
-Executor: Codex; independent static reviewer: Claude CLI. Source `f52ecd5`.
+Final code 4d00071, 1807 green Release tests, packaged-engine smoke, local installed UI at 125%, fixture report/opening, state preservation and actual rollback are verified. Independent final static review reports no critical/high findings. Setup, checksum, compatible update manifest, local ZIP and release notes are prepared. No remote mutation performed.
 
-Local self-contained candidate ZIP, hashes, per-file manifest and release notes prepared. 1806 Release tests and packaged CLI smoke pass. Independent final static review has no critical/high findings. Local candidate is explicitly labelled not an installer and not an updater payload.
-
-Missing: compiled setup/update-manifest artifacts, native installed QA, real upgrade/rollback proof and explicit authorization for remote mutation. No push/merge/release/CI publication was attempted. Previous immutable desktop release remains untouched. Overall acceptance cannot be PASS until these prerequisites are met.
+Before publication, obtain explicit push/PR/merge/release authorization under user AGENTS.md rule 8 and acceptance of the old 0.2.2 manual-bootstrap limitation. Then verify CI-produced official immutable assets and actual published feed. Public e2e is not inferred from local installation. Previous immutable release remains unchanged.

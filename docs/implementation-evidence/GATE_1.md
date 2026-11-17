@@ -1,9 +1,5 @@
 # Gate 1 — Interface and image
 
-Status: BLOCKED (automated/rendered checks PASS; native acceptance pending).
+Status: PASS on the recorded test machine and viewports.
 
-Executor: Codex. Independent static reviewer: Claude CLI. Verified source `f52ecd5`.
-
-Approved assets preserved; no redrawing. Runtime assets resolve and executable icon is present. Four Skia headless viewport previews and both-theme contrast tests passed; navigation/localization/form smoke tests passed. All 1806 Release tests passed, exit 0. No fabricated metrics or private screenshots.
-
-Native window selection failed in both available drivers despite fresh inventory/retry. Windows keyboard/dialog acceptance and 125% scale are NOT_RUN. Headless renders cannot satisfy those native criteria. Exact details: T16 and reviews/design-final.md.
+Executor Codex; independent static reviewer Claude CLI. Source 4d00071. Five headless viewport cases and relevant AA contrast checks passed. Native installed UI verified at existing Windows 125% scale; no OS setting changed. All seven sections, keyboard navigation, real engine state, official wordmark, PT/EN switching and both themes were observed. Minimum-width clipping was reproduced and corrected. T16 contains scope and evidence; private native screenshots were not committed.

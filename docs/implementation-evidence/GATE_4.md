@@ -1,11 +1,7 @@
 # Gate 4 — Updater
 
-Status: BLOCKED (corrected-source tests PASS; old-installed e2e blocked).
+Status: corrected-source checks PASS; exact legacy one-click upgrade BLOCKED by the old installed binary.
 
-Executor: Codex; independent static review: Claude CLI. Source `f52ecd5`.
+Source 4d00071. Real old Check button observed Checking -> Up to date against current published 0.2.2 feed. Compatible target setup/checksum/manifest prepared for desktop-v0.2.3. Tests pass for ordering, official URLs, invalid hash, cancellation/network recovery, stream disposal and start failure. Actual manual upgrade and rollback passed without state loss.
 
-Installed base version and feed were inspected read-only. Desktop target 0.2.3 is newer under the actual comparer; engine channel remains separate. Unit tests cover version ordering, official URLs, invalid hash, cancelled/failed download, file-handle disposal and installer-start refusal; all pass in Release.
-
-Old 0.2.2 installed code has the reproduced rename-sharing defect. It cannot bootstrap the correction through its own broken download path. No feed/publication/install/relaunch proof exists. A verified manual initial installer upgrade is required; no claim of seamless old-button success.
-
-Unsigned release and same-user file replacement/authenticity limits predate this branch and remain documented. No integrity/TLS/channel rule was weakened.
+The already-installed 0.2.2 binary cannot rename a verified download because its hash-verification handle remains open. A new release cannot fix that old running code before it installs. First upgrade requires a verified manual official-installer bootstrap; subsequent source is fixed. This legacy exception needs explicit acceptance for rollout. Unsigned-distribution/authenticity limits remain documented; no TLS/hash/channel rule was weakened.

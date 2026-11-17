@@ -1,9 +1,7 @@
-# Gate 3 — Windows resources
+# Gate 3 — Installed Windows resources
 
-Status: BLOCKED.
+Status: PASS for built resources and observed native surfaces; taskbar visual confirmation pending.
 
-Executor: Codex; independent static path review: Claude CLI. Source `f52ecd5`.
+Source 4d00071. Inno Setup 6.7.3 was manually installed by the user; setup build and actual per-user upgrade succeeded. ApplicationIcon, Window.Icon and SetupIconFile use the approved ICO. Built and installed executable icons and actual uninstaller icon were extracted and visually inspected. New logo observed in native titlebar, Start recommended tile and Alt+Tab. Start shortcut targets the installed executable; Windows uninstall entry names 0.2.3 and uses that executable for DisplayIcon. AppId/scope/data paths unchanged.
 
-ApplicationIcon, Window.Icon and Inno SetupIconFile point at the supplied ICO. The built win-x64 executable carries the branded icon: extracted and visually inspected. ProductVersion agrees with version props. AppId, shortcuts, uninstall icon source and data paths remain unchanged.
-
-Inno Setup 6 is absent and automatic approval review rejected its installation (“blocked by policy”). No candidate setup exists. Installed Start/taskbar/Alt+Tab/uninstall icons and cache refresh are NOT_RUN. This gate cannot pass from executable resource checks alone.
+The tool's app-window captures do not separately include the taskbar. Explicit user visual confirmation was requested; do not claim pinned-cache verification without that response. No system icon cache was cleared.

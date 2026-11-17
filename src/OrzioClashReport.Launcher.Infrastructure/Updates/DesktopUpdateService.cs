@@ -26,14 +26,27 @@ namespace OrzioClashReport.Launcher.Infrastructure.Updates
         private const string ReleaseApi = "https://api.github.com/repos/" + Repository + "/releases?per_page=100";
         private const long MaximumInstallerBytes = 250L * 1024L * 1024L;
         private readonly HttpClient _http;
+        private readonly string? _updatesDirectory;
+        private readonly Action<string> _startInstaller;
 
         public DesktopUpdateService() : this(CreateHttpClient())
         {
         }
 
-        internal DesktopUpdateService(HttpClient http)
+        internal DesktopUpdateService(HttpClient http, string? updatesDirectory = null, Action<string>? startInstaller = null)
         {
             _http = http ?? throw new ArgumentNullException(nameof(http));
+            _updatesDirectory = updatesDirectory;
+            _startInstaller = startInstaller ?? StartInstaller;
+        }
+
+        private static void StartInstaller(string installer)
+        {
+            using var started = System.Diagnostics.Process.Start(new ProcessStartInfo(installer) { UseShellExecute = false });
+            if (started is null)
+            {
+                throw new InvalidOperationException("Windows did not start the installer.");
+            }
         }
 
         private static HttpClient CreateHttpClient()
@@ -175,7 +188,7 @@ namespace OrzioClashReport.Launcher.Infrastructure.Updates
                 throw new PlatformNotSupportedException("Desktop updates require Windows.");
             }
 
-            string updates = Path.Combine(
+            string updates = _updatesDirectory ?? Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                 "Orzio", "ClashReportLauncher", "Updates");
             Directory.CreateDirectory(updates);
@@ -220,20 +233,19 @@ namespace OrzioClashReport.Launcher.Infrastructure.Updates
                     }
                 }
 
-                await using FileStream verification = File.OpenRead(temporary);
-                byte[] hash = await SHA256.HashDataAsync(verification, cancellationToken).ConfigureAwait(false);
-                string actual = Convert.ToHexString(hash);
-                if (!actual.Equals(manifest.Sha256, StringComparison.OrdinalIgnoreCase))
+                // Windows cannot rename the download while its verification handle is open.
+                await using (FileStream verification = File.OpenRead(temporary))
                 {
-                    throw new InvalidDataException("Downloaded installer SHA-256 does not match the release.");
+                    byte[] hash = await SHA256.HashDataAsync(verification, cancellationToken).ConfigureAwait(false);
+                    string actual = Convert.ToHexString(hash);
+                    if (!actual.Equals(manifest.Sha256, StringComparison.OrdinalIgnoreCase))
+                    {
+                        throw new InvalidDataException("Downloaded installer SHA-256 does not match the release.");
+                    }
                 }
 
                 File.Move(temporary, installer, overwrite: true);
-                using var started = System.Diagnostics.Process.Start(new ProcessStartInfo(installer) { UseShellExecute = false });
-                if (started is null)
-                {
-                    throw new InvalidOperationException("Windows did not start the installer.");
-                }
+                _startInstaller(installer);
                 return installer;
             }
             finally

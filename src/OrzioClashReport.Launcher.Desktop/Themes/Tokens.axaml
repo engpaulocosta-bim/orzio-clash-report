@@ -29,8 +29,8 @@
       <SolidColorBrush x:Key="OrzioBorderStrongBrush" Color="#C9D2E0" />
       <SolidColorBrush x:Key="OrzioTextPrimaryBrush" Color="#1A2B3D" />
       <SolidColorBrush x:Key="OrzioTextSecondaryBrush" Color="#526478" />
-      <SolidColorBrush x:Key="OrzioTextTertiaryBrush" Color="#617287" />
-      <SolidColorBrush x:Key="OrzioAccentBrush" Color="#087F8C" />
+      <SolidColorBrush x:Key="OrzioTextTertiaryBrush" Color="#526478" />
+      <SolidColorBrush x:Key="OrzioAccentBrush" Color="#076F7B" />
       <SolidColorBrush x:Key="OrzioAccentHoverBrush" Color="#076A75" />
       <SolidColorBrush x:Key="OrzioAccentPressedBrush" Color="#065763" />
       <SolidColorBrush x:Key="OrzioAccentTintBrush" Color="#E6F3F4" />

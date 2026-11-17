@@ -223,6 +223,10 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
             }
 
             SetStatusSource(StatusSource.SelectedSection);
+            if (value.Section == LauncherSection.Home)
+            {
+                _ = Home.RefreshRecentOutputsAsync(CancellationToken.None);
+            }
         }
     }
 }

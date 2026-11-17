@@ -14,7 +14,7 @@
         <Grid ColumnDefinitions="*">
           <StackPanel Grid.Column="0" Classes="stack-md">
             <TextBlock Classes="overline" Text="{loc:Loc home.overline}" />
-                        <TextBlock Classes="display"
+            <TextBlock Classes="display"
                        Text="{loc:Loc home.hero.title}" />
             <TextBlock Classes="secondary"
                        Text="{loc:Loc home.hero.body}" />

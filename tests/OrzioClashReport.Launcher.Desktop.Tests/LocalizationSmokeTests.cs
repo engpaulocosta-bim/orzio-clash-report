@@ -70,7 +70,7 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
                 Assert.DoesNotContain("Definições", english);
 
                 // The status bar shows the selected section's description, which also follows.
-                Assert.Contains("Quick actions, engine status and latest reports.", english);
+                Assert.Contains("Quick actions, engine status and recent files.", english);
 
                 Loc.Language = UiLanguage.Portuguese;
                 Dispatcher.UIThread.RunJobs();

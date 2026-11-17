@@ -10,8 +10,8 @@ namespace OrzioClashReport.Launcher.Application.Localization
             // Navigation sections: label and one-line description, in navigation order.
             Add(t, "nav.home.label", "Visão geral", "Overview");
             Add(t, "nav.home.description",
-                "Ações rápidas, estado do motor e últimos relatórios.",
-                "Quick actions, engine status and latest reports.");
+                "Ações rápidas, estado do motor e ficheiros recentes.",
+                "Quick actions, engine status and recent files.");
 
             Add(t, "nav.quickreport.label", "Relatório rápido", "Quick report");
             Add(t, "nav.quickreport.description",

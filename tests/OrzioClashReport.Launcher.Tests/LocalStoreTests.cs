@@ -113,6 +113,34 @@ namespace OrzioClashReport.Launcher.Tests
         }
 
         [Fact]
+        public async Task CorruptRecentHistoryIsReportedAndNeverOverwrittenByAdd()
+        {
+            string path = Path.Combine(_root, "recent-items.json");
+            const string corrupt = "{ not valid json";
+            File.WriteAllText(path, corrupt);
+            var store = new JsonRecentItemsStore(path);
+
+            await Assert.ThrowsAnyAsync<System.Text.Json.JsonException>(() => store.LoadAsync(CancellationToken.None));
+            await Assert.ThrowsAnyAsync<System.Text.Json.JsonException>(() => store.AddAsync(
+                Recent(Path.Combine(_root, "report.html")), CancellationToken.None));
+            Assert.Equal(corrupt, File.ReadAllText(path));
+        }
+
+        [Fact]
+        public async Task UnsupportedRecentHistoryIsPreservedInsteadOfBeingRewritten()
+        {
+            string path = Path.Combine(_root, "recent-items.json");
+            const string unsupported = "{\"schemaVersion\":2,\"items\":[]}";
+            File.WriteAllText(path, unsupported);
+            var store = new JsonRecentItemsStore(path);
+
+            await Assert.ThrowsAsync<InvalidDataException>(() => store.LoadAsync(CancellationToken.None));
+            await Assert.ThrowsAsync<InvalidDataException>(() => store.AddAsync(
+                Recent(Path.Combine(_root, "report.html")), CancellationToken.None));
+            Assert.Equal(unsupported, File.ReadAllText(path));
+        }
+
+        [Fact]
         public async Task ClearingRecentItemsRemovesTheListWithoutTouchingTheFiles()
         {
             string reportPath = Path.Combine(_root, "report.html");

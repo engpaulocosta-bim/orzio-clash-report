@@ -17,7 +17,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="Assets\*.png;Assets\*.ico" Exclude="Assets\orzio-approved-original.png" />
   </ItemGroup>
 
   <ItemGroup>

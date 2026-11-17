@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -13,6 +14,7 @@ namespace OrzioClashReport.Launcher.Desktop.Tests;
 public sealed class DesignViewportTests
 {
     [AvaloniaTheory]
+    [InlineData(1024, 680, false)]
     [InlineData(1280, 720, false)]
     [InlineData(1600, 900, false)]
     [InlineData(1920, 1080, false)]
@@ -42,6 +44,19 @@ public sealed class DesignViewportTests
             {
                 Assert.True(label.Bounds.Width + 1 >= label.DesiredSize.Width,
                     $"Navigation label is clipped: {label.Text}");
+            }
+
+            foreach (Button action in window.GetVisualDescendants().OfType<Button>().Where(b => b.Classes.Contains("link")))
+            {
+                Border card = action.GetVisualAncestors().OfType<Border>().First(b => b.Classes.Contains("card"));
+                foreach (Control content in action.GetVisualDescendants().OfType<Control>()
+                    .Where(c => c is TextBlock or PathIcon))
+                {
+                    Avalonia.Point? origin = content.TranslatePoint(new Avalonia.Point(), card);
+                    Assert.NotNull(origin);
+                    Assert.True(origin.Value.X + content.Bounds.Width <= card.Bounds.Width - card.Padding.Right + 1,
+                        "Overview action is clipped inside its card.");
+                }
             }
 
             using var frame = window.CaptureRenderedFrame();

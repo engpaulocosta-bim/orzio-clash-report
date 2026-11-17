@@ -38,7 +38,7 @@ namespace OrzioClashReport.Launcher.Application.Localization
             Add(t, "home.tile.compare.body",
                 "Compara pares adjacentes na ordem que declarar. Nada é ordenado por data, nome ou revisão.",
                 "Compares adjacent pairs in the order you declare. Nothing is sorted by date, name or revision.");
-            Add(t, "home.tile.compare.action", "Ver evolução dos conflitos", "View clash evolution");
+            Add(t, "home.tile.compare.action", "Ver evolução", "View evolution");
 
             Add(t, "home.recent.title", "Ficheiros recentes", "Recent files");
             Add(t, "home.recent.loading", "A carregar ficheiros recentes…", "Loading recent files…");

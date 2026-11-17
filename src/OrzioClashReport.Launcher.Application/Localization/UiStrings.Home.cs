@@ -10,15 +10,11 @@ namespace OrzioClashReport.Launcher.Application.Localization
             Add(t, "home.overline",
                 "COORDENAÇÃO BIM · NAVISWORKS CLASH DETECTIVE",
                 "BIM COORDINATION · NAVISWORKS CLASH DETECTIVE");
-            Add(t, "home.hero.title",
-                "Do export de clashes a um relatório pronto para a reunião.",
-                "From a clash export to a report ready for the meeting.");
+            Add(t, "home.hero.title", "Visão geral", "Overview");
             Add(t, "home.hero.body",
-                "Transforma exports do Navisworks Clash Detective em relatórios de coordenação, "
-                + "comparações entre revisões e decisões humanas explícitas.",
-                "Turns Navisworks Clash Detective exports into coordination reports, "
-                + "comparisons between revisions and explicit human decisions.");
-            Add(t, "home.hero.quickReport", "Gerar relatório rápido", "Generate quick report");
+                "Escolha um XML do Clash Detective para gerar um relatório, ou compare revisões existentes.",
+                "Choose a Clash Detective XML to generate a report, or compare existing revisions.");
+            Add(t, "home.hero.quickReport", "Importar XML", "Import XML");
             Add(t, "home.hero.compare", "Comparar revisões", "Compare revisions");
 
             Add(t, "home.update.title", "Nova versão disponível: {0}", "New version available: {0}");

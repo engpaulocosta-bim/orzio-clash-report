@@ -9,23 +9,22 @@
   <ScrollViewer>
     <StackPanel Classes="page">
 
-      <!-- Hero: what the tool is for, and the one action most coordinators come for. -->
-      <Border Classes="hero">
+      <!-- Operational overview; commands reuse the existing workflows. -->
+      <Border Classes="card">
         <Grid ColumnDefinitions="*,Auto">
           <StackPanel Grid.Column="0" Classes="stack-md">
-            <TextBlock Classes="overline" Text="{loc:Loc home.overline}" />
-            <TextBlock Classes="hero-title"
+                        <TextBlock Classes="display"
                        Text="{loc:Loc home.hero.title}" />
-            <TextBlock Classes="on-hero-muted"
+            <TextBlock Classes="secondary"
                        Text="{loc:Loc home.hero.body}" />
             <StackPanel Orientation="Horizontal" Classes="stack-sm">
-              <Button Classes="on-hero" Command="{Binding GoToQuickReportCommand}">
+              <Button Classes="primary" Command="{Binding GoToQuickReportCommand}">
                 <StackPanel Orientation="Horizontal" Classes="stack-sm">
                   <PathIcon Classes="small" Data="{DynamicResource OrzioIconQuickReport}" />
                   <TextBlock Text="{loc:Loc home.hero.quickReport}" />
                 </StackPanel>
               </Button>
-              <Button Classes="on-hero-ghost" Command="{Binding GoToLongitudinalCommand}">
+              <Button Classes="ghost" Command="{Binding GoToLongitudinalCommand}">
                 <StackPanel Orientation="Horizontal" Classes="stack-sm">
                   <TextBlock Text="{loc:Loc home.hero.compare}" />
                   <PathIcon Classes="small" Data="{DynamicResource OrzioIconArrowRight}" />

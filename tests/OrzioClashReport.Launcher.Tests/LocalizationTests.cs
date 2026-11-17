@@ -322,14 +322,14 @@ namespace OrzioClashReport.Launcher.Tests
             using (new LanguageScope(UiLanguage.Portuguese))
             {
                 Assert.Equal(
-                    new[] { "Início", "Relatório rápido", "Snapshots", "Longitudinal", "Projetos", "Governança", "Definições" },
+                    new[] { "Visão geral", "Relatório rápido", "Snapshots", "Evolução dos conflitos", "Projetos", "Governança", "Definições" },
                     LauncherSectionPresentation.All.Select(section => section.Label));
             }
 
             using (new LanguageScope(UiLanguage.English))
             {
                 Assert.Equal(
-                    new[] { "Home", "Quick report", "Snapshots", "Longitudinal", "Projects", "Governance", "Settings" },
+                    new[] { "Overview", "Quick report", "Snapshots", "Clash evolution", "Projects", "Governance", "Settings" },
                     LauncherSectionPresentation.All.Select(section => section.Label));
             }
         }

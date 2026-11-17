@@ -34,7 +34,7 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
             Assert.Equal(
                 new[]
                 {
-                    "Início", "Relatório rápido", "Snapshots", "Longitudinal",
+                    "Visão geral", "Relatório rápido", "Snapshots", "Evolução dos conflitos",
                     "Projetos", "Governança", "Definições",
                 },
                 shell.Sections.Select(section => section.Label));

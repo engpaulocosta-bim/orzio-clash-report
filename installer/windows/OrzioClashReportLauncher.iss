@@ -38,6 +38,7 @@ AppVersion={#LauncherVersion}
 AppVerName={#LauncherName} {#LauncherFullVersion}
 VersionInfoVersion={#LauncherVersion}
 AppPublisher={#LauncherPublisher}
+SetupIconFile=..\..\src\OrzioClashReport.Launcher.Desktop\Assets\orzio-icon-light-tile.ico
 
 ; {autopf} resolves to {localappdata}\Programs in the default per-user mode, and only becomes
 ; Program Files when the user deliberately elevates.

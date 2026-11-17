@@ -98,7 +98,16 @@ namespace OrzioClashReport.Launcher.Application.Operations
 
                 if (result.State == EngineJobState.Succeeded)
                 {
-                    await RecordArtifactsAsync(request, result, cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        await RecordArtifactsAsync(request, result, cancellationToken).ConfigureAwait(false);
+                    }
+                    catch (Exception exception) when (exception is IOException or UnauthorizedAccessException
+                        or System.Text.Json.JsonException or InvalidDataException or System.Security.SecurityException)
+                    {
+                        Log(LauncherLogLevel.Warning, "recent.writeFailed",
+                            "Could not update recent output history; saved artifacts are unchanged.", request, jobId);
+                    }
                 }
 
                 Log(

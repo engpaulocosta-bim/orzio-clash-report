@@ -8,6 +8,7 @@
         x:Class="OrzioClashReport.Launcher.Desktop.MainWindow"
         x:DataType="vm:ShellViewModel"
         Title="Orzio Clash Report"
+        Icon="/Assets/orzio-icon-light-tile.ico"
         Width="{DynamicResource OrzioWindowMinWidth}"
         Height="{DynamicResource OrzioWindowMinHeight}"
         MinWidth="{DynamicResource OrzioWindowMinWidth}"
@@ -52,7 +53,8 @@
           <Border DockPanel.Dock="Top" Classes="sidebar-header">
             <StackPanel Orientation="Horizontal" Classes="stack-md">
               <Border Classes="brand-mark" ToolTip.Tip="Orzio Clash Report">
-                <TextBlock Text="OC" />
+                <Image Source="/Assets/orzio-symbol-128.png" Stretch="Uniform"
+                       AutomationProperties.Name="Orzio" />
               </Border>
               <StackPanel Classes="nav-label" VerticalAlignment="Center">
                 <TextBlock Classes="brand-title" Text="Orzio Clash Report" />

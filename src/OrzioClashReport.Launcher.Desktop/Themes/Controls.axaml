@@ -7,6 +7,10 @@
     classes; they never carry a literal colour, font size, radius, padding or margin.
   -->
 
+  <Style Selector="Window">
+    <Setter Property="FontFamily" Value="Segoe UI, sans-serif" />
+  </Style>
+
   <!-- Typography -->
   <Style Selector="TextBlock">
     <Setter Property="FontSize" Value="{DynamicResource OrzioFontSizeBody}" />
@@ -227,6 +231,13 @@
   </Style>
 
   <!-- Brand -->
+  <Style Selector="Border.wordmark">
+    <Setter Property="Width" Value="{DynamicResource OrzioWordmarkWidth}" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="Background" Value="{DynamicResource OrzioBrandMarkBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OrzioRadiusSm}" />
+    <Setter Property="Padding" Value="{DynamicResource OrzioCompactPadding}" />
+  </Style>
   <Style Selector="Border.brand-mark">
     <Setter Property="Width" Value="{DynamicResource OrzioBrandMarkSize}" />
     <Setter Property="Height" Value="{DynamicResource OrzioBrandMarkSize}" />
@@ -250,7 +261,7 @@
 
   <!-- Shell -->
   <Style Selector="Border.sidebar">
-    <Setter Property="Background" Value="{DynamicResource OrzioRaisedBrush}" />
+    <Setter Property="Background" Value="{DynamicResource OrzioSidebarBrush}" />
     <Setter Property="BorderBrush" Value="{DynamicResource OrzioBorderSubtleBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource OrzioHairlineRight}" />
     <Setter Property="Width" Value="{DynamicResource OrzioSidebarWidth}" />
@@ -264,6 +275,21 @@
     <Setter Property="Padding" Value="{DynamicResource OrzioSidebarFooterPadding}" />
     <Setter Property="BorderBrush" Value="{DynamicResource OrzioBorderSubtleBrush}" />
     <Setter Property="BorderThickness" Value="{DynamicResource OrzioHairlineTop}" />
+  </Style>
+
+  <Style Selector="Border.sidebar TextBlock">
+    <Setter Property="Foreground" Value="{DynamicResource OrzioSidebarTextBrush}" />
+  </Style>
+  <Style Selector="Border.sidebar TextBlock.caption">
+    <Setter Property="Foreground" Value="{DynamicResource OrzioSidebarMutedBrush}" />
+  </Style>
+  <Style Selector="Button.sidebar-action:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource OrzioSidebarActiveBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioSidebarTextBrush}" />
+  </Style>
+  <Style Selector="Button:focus-visible /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="BorderBrush" Value="{DynamicResource OrzioAccentBrush}" />
+    <Setter Property="BorderThickness" Value="{DynamicResource OrzioHairlineAll}" />
   </Style>
 
   <!-- Rail mode: icons only, with every label kept as a tooltip. -->
@@ -467,16 +493,16 @@
     <Setter Property="Padding" Value="{DynamicResource OrzioNavItemPadding}" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
-    <Setter Property="Foreground" Value="{DynamicResource OrzioTextSecondaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioSidebarMutedBrush}" />
   </Style>
 
   <Style Selector="Button.update-available">
-    <Setter Property="Background" Value="{DynamicResource OrzioAccentTintBrush}" />
+    <Setter Property="Background" Value="{DynamicResource OrzioSidebarActiveBrush}" />
     <Setter Property="BorderThickness" Value="0" />
     <Setter Property="Padding" Value="{DynamicResource OrzioNavItemPadding}" />
     <Setter Property="HorizontalAlignment" Value="Stretch" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
-    <Setter Property="Foreground" Value="{DynamicResource OrzioAccentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioSidebarTextBrush}" />
     <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
 
@@ -490,7 +516,7 @@
   <Style Selector="ListBox.navigation ListBoxItem">
     <Setter Property="Padding" Value="{DynamicResource OrzioNavItemPadding}" />
     <Setter Property="CornerRadius" Value="{DynamicResource OrzioRadiusMd}" />
-    <Setter Property="Foreground" Value="{DynamicResource OrzioTextSecondaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioSidebarMutedBrush}" />
   </Style>
 
   <Style Selector="ListBox.navigation ListBoxItem /template/ ContentPresenter#PART_ContentPresenter">
@@ -502,35 +528,35 @@
   </Style>
 
   <Style Selector="ListBox.navigation ListBoxItem TextBlock">
-    <Setter Property="Foreground" Value="{DynamicResource OrzioTextSecondaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioSidebarMutedBrush}" />
     <Setter Property="FontWeight" Value="Medium" />
     <Setter Property="VerticalAlignment" Value="Center" />
     <Setter Property="TextWrapping" Value="NoWrap" />
   </Style>
 
   <Style Selector="ListBox.navigation ListBoxItem PathIcon">
-    <Setter Property="Foreground" Value="{DynamicResource OrzioTextTertiaryBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioSidebarMutedBrush}" />
   </Style>
 
   <Style Selector="ListBox.navigation ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource OrzioSunkenBrush}" />
+    <Setter Property="Background" Value="{DynamicResource OrzioSidebarActiveBrush}" />
   </Style>
 
   <Style Selector="ListBox.navigation ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource OrzioAccentTintBrush}" />
+    <Setter Property="Background" Value="{DynamicResource OrzioSidebarActiveBrush}" />
   </Style>
 
   <Style Selector="ListBox.navigation ListBoxItem:selected:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource OrzioAccentTintBrush}" />
+    <Setter Property="Background" Value="{DynamicResource OrzioSidebarActiveBrush}" />
   </Style>
 
   <Style Selector="ListBox.navigation ListBoxItem:selected TextBlock">
-    <Setter Property="Foreground" Value="{DynamicResource OrzioAccentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioSidebarTextBrush}" />
     <Setter Property="FontWeight" Value="SemiBold" />
   </Style>
 
   <Style Selector="ListBox.navigation ListBoxItem:selected PathIcon">
-    <Setter Property="Foreground" Value="{DynamicResource OrzioAccentBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource OrzioSidebarTextBrush}" />
   </Style>
 
   <!-- Segmented tabs: the forms of one section. -->

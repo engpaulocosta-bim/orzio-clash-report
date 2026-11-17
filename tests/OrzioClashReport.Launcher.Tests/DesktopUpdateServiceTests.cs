@@ -17,6 +17,7 @@ public sealed class DesktopUpdateServiceTests
     [InlineData("0.2.1-launcher-preview.1", "0.2.1", false)]
     [InlineData("0.2.1-launcher-preview.9", "0.2.1-launcher-preview.10", false)]
     [InlineData("0.2.1", "0.2.1", false)]
+    [InlineData("0.2.3-launcher-preview.1", "0.2.2-launcher-preview.1", true)]
     public void Semantic_version_comparison_respects_prereleases(string latest, string current, bool expected)
     {
         Assert.Equal(expected, DesktopVersionComparer.IsNewer(latest, current));
@@ -79,9 +80,93 @@ public sealed class DesktopUpdateServiceTests
         await Assert.ThrowsAsync<InvalidDataException>(() => service.CheckAsync("0.2.1-launcher-preview.1"));
     }
 
+    [Fact]
+    public async Task Verified_download_releases_its_handle_before_move_and_launch()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        string directory = Path.Combine(Path.GetTempPath(), "orzio-update-test-" + Guid.NewGuid().ToString("N"));
+        byte[] bytes = Encoding.UTF8.GetBytes("inert installer fixture; never executed");
+        var manifest = DownloadManifest(Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(bytes)));
+        using var http = new HttpClient(new FakeHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        { Content = new ByteArrayContent(bytes) }));
+        bool launched = false;
+        var service = new DesktopUpdateService(http, directory, path =>
+        {
+            using var exclusive = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None);
+            launched = true;
+        });
+        try
+        {
+            string path = await service.DownloadAndStartInstallerAsync(manifest);
+            Assert.True(launched);
+            Assert.Equal(bytes, await File.ReadAllBytesAsync(path));
+            Assert.Empty(Directory.GetFiles(directory, "*.download"));
+        }
+        finally { if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true); }
+    }
+
+    [Fact]
+    public async Task Corrupt_download_preserves_existing_installer_and_never_launches()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        string directory = Path.Combine(Path.GetTempPath(), "orzio-update-test-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        var manifest = DownloadManifest(new string('a', 64));
+        string previous = Path.Combine(directory, Path.GetFileName(new Uri(manifest.InstallerUrl).AbsolutePath));
+        await File.WriteAllTextAsync(previous, "previous verified installer");
+        using var http = new HttpClient(new FakeHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        { Content = new StringContent("corrupt fixture") }));
+        bool launched = false;
+        var service = new DesktopUpdateService(http, directory, _ => launched = true);
+        try
+        {
+            await Assert.ThrowsAsync<InvalidDataException>(() => service.DownloadAndStartInstallerAsync(manifest));
+            Assert.False(launched);
+            Assert.Equal("previous verified installer", await File.ReadAllTextAsync(previous));
+            Assert.Empty(Directory.GetFiles(directory, "*.download"));
+        }
+        finally { Directory.Delete(directory, recursive: true); }
+    }
+
+    private static DesktopUpdateManifest DownloadManifest(string sha256) => new(
+        "0.2.3-launcher-preview.1",
+        $"https://github.com/{Repo}/releases/download/desktop-v0.2.3-launcher-preview.1/orzio-clash-report-desktop-v0.2.3-launcher-preview.1-win-x64-setup.exe",
+        sha256, null);
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Network_failure_or_cancellation_preserves_state_and_never_launches(bool cancel)
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        string directory = Path.Combine(Path.GetTempPath(), "orzio-update-test-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        string evidence = Path.Combine(directory, "retained-state.txt");
+        await File.WriteAllTextAsync(evidence, "unchanged");
+        using var http = new HttpClient(new FakeHandler(_ => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)));
+        bool launched = false;
+        var service = new DesktopUpdateService(http, directory, _ => launched = true);
+        using var cancellation = new CancellationTokenSource();
+        if (cancel) cancellation.Cancel();
+        try
+        {
+            Func<Task> download = () => service.DownloadAndStartInstallerAsync(
+                DownloadManifest(new string('a', 64)), cancellation.Token);
+            if (cancel) await Assert.ThrowsAnyAsync<OperationCanceledException>(download);
+            else await Assert.ThrowsAsync<HttpRequestException>(download);
+            Assert.False(launched);
+            Assert.Equal("unchanged", await File.ReadAllTextAsync(evidence));
+            Assert.Single(Directory.GetFiles(directory));
+        }
+        finally { Directory.Delete(directory, recursive: true); }
+    }
+
     private sealed class FakeHandler(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler
     {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
-            Task.FromResult(respond(request));
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(respond(request));
+        }
     }
 }

@@ -10,10 +10,15 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\orzio-icon-light-tile.ico</ApplicationIcon>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <VersionPrefix>$(LauncherVersionPrefix)</VersionPrefix>
     <VersionSuffix>$(LauncherVersionSuffix)</VersionSuffix>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\*.png;Assets\*.ico" Exclude="Assets\orzio-approved-original.png" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.20" />

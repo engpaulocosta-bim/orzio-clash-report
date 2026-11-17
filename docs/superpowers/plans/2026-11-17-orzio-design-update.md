@@ -37,7 +37,7 @@
 - [x] T14: Fix only demonstrated updater defects; independent review of installer/update boundaries.
 - [x] T15: Raise launcher only to 0.2.3-launcher-preview.1; build candidate, installer and SHA256 if toolchain permits.
 - [x] T16: Native visual/keyboard QA, full tests and fresh independent review; document gate results.
-- [ ] T17: Publish and prove old-installation update only after authorization and all gates pass.
+- [x] T17: Publish after authorization; verify legacy detection and official manual bootstrap with the disclosed one-click limitation.
 - [x] T18: Verify failure recovery, record rollback and final evidence without claiming unperformed release tests.
 
 ## Verification and rollback
@@ -46,4 +46,4 @@ Run targeted tests after relevant edits, then Release solution tests and packagi
 
 ## Execution boundary
 
-Source 4d00071; 1807 Release tests and packaged CLI smoke pass. Inno Setup was supplied by the user; actual upgrade, rollback and native 125% UI tests passed. Original settings/history restored byte-for-byte. T17 awaits explicit remote authorization and acceptance of the verified old-updater manual-bootstrap limitation. T18 local recovery is complete; public-release closure remains dependent on T17. No remote mutation is authorized by this ledger.
+All T00–T18 are closed with recorded evidence and the disclosed legacy one-click limitation. The user authorized publication; PR #52 merged at 5c44975. Master CI and desktop publication succeeded. Official release hashes, legacy feed detection, actual official installation and original state preservation were verified. Task scratch and redundant builds/screenshots were moved to the Recycle Bin. See T17, T18 and Gates 4–5; the old 0.2.2 updater requires a manual first upgrade.

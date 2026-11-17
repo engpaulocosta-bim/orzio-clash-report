@@ -1,9 +1,7 @@
 # Gate 5 — Release
 
-Status: AUTHORIZED / CI AND PUBLICATION PENDING.
+Status: PASS, with the legacy manual-bootstrap limitation recorded in Gate 4. The closure evidence supersedes the historical preparation notes below.
 
-Final code 4d00071, 1807 green Release tests, packaged-engine smoke, local installed UI at 125%, fixture report/opening, state preservation and actual rollback are verified. Independent final static review reports no critical/high findings. Setup, checksum, compatible update manifest, local ZIP and release notes are prepared. No remote mutation performed.
+PR #52 passed required checks and merged at 5c44975. Master CI and official publication succeeded. Official setup/checksum/manifest agree, the tag resolves to the merge commit, the old installation detects the new version and the official released setup was installed and launched. See T17 for run IDs, release URL, SHA-256 and actual ProductVersion.
 
-Before publication, obtain explicit push/PR/merge/release authorization under user AGENTS.md rule 8 and acceptance of the old 0.2.2 manual-bootstrap limitation. Then verify CI-produced official immutable assets and actual published feed. Public e2e is not inferred from local installation. Previous immutable release remains unchanged.
-
-User authorization received for commit, push and merge after automatic publication and legacy bootstrap were disclosed. Proceed through the existing PR/check/release process; final run/asset evidence follows.
+Task scratch, redundant local builds, previews/screenshots and regenerable bin/obj directories were moved to the Recycle Bin. Original inputs, repository source/evidence, installation and user state were retained. This is recoverable task-scoped cleanup, not a whole-PC purge or a claim of freed disk space.

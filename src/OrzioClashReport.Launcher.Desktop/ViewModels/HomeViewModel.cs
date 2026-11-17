@@ -93,7 +93,8 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
                     RecentErrorKey = "home.recent.openFailed";
                 }
             }
-            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidOperationException)
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or InvalidOperationException
+                or System.ComponentModel.Win32Exception)
             {
                 RecentErrorKey = "home.recent.openFailed";
             }
@@ -115,7 +116,8 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
                 }
                 HasRecentOutputs = RecentOutputs.Count > 0;
             }
-            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException
+                or System.Security.SecurityException)
             {
                 RecentErrorKey = "home.recent.loadFailed";
             }

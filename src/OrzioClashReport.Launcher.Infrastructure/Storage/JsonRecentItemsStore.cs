@@ -79,45 +79,33 @@ namespace OrzioClashReport.Launcher.Infrastructure.Storage
                 return Array.Empty<RecentOutputItem>();
             }
 
-            try
+            using (JsonDocument document = JsonDocument.Parse(File.ReadAllText(_filePath)))
             {
-                using (JsonDocument document = JsonDocument.Parse(File.ReadAllText(_filePath)))
+                JsonElement root = document.RootElement;
+                if (root.ValueKind != JsonValueKind.Object
+                    || !root.TryGetProperty("schemaVersion", out JsonElement version)
+                    || version.ValueKind != JsonValueKind.Number
+                    || !version.TryGetInt32(out int schema) || schema != SchemaVersion
+                    || !root.TryGetProperty("items", out JsonElement items)
+                    || items.ValueKind != JsonValueKind.Array)
                 {
-                    JsonElement root = document.RootElement;
-                    if (root.ValueKind != JsonValueKind.Object
-                        || !root.TryGetProperty("items", out JsonElement items)
-                        || items.ValueKind != JsonValueKind.Array)
-                    {
-                        return Array.Empty<RecentOutputItem>();
-                    }
-
-                    var result = new List<RecentOutputItem>();
-                    foreach (JsonElement element in items.EnumerateArray())
-                    {
-                        RecentOutputItem? item = TryReadItem(element);
-                        if (item != null)
-                        {
-                            result.Add(item);
-                        }
-
-                        if (result.Count == MaximumItems)
-                        {
-                            break;
-                        }
-                    }
-
-                    return result;
+                    throw new InvalidDataException("Recent output history has an invalid structure.");
                 }
-            }
-            catch (Exception exception) when (
-                exception is JsonException
-                || exception is IOException
-                || exception is UnauthorizedAccessException
-                || exception is System.Security.SecurityException)
-            {
-                // A corrupt convenience list is discarded rather than surfaced as a failure; nothing
-                // the user depends on is stored here.
-                return Array.Empty<RecentOutputItem>();
+
+                var result = new List<RecentOutputItem>();
+                foreach (JsonElement element in items.EnumerateArray())
+                {
+                    RecentOutputItem item = TryReadItem(element)
+                        ?? throw new InvalidDataException("Recent output history contains an invalid item.");
+                    result.Add(item);
+
+                    if (result.Count == MaximumItems)
+                    {
+                        break;
+                    }
+                }
+
+                return result;
             }
         }
 
@@ -139,6 +127,8 @@ namespace OrzioClashReport.Launcher.Infrastructure.Storage
 
             if (!Enum.TryParse(operationText, ignoreCase: false, out LauncherOperationKind operation)
                 || !Enum.TryParse(artifactText, ignoreCase: false, out LauncherArtifactKind artifactKind)
+                || !Enum.IsDefined(typeof(LauncherOperationKind), operation)
+                || !Enum.IsDefined(typeof(LauncherArtifactKind), artifactKind)
                 || !DateTimeOffset.TryParse(
                     completedText,
                     CultureInfo.InvariantCulture,
@@ -162,7 +152,7 @@ namespace OrzioClashReport.Launcher.Infrastructure.Storage
             }
 
             value = property.GetString() ?? string.Empty;
-            return value.Length > 0;
+            return !string.IsNullOrWhiteSpace(value);
         }
 
         private void Save(IReadOnlyList<RecentOutputItem> items)

@@ -133,9 +133,40 @@ public sealed class DesktopUpdateServiceTests
         $"https://github.com/{Repo}/releases/download/desktop-v0.2.3-launcher-preview.1/orzio-clash-report-desktop-v0.2.3-launcher-preview.1-win-x64-setup.exe",
         sha256, null);
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Network_failure_or_cancellation_preserves_state_and_never_launches(bool cancel)
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        string directory = Path.Combine(Path.GetTempPath(), "orzio-update-test-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        string evidence = Path.Combine(directory, "retained-state.txt");
+        await File.WriteAllTextAsync(evidence, "unchanged");
+        using var http = new HttpClient(new FakeHandler(_ => new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)));
+        bool launched = false;
+        var service = new DesktopUpdateService(http, directory, _ => launched = true);
+        using var cancellation = new CancellationTokenSource();
+        if (cancel) cancellation.Cancel();
+        try
+        {
+            Func<Task> download = () => service.DownloadAndStartInstallerAsync(
+                DownloadManifest(new string('a', 64)), cancellation.Token);
+            if (cancel) await Assert.ThrowsAnyAsync<OperationCanceledException>(download);
+            else await Assert.ThrowsAsync<HttpRequestException>(download);
+            Assert.False(launched);
+            Assert.Equal("unchanged", await File.ReadAllTextAsync(evidence));
+            Assert.Single(Directory.GetFiles(directory));
+        }
+        finally { Directory.Delete(directory, recursive: true); }
+    }
+
     private sealed class FakeHandler(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler
     {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
-            Task.FromResult(respond(request));
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(respond(request));
+        }
     }
 }

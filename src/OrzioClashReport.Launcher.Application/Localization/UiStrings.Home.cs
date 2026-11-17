@@ -42,6 +42,10 @@ namespace OrzioClashReport.Launcher.Application.Localization
 
             Add(t, "home.recent.title", "Últimos relatórios", "Latest reports");
             Add(t, "home.recent.loading", "A carregar ficheiros recentes…", "Loading recent files…");
+            Add(t, "home.recent.missing", "Ficheiro indisponível", "File unavailable");
+            Add(t, "home.recent.openFailed",
+                "Não foi possível abrir o ficheiro. Confirme que está disponível e que existe uma aplicação para o abrir.",
+                "Could not open the file. Check that it is available and that an application can open it.");
             Add(t, "home.recent.loadFailed",
                 "Não foi possível carregar o histórico. Os ficheiros guardados não foram alterados.",
                 "Could not load history. Your saved files have not been changed.");

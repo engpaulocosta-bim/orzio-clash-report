@@ -150,12 +150,15 @@
                     <PathIcon Data="{DynamicResource OrzioIconFile}" />
                   </Border>
                   <StackPanel Grid.Column="1" Classes="stack-xs" VerticalAlignment="Center">
-                    <TextBlock FontWeight="SemiBold" Text="{Binding FileName}" />
-                    <StackPanel Orientation="Horizontal" Classes="stack-sm">
+                    <TextBlock FontWeight="SemiBold" Text="{Binding FileName}"
+                               TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"
+                               ToolTip.Tip="{Binding FileName}" />
+                    <StackPanel Classes="stack-xs">
                       <TextBlock Classes="caption" Text="{Binding FolderName}" />
-                      <TextBlock Classes="caption" Text="·" />
                       <TextBlock Classes="caption" Text="{Binding CompletedAt}" />
                     </StackPanel>
+                    <TextBlock Classes="caption" IsVisible="{Binding !IsAvailable}"
+                               Text="{loc:Loc home.recent.missing}" />
                   </StackPanel>
 
                   <Button Grid.Column="2"

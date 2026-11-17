@@ -12,6 +12,18 @@ namespace OrzioClashReport.Launcher.Desktop.Tests;
 public sealed class HomeViewModelTests
 {
     [Fact]
+    public async Task UnavailableOutputShowsFeedbackAndRemainsInHistory()
+    {
+        HomeViewModel home = Create(new HistoryStore());
+        await home.RefreshRecentOutputsAsync(CancellationToken.None);
+
+        await home.OpenRecentCommand.ExecuteAsync(home.RecentOutputs[0]);
+
+        Assert.True(home.HasRecentError);
+        Assert.Single(home.RecentOutputs);
+    }
+
+    [Fact]
     public async Task HistoryReadFailureIsReportedWithoutDiscardingLoadedHistory()
     {
         var store = new HistoryStore();

@@ -8,6 +8,7 @@
         x:Class="OrzioClashReport.Launcher.Desktop.MainWindow"
         x:DataType="vm:ShellViewModel"
         Title="Orzio Clash Report"
+        Icon="/Assets/orzio-icon-light-tile.ico"
         Width="{DynamicResource OrzioWindowMinWidth}"
         Height="{DynamicResource OrzioWindowMinHeight}"
         MinWidth="{DynamicResource OrzioWindowMinWidth}"

@@ -8,10 +8,10 @@ namespace OrzioClashReport.Launcher.Application.Localization
         private static void AddNavigationAndShell(Dictionary<string, (string Portuguese, string English)> t)
         {
             // Navigation sections: label and one-line description, in navigation order.
-            Add(t, "nav.home.label", "Início", "Home");
+            Add(t, "nav.home.label", "Visão geral", "Overview");
             Add(t, "nav.home.description",
-                "Ações rápidas, estado do motor e últimos relatórios.",
-                "Quick actions, engine status and latest reports.");
+                "Ações rápidas, estado do motor e ficheiros recentes.",
+                "Quick actions, engine status and recent files.");
 
             Add(t, "nav.quickreport.label", "Relatório rápido", "Quick report");
             Add(t, "nav.quickreport.description",
@@ -23,7 +23,7 @@ namespace OrzioClashReport.Launcher.Application.Localization
                 "Criar snapshots imutáveis e comparar dois snapshots.",
                 "Create immutable snapshots and compare two snapshots.");
 
-            Add(t, "nav.longitudinal.label", "Longitudinal", "Longitudinal");
+            Add(t, "nav.longitudinal.label", "Evolução dos conflitos", "Clash evolution");
             Add(t, "nav.longitudinal.description",
                 "Índice ordenado de runs e comparação de pares adjacentes.",
                 "Ordered run index and comparison of adjacent pairs.");

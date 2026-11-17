@@ -8,17 +8,13 @@ namespace OrzioClashReport.Launcher.Application.Localization
         private static void AddHomeAndQuickReport(Dictionary<string, (string Portuguese, string English)> t)
         {
             Add(t, "home.overline",
-                "COORDENAÇÃO BIM · NAVISWORKS CLASH DETECTIVE",
-                "BIM COORDINATION · NAVISWORKS CLASH DETECTIVE");
-            Add(t, "home.hero.title",
-                "Do export de clashes a um relatório pronto para a reunião.",
-                "From a clash export to a report ready for the meeting.");
+                "ORZIO CLASH REPORT",
+                "ORZIO CLASH REPORT");
+            Add(t, "home.hero.title", "Visão geral", "Overview");
             Add(t, "home.hero.body",
-                "Transforma exports do Navisworks Clash Detective em relatórios de coordenação, "
-                + "comparações entre revisões e decisões humanas explícitas.",
-                "Turns Navisworks Clash Detective exports into coordination reports, "
-                + "comparisons between revisions and explicit human decisions.");
-            Add(t, "home.hero.quickReport", "Gerar relatório rápido", "Generate quick report");
+                "Escolha um XML do Clash Detective para gerar um relatório, ou compare revisões existentes.",
+                "Choose a Clash Detective XML to generate a report, or compare existing revisions.");
+            Add(t, "home.hero.quickReport", "Importar XML", "Import XML");
             Add(t, "home.hero.compare", "Comparar revisões", "Compare revisions");
 
             Add(t, "home.update.title", "Nova versão disponível: {0}", "New version available: {0}");
@@ -42,9 +38,17 @@ namespace OrzioClashReport.Launcher.Application.Localization
             Add(t, "home.tile.compare.body",
                 "Compara pares adjacentes na ordem que declarar. Nada é ordenado por data, nome ou revisão.",
                 "Compares adjacent pairs in the order you declare. Nothing is sorted by date, name or revision.");
-            Add(t, "home.tile.compare.action", "Ir para Longitudinal", "Go to Longitudinal");
+            Add(t, "home.tile.compare.action", "Ver evolução", "View evolution");
 
-            Add(t, "home.recent.title", "Últimos relatórios", "Latest reports");
+            Add(t, "home.recent.title", "Ficheiros recentes", "Recent files");
+            Add(t, "home.recent.loading", "A carregar ficheiros recentes…", "Loading recent files…");
+            Add(t, "home.recent.missing", "Ficheiro indisponível", "File unavailable");
+            Add(t, "home.recent.openFailed",
+                "Não foi possível abrir o ficheiro. Confirme que está disponível e que existe uma aplicação para o abrir.",
+                "Could not open the file. Check that it is available and that an application can open it.");
+            Add(t, "home.recent.loadFailed",
+                "Não foi possível carregar o histórico. Os ficheiros guardados não foram alterados.",
+                "Could not load history. Your saved files have not been changed.");
             Add(t, "home.recent.empty",
                 "Ainda não gerou nenhum ficheiro. O que gerar aparece aqui, e fica onde o guardou.",
                 "You have not generated any file yet. What you generate appears here, "

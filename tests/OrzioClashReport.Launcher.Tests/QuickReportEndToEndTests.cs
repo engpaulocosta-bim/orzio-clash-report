@@ -61,6 +61,24 @@ namespace OrzioClashReport.Launcher.Tests
             }
         }
 
+        [Theory]
+        [InlineData("{ corrupt history")]
+        [InlineData("{\"schemaVersion\":2,\"items\":[]}")]
+        [InlineData("{\"schemaVersion\":1,\"items\":[{}]}")]
+        public async Task CorruptHistoryDoesNotEraseHistoryOrFailAnOtherwiseSuccessfulReport(string history)
+        {
+            File.WriteAllText(_locations.RecentItemsFilePath, history);
+            string output = Path.Combine(_outputDirectory, "report.html");
+
+            EngineJobResult result = await ExecuteAsync(Input("model.xml"), output);
+
+            Assert.Equal(EngineJobState.Succeeded, result.State);
+            Assert.True(File.Exists(output));
+            Assert.Equal(history, File.ReadAllText(_locations.RecentItemsFilePath));
+            Assert.Contains(_log.Entries, entry => entry.EventCode == "recent.writeFailed");
+            Assert.Empty(await _journal.ReadInterruptedAsync(CancellationToken.None));
+        }
+
         [Fact]
         public async Task AQuickReportProducesTheFileRecordsItAndLeavesNoJournalEntry()
         {

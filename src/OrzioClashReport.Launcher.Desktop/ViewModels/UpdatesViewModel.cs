@@ -255,6 +255,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         private static bool IsExpectedFailure(Exception exception) =>
             exception is HttpRequestException or IOException or JsonException or UnauthorizedAccessException
+                or System.ComponentModel.Win32Exception
                 or InvalidDataException or InvalidOperationException or ArgumentException
                 or PlatformNotSupportedException or TaskCanceledException;
 

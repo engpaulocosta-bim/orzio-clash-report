@@ -6,7 +6,8 @@ namespace OrzioClashReport.Launcher.Contracts.Settings
 {
     /// <summary>
     /// Keeps the most recent outputs, newest first. Implementations cap the list and de-duplicate by
-    /// path; a missing or unreadable store yields an empty list rather than an exception.
+    /// path. A missing store yields an empty list; unreadable or corrupt history must be reported
+    /// without replacing it when a new output is recorded.
     /// </summary>
     public interface IRecentItemsStore
     {

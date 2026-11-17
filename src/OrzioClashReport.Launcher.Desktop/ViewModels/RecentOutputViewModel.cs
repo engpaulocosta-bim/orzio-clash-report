@@ -32,6 +32,8 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public string FileName { get; }
 
+        public bool IsAvailable => File.Exists(Item.Path);
+
         public string FolderName { get; }
 
         public string CompletedAt { get; }

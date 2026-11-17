@@ -64,6 +64,25 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
         }
 
         [AvaloniaFact]
+        public async Task InstallerStartFailureIsReportedAndDoesNotCloseTheApplication()
+        {
+            var client = new FakeDesktopUpdateClient
+            {
+                Available = Newer,
+                DownloadFailure = new System.ComponentModel.Win32Exception("Launch refused"),
+            };
+            UpdatesViewModel updates = Create(client, out _, out bool[] shutdown);
+            await updates.CheckCommand.ExecuteAsync(null);
+
+            Exception? error = await Record.ExceptionAsync(() => updates.InstallCommand.ExecuteAsync(null));
+
+            Assert.Null(error);
+            Assert.Equal(UpdateState.Failed, updates.State);
+            Assert.False(shutdown[0]);
+            Assert.NotEmpty(updates.StatusText);
+        }
+
+        [AvaloniaFact]
         public async Task InstallingStartsTheVerifiedInstallerAndClosesTheApplication()
         {
             var client = new FakeDesktopUpdateClient { Available = Newer };

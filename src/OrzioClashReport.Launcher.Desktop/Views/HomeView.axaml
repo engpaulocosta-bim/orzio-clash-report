@@ -9,23 +9,23 @@
   <ScrollViewer>
     <StackPanel Classes="page">
 
-      <!-- Hero: what the tool is for, and the one action most coordinators come for. -->
-      <Border Classes="hero">
-        <Grid ColumnDefinitions="*,Auto">
+      <!-- Operational overview; commands reuse the existing workflows. -->
+      <Border Classes="card">
+        <Grid ColumnDefinitions="*">
           <StackPanel Grid.Column="0" Classes="stack-md">
             <TextBlock Classes="overline" Text="{loc:Loc home.overline}" />
-            <TextBlock Classes="hero-title"
+            <TextBlock Classes="display"
                        Text="{loc:Loc home.hero.title}" />
-            <TextBlock Classes="on-hero-muted"
+            <TextBlock Classes="secondary"
                        Text="{loc:Loc home.hero.body}" />
             <StackPanel Orientation="Horizontal" Classes="stack-sm">
-              <Button Classes="on-hero" Command="{Binding GoToQuickReportCommand}">
+              <Button Classes="primary" Command="{Binding GoToQuickReportCommand}">
                 <StackPanel Orientation="Horizontal" Classes="stack-sm">
                   <PathIcon Classes="small" Data="{DynamicResource OrzioIconQuickReport}" />
                   <TextBlock Text="{loc:Loc home.hero.quickReport}" />
                 </StackPanel>
               </Button>
-              <Button Classes="on-hero-ghost" Command="{Binding GoToLongitudinalCommand}">
+              <Button Classes="ghost" Command="{Binding GoToLongitudinalCommand}">
                 <StackPanel Orientation="Horizontal" Classes="stack-sm">
                   <TextBlock Text="{loc:Loc home.hero.compare}" />
                   <PathIcon Classes="small" Data="{DynamicResource OrzioIconArrowRight}" />
@@ -34,9 +34,6 @@
             </StackPanel>
           </StackPanel>
 
-          <controls:EngineStatusBadge Grid.Column="1"
-                                      VerticalAlignment="Top"
-                                      DataContext="{Binding EngineStatus}" />
         </Grid>
       </Border>
 
@@ -128,8 +125,13 @@
       <Border Classes="card">
         <StackPanel Classes="stack-md">
           <TextBlock Classes="title" Text="{loc:Loc home.recent.title}" />
+          <TextBlock Classes="secondary" IsVisible="{Binding IsLoadingRecentOutputs}"
+                     Text="{loc:Loc home.recent.loading}" />
+          <Border Classes="notice critical" IsVisible="{Binding HasRecentError}">
+            <TextBlock Text="{Binding RecentError}" />
+          </Border>
 
-          <StackPanel Orientation="Horizontal" Classes="stack-md" IsVisible="{Binding !HasRecentOutputs}">
+          <StackPanel Orientation="Horizontal" Classes="stack-md" IsVisible="{Binding IsRecentEmpty}">
             <Border Classes="icon-chip">
               <PathIcon Data="{DynamicResource OrzioIconFile}" />
             </Border>
@@ -146,12 +148,15 @@
                     <PathIcon Data="{DynamicResource OrzioIconFile}" />
                   </Border>
                   <StackPanel Grid.Column="1" Classes="stack-xs" VerticalAlignment="Center">
-                    <TextBlock FontWeight="SemiBold" Text="{Binding FileName}" />
-                    <StackPanel Orientation="Horizontal" Classes="stack-sm">
+                    <TextBlock FontWeight="SemiBold" Text="{Binding FileName}"
+                               TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"
+                               ToolTip.Tip="{Binding FileName}" />
+                    <StackPanel Classes="stack-xs">
                       <TextBlock Classes="caption" Text="{Binding FolderName}" />
-                      <TextBlock Classes="caption" Text="·" />
                       <TextBlock Classes="caption" Text="{Binding CompletedAt}" />
                     </StackPanel>
+                    <TextBlock Classes="caption" IsVisible="{Binding !IsAvailable}"
+                               Text="{loc:Loc home.recent.missing}" />
                   </StackPanel>
 
                   <Button Grid.Column="2"

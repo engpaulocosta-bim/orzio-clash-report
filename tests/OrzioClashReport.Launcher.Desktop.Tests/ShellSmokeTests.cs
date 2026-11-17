@@ -9,10 +9,13 @@ using Avalonia.Styling;
 using Avalonia.Headless.XUnit;
 using Avalonia.Threading;
 using OrzioClashReport.Launcher.Application.Engine;
+using OrzioClashReport.Launcher.Application;
 using OrzioClashReport.Launcher.Application.Presentation;
 using OrzioClashReport.Launcher.Contracts.Engine;
 using OrzioClashReport.Launcher.Contracts.Jobs;
 using OrzioClashReport.Launcher.Contracts.Operations;
+using OrzioClashReport.Launcher.Contracts.Settings;
+using OrzioClashReport.Launcher.Contracts.Results;
 using OrzioClashReport.Launcher.Desktop.ViewModels;
 
 namespace OrzioClashReport.Launcher.Desktop.Tests
@@ -25,6 +28,21 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
     public sealed class ShellSmokeTests
     {
         [AvaloniaFact]
+        public async Task ReturningToOverviewReloadsTheLatestOutputs()
+        {
+            var history = new InMemoryRecentItemsStore();
+            ShellViewModel shell = CreateShell(out _, history: history);
+            shell.Navigate(LauncherSection.QuickReport);
+            await history.AddAsync(new RecentOutputItem(
+                Path.Combine(Path.GetTempPath(), "report.html"), "Report", LauncherOperationKind.QuickReport,
+                LauncherArtifactKind.HtmlReport, DateTimeOffset.Parse("2026-01-01T12:00:00Z")), CancellationToken.None);
+
+            shell.Navigate(LauncherSection.Home);
+
+            Assert.Single(shell.Home.RecentOutputs);
+        }
+
+        [AvaloniaFact]
         public void TheShellWindowOpensWithTheSevenSections()
         {
             var window = new MainWindow { DataContext = CreateShell(out ShellViewModel shell) };
@@ -34,7 +52,7 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
             Assert.Equal(
                 new[]
                 {
-                    "Início", "Relatório rápido", "Snapshots", "Longitudinal",
+                    "Visão geral", "Relatório rápido", "Snapshots", "Evolução dos conflitos",
                     "Projetos", "Governança", "Definições",
                 },
                 shell.Sections.Select(section => section.Label));
@@ -168,7 +186,8 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
             EngineIntegrityResult? integrity = null,
             string? expectedVersion = null,
             EngineProcessResult? processResult = null,
-            NoOpJobJournal? journal = null)
+            NoOpJobJournal? journal = null,
+            IRecentItemsStore? history = null)
         {
             var probe = new EngineProbe(
                 new StubEngineLocator(engineLocation),
@@ -178,14 +197,14 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
                 Path.GetTempPath());
 
             var engineStatus = new EngineStatusViewModel();
-            var recentItems = new InMemoryRecentItemsStore();
+            var recentItems = history ?? new InMemoryRecentItemsStore();
             var revealer = new NullOutputRevealer();
 
             ShellViewModel? created = null;
 
             var updates = new UpdatesViewModel(
                 new FakeDesktopUpdateClient(), new ActiveJobTracker(), new FixedClock(),
-                "0.2.0-launcher-preview.1", _ => { }, () => { });
+                LauncherBuildInfo.LauncherVersion, _ => { }, () => { });
 
             var home = new HomeViewModel(
                 engineStatus, recentItems, revealer, section => created?.Navigate(section), updates);
@@ -197,7 +216,7 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
                 new StubDiagnosticsBundleBuilder(),
                 engineStatus,
                 Path.GetTempPath(),
-                "0.2.0-launcher-preview.1",
+                LauncherBuildInfo.LauncherVersion,
                 _ => { },
                 updates);
 

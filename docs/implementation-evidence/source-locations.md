@@ -1,6 +1,6 @@
 # Source locations
 
-Verified source: `f52ecd5`; base `7fe5c49`. New-side hunk start lines from the actual Git diff. Binary resources are listed in T02/T11.
+Verified source: `4d00071`; base `7fe5c49`. New-side hunk start lines from the actual Git diff. Binary resources are listed in T02/T11.
 
 | File | Changed hunk starts |
 |---|---|

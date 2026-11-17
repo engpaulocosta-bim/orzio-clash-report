@@ -35,10 +35,10 @@
 - [x] T12: Full regression suite and CLI fixture smoke; preserve byte-identical engine outputs.
 - [x] T13: Record old-version manifest, URL, version and installation compatibility.
 - [x] T14: Fix only demonstrated updater defects; independent review of installer/update boundaries.
-- [ ] T15: Raise launcher only to 0.2.3-launcher-preview.1; build candidate, installer and SHA256 if toolchain permits.
-- [ ] T16: Native visual/keyboard QA, full tests and fresh independent review; document gate results.
+- [x] T15: Raise launcher only to 0.2.3-launcher-preview.1; build candidate, installer and SHA256 if toolchain permits.
+- [x] T16: Native visual/keyboard QA, full tests and fresh independent review; document gate results.
 - [ ] T17: Publish and prove old-installation update only after authorization and all gates pass.
-- [ ] T18: Verify failure recovery, record rollback and final evidence without claiming unperformed release tests.
+- [x] T18: Verify failure recovery, record rollback and final evidence without claiming unperformed release tests.
 
 ## Verification and rollback
 
@@ -46,4 +46,4 @@ Run targeted tests after relevant edits, then Release solution tests and packagi
 
 ## Execution boundary
 
-T00–T14 implementation/checks are recorded; checkmarks do not assert native installed acceptance. T04/T09/T11 still need native QA. T15 is partial (local ZIP exists; installer compiler blocked). T16–T18 cannot close until native, installed, publication-authorization and recovery gates are satisfied. Final source f52ecd5; 1806 Release tests and packaged CLI smoke passed. Overall BLOCKED, not complete.
+Source 4d00071; 1807 Release tests and packaged CLI smoke pass. Inno Setup was supplied by the user; actual upgrade, rollback and native 125% UI tests passed. Original settings/history restored byte-for-byte. T17 awaits explicit remote authorization and acceptance of the verified old-updater manual-bootstrap limitation. T18 local recovery is complete; public-release closure remains dependent on T17. No remote mutation is authorized by this ledger.

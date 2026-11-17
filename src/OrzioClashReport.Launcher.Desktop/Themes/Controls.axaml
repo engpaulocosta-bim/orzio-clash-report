@@ -231,6 +231,13 @@
   </Style>
 
   <!-- Brand -->
+  <Style Selector="Border.wordmark">
+    <Setter Property="Width" Value="{DynamicResource OrzioWordmarkWidth}" />
+    <Setter Property="HorizontalAlignment" Value="Left" />
+    <Setter Property="Background" Value="{DynamicResource OrzioBrandMarkBrush}" />
+    <Setter Property="CornerRadius" Value="{DynamicResource OrzioRadiusSm}" />
+    <Setter Property="Padding" Value="{DynamicResource OrzioCompactPadding}" />
+  </Style>
   <Style Selector="Border.brand-mark">
     <Setter Property="Width" Value="{DynamicResource OrzioBrandMarkSize}" />
     <Setter Property="Height" Value="{DynamicResource OrzioBrandMarkSize}" />

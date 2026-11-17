@@ -11,6 +11,10 @@
     <StackPanel Classes="page">
 
       <StackPanel Classes="stack-xs">
+        <Border Classes="wordmark">
+          <Image Source="/Assets/orzio-horizontal-transparent.png" Stretch="Uniform"
+                 AutomationProperties.Name="Orzio" />
+        </Border>
         <TextBlock Classes="display" Text="{loc:Loc nav.settings.label}" />
         <TextBlock Classes="secondary" Text="{loc:Loc settings.subtitle}" />
       </StackPanel>

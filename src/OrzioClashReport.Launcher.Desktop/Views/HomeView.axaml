@@ -127,8 +127,13 @@
       <Border Classes="card">
         <StackPanel Classes="stack-md">
           <TextBlock Classes="title" Text="{loc:Loc home.recent.title}" />
+          <TextBlock Classes="secondary" IsVisible="{Binding IsLoadingRecentOutputs}"
+                     Text="{loc:Loc home.recent.loading}" />
+          <Border Classes="notice critical" IsVisible="{Binding HasRecentError}">
+            <TextBlock Text="{Binding RecentError}" />
+          </Border>
 
-          <StackPanel Orientation="Horizontal" Classes="stack-md" IsVisible="{Binding !HasRecentOutputs}">
+          <StackPanel Orientation="Horizontal" Classes="stack-md" IsVisible="{Binding IsRecentEmpty}">
             <Border Classes="icon-chip">
               <PathIcon Data="{DynamicResource OrzioIconFile}" />
             </Border>

@@ -18,22 +18,26 @@
   <ResourceDictionary.ThemeDictionaries>
 
     <ResourceDictionary x:Key="Default">
-      <SolidColorBrush x:Key="OrzioCanvasBrush" Color="#F4F6FB" />
+      <SolidColorBrush x:Key="OrzioSidebarBrush" Color="#17243A" />
+      <SolidColorBrush x:Key="OrzioSidebarTextBrush" Color="#F4F7FA" />
+      <SolidColorBrush x:Key="OrzioSidebarMutedBrush" Color="#C2CFDC" />
+      <SolidColorBrush x:Key="OrzioSidebarActiveBrush" Color="#284359" />
+      <SolidColorBrush x:Key="OrzioCanvasBrush" Color="#F4F7FA" />
       <SolidColorBrush x:Key="OrzioRaisedBrush" Color="#FFFFFF" />
-      <SolidColorBrush x:Key="OrzioSunkenBrush" Color="#EDF0F7" />
-      <SolidColorBrush x:Key="OrzioBorderSubtleBrush" Color="#E2E7F0" />
+      <SolidColorBrush x:Key="OrzioSunkenBrush" Color="#EAF0F5" />
+      <SolidColorBrush x:Key="OrzioBorderSubtleBrush" Color="#DFE7EF" />
       <SolidColorBrush x:Key="OrzioBorderStrongBrush" Color="#C9D2E0" />
-      <SolidColorBrush x:Key="OrzioTextPrimaryBrush" Color="#0F172A" />
-      <SolidColorBrush x:Key="OrzioTextSecondaryBrush" Color="#4B5870" />
-      <SolidColorBrush x:Key="OrzioTextTertiaryBrush" Color="#8792A8" />
-      <SolidColorBrush x:Key="OrzioAccentBrush" Color="#4F46E5" />
-      <SolidColorBrush x:Key="OrzioAccentHoverBrush" Color="#4338CA" />
-      <SolidColorBrush x:Key="OrzioAccentPressedBrush" Color="#3730A3" />
-      <SolidColorBrush x:Key="OrzioAccentTintBrush" Color="#EEF0FF" />
+      <SolidColorBrush x:Key="OrzioTextPrimaryBrush" Color="#1A2B3D" />
+      <SolidColorBrush x:Key="OrzioTextSecondaryBrush" Color="#526478" />
+      <SolidColorBrush x:Key="OrzioTextTertiaryBrush" Color="#617287" />
+      <SolidColorBrush x:Key="OrzioAccentBrush" Color="#087F8C" />
+      <SolidColorBrush x:Key="OrzioAccentHoverBrush" Color="#076A75" />
+      <SolidColorBrush x:Key="OrzioAccentPressedBrush" Color="#065763" />
+      <SolidColorBrush x:Key="OrzioAccentTintBrush" Color="#E6F3F4" />
       <SolidColorBrush x:Key="OrzioOnAccentBrush" Color="#FFFFFF" />
-      <SolidColorBrush x:Key="OrzioPositiveBrush" Color="#047857" />
+      <SolidColorBrush x:Key="OrzioPositiveBrush" Color="#167A69" />
       <SolidColorBrush x:Key="OrzioCautionBrush" Color="#B45309" />
-      <SolidColorBrush x:Key="OrzioCriticalBrush" Color="#B91C1C" />
+      <SolidColorBrush x:Key="OrzioCriticalBrush" Color="#B84A50" />
       <SolidColorBrush x:Key="OrzioPositiveTintBrush" Color="#E8F8F1" />
       <SolidColorBrush x:Key="OrzioCautionTintBrush" Color="#FEF5E7" />
       <SolidColorBrush x:Key="OrzioCriticalTintBrush" Color="#FDECEC" />
@@ -42,24 +46,17 @@
       <SolidColorBrush x:Key="OrzioOnHeroSurfaceBrush" Color="#26FFFFFF" />
       <SolidColorBrush x:Key="OrzioOnHeroSurfaceHoverBrush" Color="#3DFFFFFF" />
 
-      <LinearGradientBrush x:Key="OrzioHeroBrush" StartPoint="0%,0%" EndPoint="100%,100%">
-        <GradientStop Offset="0" Color="#312E81" />
-        <GradientStop Offset="0.55" Color="#4F46E5" />
-        <GradientStop Offset="1" Color="#0E7490" />
-      </LinearGradientBrush>
+      <SolidColorBrush x:Key="OrzioHeroBrush" Color="#17243A" />
 
-      <LinearGradientBrush x:Key="OrzioBrandMarkBrush" StartPoint="0%,0%" EndPoint="100%,100%">
-        <GradientStop Offset="0" Color="#6366F1" />
-        <GradientStop Offset="1" Color="#0891B2" />
-      </LinearGradientBrush>
+      <SolidColorBrush x:Key="OrzioBrandMarkBrush" Color="#FFFFFF" />
 
-      <Color x:Key="SystemAccentColor">#4F46E5</Color>
-      <Color x:Key="SystemAccentColorDark1">#4338CA</Color>
-      <Color x:Key="SystemAccentColorDark2">#3730A3</Color>
-      <Color x:Key="SystemAccentColorDark3">#312E81</Color>
-      <Color x:Key="SystemAccentColorLight1">#6366F1</Color>
-      <Color x:Key="SystemAccentColorLight2">#818CF8</Color>
-      <Color x:Key="SystemAccentColorLight3">#A5B4FC</Color>
+      <Color x:Key="SystemAccentColor">#087F8C</Color>
+      <Color x:Key="SystemAccentColorDark1">#076A75</Color>
+      <Color x:Key="SystemAccentColorDark2">#065763</Color>
+      <Color x:Key="SystemAccentColorDark3">#065763</Color>
+      <Color x:Key="SystemAccentColorLight1">#18A0AA</Color>
+      <Color x:Key="SystemAccentColorLight2">#62D3D6</Color>
+      <Color x:Key="SystemAccentColorLight3">#A1E6E8</Color>
 
       <BoxShadows x:Key="OrzioShadowCard">0 1 2 0 #0F0F172A, 0 6 20 -8 #1F0F172A</BoxShadows>
       <BoxShadows x:Key="OrzioShadowRaised">0 2 4 0 #140F172A, 0 16 32 -12 #330F172A</BoxShadows>
@@ -67,6 +64,10 @@
     </ResourceDictionary>
 
     <ResourceDictionary x:Key="Dark">
+      <SolidColorBrush x:Key="OrzioSidebarBrush" Color="#17243A" />
+      <SolidColorBrush x:Key="OrzioSidebarTextBrush" Color="#F4F7FA" />
+      <SolidColorBrush x:Key="OrzioSidebarMutedBrush" Color="#C2CFDC" />
+      <SolidColorBrush x:Key="OrzioSidebarActiveBrush" Color="#284359" />
       <SolidColorBrush x:Key="OrzioCanvasBrush" Color="#0B1020" />
       <SolidColorBrush x:Key="OrzioRaisedBrush" Color="#131A2C" />
       <SolidColorBrush x:Key="OrzioSunkenBrush" Color="#1B2438" />
@@ -74,11 +75,11 @@
       <SolidColorBrush x:Key="OrzioBorderStrongBrush" Color="#34425E" />
       <SolidColorBrush x:Key="OrzioTextPrimaryBrush" Color="#E7EBF3" />
       <SolidColorBrush x:Key="OrzioTextSecondaryBrush" Color="#A6B0C3" />
-      <SolidColorBrush x:Key="OrzioTextTertiaryBrush" Color="#6F7B92" />
-      <SolidColorBrush x:Key="OrzioAccentBrush" Color="#8B93FF" />
-      <SolidColorBrush x:Key="OrzioAccentHoverBrush" Color="#A9AFFF" />
-      <SolidColorBrush x:Key="OrzioAccentPressedBrush" Color="#6E76F0" />
-      <SolidColorBrush x:Key="OrzioAccentTintBrush" Color="#1E2550" />
+      <SolidColorBrush x:Key="OrzioTextTertiaryBrush" Color="#A0ADBF" />
+      <SolidColorBrush x:Key="OrzioAccentBrush" Color="#62D3D6" />
+      <SolidColorBrush x:Key="OrzioAccentHoverBrush" Color="#8DE2E4" />
+      <SolidColorBrush x:Key="OrzioAccentPressedBrush" Color="#42B8C0" />
+      <SolidColorBrush x:Key="OrzioAccentTintBrush" Color="#12363D" />
       <SolidColorBrush x:Key="OrzioOnAccentBrush" Color="#0B1020" />
       <SolidColorBrush x:Key="OrzioPositiveBrush" Color="#34D399" />
       <SolidColorBrush x:Key="OrzioCautionBrush" Color="#FBBF24" />
@@ -91,24 +92,17 @@
       <SolidColorBrush x:Key="OrzioOnHeroSurfaceBrush" Color="#1FFFFFFF" />
       <SolidColorBrush x:Key="OrzioOnHeroSurfaceHoverBrush" Color="#33FFFFFF" />
 
-      <LinearGradientBrush x:Key="OrzioHeroBrush" StartPoint="0%,0%" EndPoint="100%,100%">
-        <GradientStop Offset="0" Color="#1E1B4B" />
-        <GradientStop Offset="0.55" Color="#3730A3" />
-        <GradientStop Offset="1" Color="#155E75" />
-      </LinearGradientBrush>
+      <SolidColorBrush x:Key="OrzioHeroBrush" Color="#17243A" />
 
-      <LinearGradientBrush x:Key="OrzioBrandMarkBrush" StartPoint="0%,0%" EndPoint="100%,100%">
-        <GradientStop Offset="0" Color="#818CF8" />
-        <GradientStop Offset="1" Color="#22D3EE" />
-      </LinearGradientBrush>
+      <SolidColorBrush x:Key="OrzioBrandMarkBrush" Color="#FFFFFF" />
 
-      <Color x:Key="SystemAccentColor">#6366F1</Color>
-      <Color x:Key="SystemAccentColorDark1">#4F46E5</Color>
-      <Color x:Key="SystemAccentColorDark2">#4338CA</Color>
-      <Color x:Key="SystemAccentColorDark3">#3730A3</Color>
-      <Color x:Key="SystemAccentColorLight1">#818CF8</Color>
-      <Color x:Key="SystemAccentColorLight2">#A5B4FC</Color>
-      <Color x:Key="SystemAccentColorLight3">#C7D2FE</Color>
+      <Color x:Key="SystemAccentColor">#18A0AA</Color>
+      <Color x:Key="SystemAccentColorDark1">#087F8C</Color>
+      <Color x:Key="SystemAccentColorDark2">#076A75</Color>
+      <Color x:Key="SystemAccentColorDark3">#065763</Color>
+      <Color x:Key="SystemAccentColorLight1">#62D3D6</Color>
+      <Color x:Key="SystemAccentColorLight2">#A1E6E8</Color>
+      <Color x:Key="SystemAccentColorLight3">#C6F1F2</Color>
 
       <BoxShadows x:Key="OrzioShadowCard">0 1 2 0 #59000000, 0 8 24 -10 #80000000</BoxShadows>
       <BoxShadows x:Key="OrzioShadowRaised">0 2 6 0 #66000000, 0 18 36 -12 #99000000</BoxShadows>
@@ -124,8 +118,8 @@
   <sys:Double x:Key="OrzioGapLg">24</sys:Double>
   <sys:Double x:Key="OrzioGapXl">32</sys:Double>
 
-  <Thickness x:Key="OrzioContentPadding">36,32</Thickness>
-  <Thickness x:Key="OrzioCardPadding">24</Thickness>
+  <Thickness x:Key="OrzioContentPadding">28,24</Thickness>
+  <Thickness x:Key="OrzioCardPadding">20</Thickness>
   <Thickness x:Key="OrzioHeroPadding">32,28</Thickness>
   <Thickness x:Key="OrzioCompactPadding">16</Thickness>
   <Thickness x:Key="OrzioNoticePadding">16,12</Thickness>
@@ -150,8 +144,8 @@
   <!-- Radius scale -->
   <CornerRadius x:Key="OrzioRadiusSm">6</CornerRadius>
   <CornerRadius x:Key="OrzioRadiusMd">10</CornerRadius>
-  <CornerRadius x:Key="OrzioRadiusLg">14</CornerRadius>
-  <CornerRadius x:Key="OrzioRadiusXl">20</CornerRadius>
+  <CornerRadius x:Key="OrzioRadiusLg">8</CornerRadius>
+  <CornerRadius x:Key="OrzioRadiusXl">10</CornerRadius>
   <CornerRadius x:Key="OrzioRadiusPill">999</CornerRadius>
 
   <!-- Type scale -->
@@ -172,7 +166,7 @@
   <sys:Double x:Key="OrzioProgressHeight">6</sys:Double>
 
   <!-- Shell geometry -->
-  <sys:Double x:Key="OrzioSidebarWidth">248</sys:Double>
+  <sys:Double x:Key="OrzioSidebarWidth">276</sys:Double>
   <sys:Double x:Key="OrzioRailWidth">68</sys:Double>
   <sys:Double x:Key="OrzioStatusBarHeight">36</sys:Double>
   <sys:Double x:Key="OrzioRailBreakpoint">900</sys:Double>

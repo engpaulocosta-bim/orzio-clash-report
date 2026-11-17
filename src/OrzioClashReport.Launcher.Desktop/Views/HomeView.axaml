@@ -11,7 +11,7 @@
 
       <!-- Operational overview; commands reuse the existing workflows. -->
       <Border Classes="card">
-        <Grid ColumnDefinitions="*,Auto">
+        <Grid ColumnDefinitions="*">
           <StackPanel Grid.Column="0" Classes="stack-md">
             <TextBlock Classes="overline" Text="{loc:Loc home.overline}" />
                         <TextBlock Classes="display"
@@ -34,9 +34,6 @@
             </StackPanel>
           </StackPanel>
 
-          <controls:EngineStatusBadge Grid.Column="1"
-                                      VerticalAlignment="Top"
-                                      DataContext="{Binding EngineStatus}" />
         </Grid>
       </Border>
 

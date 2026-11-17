@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -8,6 +10,8 @@ using CommunityToolkit.Mvvm.Input;
 using OrzioClashReport.Launcher.Application.Presentation;
 using OrzioClashReport.Launcher.Contracts.Platform;
 using OrzioClashReport.Launcher.Contracts.Settings;
+using OrzioClashReport.Launcher.Application.Localization;
+using OrzioClashReport.Launcher.Desktop.Localization;
 
 namespace OrzioClashReport.Launcher.Desktop.ViewModels
 {
@@ -15,7 +19,7 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
     /// The home screen: the three actions a coordinator reaches for, the engine state, and the five
     /// most recent outputs.
     /// </summary>
-    public sealed partial class HomeViewModel : ObservableObject
+    public sealed partial class HomeViewModel : LocalizedObservableObject
     {
         /// <summary>The home list stays short on purpose; the full list lives in Definições.</summary>
         public const int VisibleRecentItems = 5;
@@ -25,7 +29,20 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
         private readonly Action<LauncherSection> _navigate;
 
         [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsRecentEmpty))]
         private bool _hasRecentOutputs;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(IsRecentEmpty))]
+        private bool _isLoadingRecentOutputs;
+
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(RecentError), nameof(HasRecentError), nameof(IsRecentEmpty))]
+        private string? _recentErrorKey;
+
+        public string RecentError => RecentErrorKey == null ? string.Empty : Loc.T(RecentErrorKey);
+        public bool HasRecentError => RecentErrorKey != null;
+        public bool IsRecentEmpty => !HasRecentOutputs && !IsLoadingRecentOutputs && !HasRecentError;
 
         public HomeViewModel(
             EngineStatusViewModel engineStatus,
@@ -73,17 +90,28 @@ namespace OrzioClashReport.Launcher.Desktop.ViewModels
 
         public async Task RefreshRecentOutputsAsync(CancellationToken cancellationToken)
         {
-            IReadOnlyList<RecentOutputItem> items =
-                await _recentItemsStore.LoadAsync(cancellationToken).ConfigureAwait(true);
-
-            RecentOutputs.Clear();
-
-            for (int i = 0; i < items.Count && i < VisibleRecentItems; i++)
+            IsLoadingRecentOutputs = true;
+            RecentErrorKey = null;
+            try
             {
-                RecentOutputs.Add(new RecentOutputViewModel(items[i]));
-            }
+                IReadOnlyList<RecentOutputItem> items =
+                    await _recentItemsStore.LoadAsync(cancellationToken).ConfigureAwait(true);
 
-            HasRecentOutputs = RecentOutputs.Count > 0;
+                RecentOutputs.Clear();
+                for (int i = 0; i < items.Count && i < VisibleRecentItems; i++)
+                {
+                    RecentOutputs.Add(new RecentOutputViewModel(items[i]));
+                }
+                HasRecentOutputs = RecentOutputs.Count > 0;
+            }
+            catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or JsonException)
+            {
+                RecentErrorKey = "home.recent.loadFailed";
+            }
+            finally
+            {
+                IsLoadingRecentOutputs = false;
+            }
         }
     }
 }

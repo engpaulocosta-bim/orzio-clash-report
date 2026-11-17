@@ -41,6 +41,10 @@ namespace OrzioClashReport.Launcher.Application.Localization
             Add(t, "home.tile.compare.action", "Ir para Longitudinal", "Go to Longitudinal");
 
             Add(t, "home.recent.title", "Últimos relatórios", "Latest reports");
+            Add(t, "home.recent.loading", "A carregar ficheiros recentes…", "Loading recent files…");
+            Add(t, "home.recent.loadFailed",
+                "Não foi possível carregar o histórico. Os ficheiros guardados não foram alterados.",
+                "Could not load history. Your saved files have not been changed.");
             Add(t, "home.recent.empty",
                 "Ainda não gerou nenhum ficheiro. O que gerar aparece aqui, e fica onde o guardou.",
                 "You have not generated any file yet. What you generate appears here, "

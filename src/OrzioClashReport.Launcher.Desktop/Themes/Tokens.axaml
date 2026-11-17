@@ -162,6 +162,7 @@
   <sys:Double x:Key="OrzioIconSizeSm">14</sys:Double>
   <sys:Double x:Key="OrzioIconChipSize">40</sys:Double>
   <sys:Double x:Key="OrzioBrandMarkSize">38</sys:Double>
+  <sys:Double x:Key="OrzioWordmarkWidth">180</sys:Double>
   <sys:Double x:Key="OrzioDotSize">8</sys:Double>
   <sys:Double x:Key="OrzioProgressHeight">6</sys:Double>
 

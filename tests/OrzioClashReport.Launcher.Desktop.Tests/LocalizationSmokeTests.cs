@@ -52,7 +52,7 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
                 window.Show();
 
                 IReadOnlyList<string> portuguese = TextsIn(window);
-                Assert.Contains("Início", portuguese);
+                Assert.Contains("Visão geral", portuguese);
                 Assert.Contains("Definições", portuguese);
                 Assert.Contains("Procurar atualizações", portuguese);
                 Assert.Contains("A verificar", portuguese);
@@ -61,12 +61,12 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
                 Dispatcher.UIThread.RunJobs();
 
                 IReadOnlyList<string> english = TextsIn(window);
-                Assert.Contains("Home", english);
+                Assert.Contains("Overview", english);
                 Assert.Contains("Quick report", english);
                 Assert.Contains("Settings", english);
                 Assert.Contains("Check for updates", english);
                 Assert.Contains("Checking", english);
-                Assert.DoesNotContain("Início", english);
+                Assert.DoesNotContain("Visão geral", english);
                 Assert.DoesNotContain("Definições", english);
 
                 // The status bar shows the selected section's description, which also follows.
@@ -75,7 +75,7 @@ namespace OrzioClashReport.Launcher.Desktop.Tests
                 Loc.Language = UiLanguage.Portuguese;
                 Dispatcher.UIThread.RunJobs();
 
-                Assert.Contains("Início", TextsIn(window));
+                Assert.Contains("Visão geral", TextsIn(window));
             }
         }
 

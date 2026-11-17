@@ -8,8 +8,8 @@ namespace OrzioClashReport.Launcher.Application.Localization
         private static void AddHomeAndQuickReport(Dictionary<string, (string Portuguese, string English)> t)
         {
             Add(t, "home.overline",
-                "COORDENAÇÃO BIM · NAVISWORKS CLASH DETECTIVE",
-                "BIM COORDINATION · NAVISWORKS CLASH DETECTIVE");
+                "ORZIO CLASH REPORT",
+                "ORZIO CLASH REPORT");
             Add(t, "home.hero.title", "Visão geral", "Overview");
             Add(t, "home.hero.body",
                 "Escolha um XML do Clash Detective para gerar um relatório, ou compare revisões existentes.",
@@ -38,9 +38,9 @@ namespace OrzioClashReport.Launcher.Application.Localization
             Add(t, "home.tile.compare.body",
                 "Compara pares adjacentes na ordem que declarar. Nada é ordenado por data, nome ou revisão.",
                 "Compares adjacent pairs in the order you declare. Nothing is sorted by date, name or revision.");
-            Add(t, "home.tile.compare.action", "Ir para Longitudinal", "Go to Longitudinal");
+            Add(t, "home.tile.compare.action", "Ver evolução dos conflitos", "View clash evolution");
 
-            Add(t, "home.recent.title", "Últimos relatórios", "Latest reports");
+            Add(t, "home.recent.title", "Ficheiros recentes", "Recent files");
             Add(t, "home.recent.loading", "A carregar ficheiros recentes…", "Loading recent files…");
             Add(t, "home.recent.missing", "Ficheiro indisponível", "File unavailable");
             Add(t, "home.recent.openFailed",

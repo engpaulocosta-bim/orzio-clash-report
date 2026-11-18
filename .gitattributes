@@ -1,1 +1,4 @@
 tests/OrzioClashReport.Tests/Golden/* text eol=lf
+
+# Preserve upstream license/notice bytes so inventory hashes agree on every OS.
+licenses/*.txt -text

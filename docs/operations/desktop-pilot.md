@@ -187,5 +187,6 @@ one.
 - There is no PDF output, no auto-update, no licensing and no cloud.
 - Longitudinal behaviour has not been validated against three real historical exports.
 
-Legal distribution terms remain an owner decision. This package is for private, authorised
-evaluation only.
+The project code and documentation are licensed under the MIT license in the repository
+root. Third-party components retain their own terms; see THIRD-PARTY-NOTICES.md and
+licenses/ in new builds. This historical evaluation guide does not restrict MIT permissions.

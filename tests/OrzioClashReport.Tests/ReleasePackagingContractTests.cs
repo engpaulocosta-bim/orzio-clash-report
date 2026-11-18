@@ -48,20 +48,20 @@ namespace OrzioClashReport.Tests
             Assert.Contains("Current source and package candidate version: `0.1.0-preview.3`", readme, StringComparison.Ordinal);
             Assert.Contains("`v0.1.0-preview.2` did not package the identity-governance workflow.", readme, StringComparison.Ordinal);
             Assert.Contains("`v0.1.0-preview.3` does package the identity-governance workflow", readme, StringComparison.Ordinal);
-            Assert.Contains("Legal distribution terms remain an owner decision.", readme, StringComparison.Ordinal);
+            Assert.Contains("MIT license", readme, StringComparison.Ordinal);
 
             Assert.Contains("Current source and package candidate version: `0.1.0-preview.3`", internalPreview, StringComparison.Ordinal);
             Assert.Contains("`v0.1.0-preview.2` did not package the identity-governance workflow.", internalPreview, StringComparison.Ordinal);
             Assert.Contains("`v0.1.0-preview.3` does package the identity-governance workflow.", internalPreview, StringComparison.Ordinal);
             Assert.Contains("The standalone review report intentionally excludes raw `ClashObject.SourceModel`.", internalPreview, StringComparison.Ordinal);
-            Assert.Contains("Legal distribution terms remain an owner decision.", internalPreview, StringComparison.Ordinal);
+            Assert.Contains("MIT license", internalPreview, StringComparison.Ordinal);
 
             Assert.Contains("internal controlled pilot", pilotGuide, StringComparison.Ordinal);
             Assert.Contains("explicit human decisions", pilotGuide, StringComparison.Ordinal);
             Assert.Contains("deterministic local reports", pilotGuide, StringComparison.Ordinal);
             Assert.Contains("read-only evidence validation", pilotGuide, StringComparison.Ordinal);
             Assert.Contains("The review report does not project raw `ClashObject.SourceModel`.", pilotGuide, StringComparison.Ordinal);
-            Assert.Contains("Legal distribution terms remain an owner decision.", pilotGuide, StringComparison.Ordinal);
+            Assert.Contains("MIT license", pilotGuide, StringComparison.Ordinal);
 
             AssertDoesNotContainProhibitedClaims(readme, "README");
             AssertDoesNotContainProhibitedClaims(internalPreview, "internal preview guide");

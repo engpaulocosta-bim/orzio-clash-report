@@ -117,7 +117,9 @@ namespace OrzioClashReport.Launcher.Tests
         public void TheReadmeSeparatesBuiltAndTestedFromInstalledAndRun()
         {
             Assert.Contains("**Desktop launcher, built and tested**: yes", Readme, StringComparison.Ordinal);
-            Assert.Contains("**Desktop launcher, installed and run on Windows**: not yet", Readme, StringComparison.Ordinal);
+            Assert.Contains("**Desktop launcher, installed and run on Windows**: yes", Readme, StringComparison.Ordinal);
+            Assert.Contains("clean-machine smoke evaluation", Readme, StringComparison.Ordinal);
+            Assert.Contains("remains pending; installed-machine checks do not imply that result.", Readme, StringComparison.Ordinal);
         }
 
         [Fact]

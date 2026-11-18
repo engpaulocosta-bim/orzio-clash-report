@@ -110,7 +110,7 @@ Use this checklist before publishing an internal preview artifact or prerelease.
   latest.
 - [ ] Release is marked as a prerelease.
 - [ ] Post-download checksum verification was tested.
-- [ ] Legal distribution terms remain documented as an owner decision.
+- [ ] MIT LICENSE, THIRD-PARTY-NOTICES.md and the verified licenses/ bundle accompany the package.
 
 ## Product Claim Gates
 

@@ -114,6 +114,10 @@ $manifestJson = $manifest | ConvertTo-Json -Depth 3
 
 Write-Host 'Copying samples and documentation...'
 
+Copy-Item -LiteralPath (Join-Path $repositoryRoot 'LICENSE') -Destination $StagingDirectory
+Copy-Item -LiteralPath (Join-Path $repositoryRoot 'THIRD-PARTY-NOTICES.md') -Destination $StagingDirectory
+Copy-Item -LiteralPath (Join-Path $repositoryRoot 'licenses') -Destination $StagingDirectory -Recurse
+
 $samplesDirectory = Join-Path $StagingDirectory 'samples'
 New-Item -ItemType Directory -Force -Path $samplesDirectory | Out-Null
 

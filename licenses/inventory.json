@@ -1,0 +1,342 @@
+{
+  "schemaVersion": 1,
+  "scope": "Resolved desktop packages plus self-contained .NET runtime and embedded Inter font; includes platform/build-only packages conservatively. Test tools and the separately installed Inno Setup compiler are not shipped.",
+  "components": [
+    {
+      "package": "Avalonia.Angle.Windows.Natives",
+      "version": "2.1.25547.20250602",
+      "license": "LICENSE",
+      "notices": [
+        "licenses/Avalonia.Angle.Windows.Natives-2.1.25547.20250602-LICENSE.txt"
+      ],
+      "source": "https://www.nuget.org/packages/Avalonia.Angle.Windows.Natives/2.1.25547.20250602"
+    },
+    {
+      "package": "Avalonia.BuildServices",
+      "version": "11.3.2",
+      "license": "MIT",
+      "notices": [
+        "licenses/Avalonia.BuildServices-11.3.2-LICENSE.txt"
+      ],
+      "source": "https://www.nuget.org/packages/Avalonia.BuildServices/11.3.2"
+    },
+    {
+      "package": "Avalonia.Desktop",
+      "version": "11.3.20",
+      "license": "MIT",
+      "notices": [
+        "licenses/Avalonia.BuildServices-11.3.2-LICENSE.txt"
+      ],
+      "source": "https://www.nuget.org/packages/Avalonia.Desktop/11.3.20"
+    },
+    {
+      "package": "Avalonia.Fonts.Inter",
+      "version": "11.3.20",
+      "license": "MIT",
+      "notices": [
+        "licenses/Avalonia.BuildServices-11.3.2-LICENSE.txt"
+      ],
+      "source": "https://www.nuget.org/packages/Avalonia.Fonts.Inter/11.3.20"
+    },
+    {
+      "package": "Avalonia.FreeDesktop",
+      "version": "11.3.20",
+      "license": "MIT",
+      "notices": [
+        "licenses/Avalonia.BuildServices-11.3.2-LICENSE.txt"
+      ],
+      "source": "https://www.nuget.org/packages/Avalonia.FreeDesktop/11.3.20"
+    },
+    {
+      "package": "Avalonia.Native",
+      "version": "11.3.20",
+      "license": "MIT",
+      "notices": [
+        "licenses/Avalonia.BuildServices-11.3.2-LICENSE.txt"
+      ],
+      "source": "https://www.nuget.org/packages/Avalonia.Native/11.3.20"
+    },
+    {
+      "package": "Avalonia.Remote.Protocol",
+      "version": "11.3.20",
+      "license": "MIT",
+      "notices": [
+        "licenses/Avalonia.BuildServices-11.3.2-LICENSE.txt"
+      ],
+      "source": "https://www.nuget.org/packages/Avalonia.Remote.Protocol/11.3.20"
+    },
+    {
+      "package": "Avalonia.Skia",
+      "version": "11.3.20",
+      "license": "MIT",
+      "notices": [
+        "licenses/Avalonia.BuildServices-11.3.2-LICENSE.txt"
+      ],
+      "source": "https://www.nuget.org/packages/Avalonia.Skia/11.3.20"
+    },
+    {
+      "package": "Avalonia.Themes.Fluent",
+      "version": "11.3.20",
+      "license": "MIT",
+      "notices": [
+        "licenses/Avalonia.BuildServices-11.3.2-LICENSE.txt"
+      ],
+      "source": "https://www.nuget.org/packages/Avalonia.Themes.Fluent/11.3.20"
+    },
+    {
+      "package": "Avalonia.Win32",
+      "version": "11.3.20",
+      "license": "MIT",
+      "notices": [
+        "licenses/Avalonia.BuildServices-11.3.2-LICENSE.txt"
+      ],
+      "source": "https://www.nuget.org/packages/Avalonia.Win32/11.3.20"
+    },
+    {
+      "package": "Avalonia.X11",
+      "version": "11.3.20",
+      "license": "MIT",
+      "notices": [
+        "licenses/Avalonia.BuildServices-11.3.2-LICENSE.txt"
+      ],
+      "source": "https://www.nuget.org/packages/Avalonia.X11/11.3.20"
+    },
+    {
+      "package": "Avalonia",
+      "version": "11.3.20",
+      "license": "MIT",
+      "notices": [
+        "licenses/Avalonia.BuildServices-11.3.2-LICENSE.txt"
+      ],
+      "source": "https://www.nuget.org/packages/Avalonia/11.3.20"
+    },
+    {
+      "package": "CommunityToolkit.Mvvm",
+      "version": "8.4.0",
+      "license": "MIT",
+      "notices": [
+        "licenses/CommunityToolkit.Mvvm-8.4.0-License.md.txt",
+        "licenses/CommunityToolkit.Mvvm-8.4.0-ThirdPartyNotices.txt.txt"
+      ],
+      "source": "https://www.nuget.org/packages/CommunityToolkit.Mvvm/8.4.0"
+    },
+    {
+      "package": "HarfBuzzSharp.NativeAssets.Linux",
+      "version": "8.3.1.1",
+      "license": "MIT",
+      "notices": [
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-LICENSE.txt.txt",
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-THIRD-PARTY-NOTICES.txt.txt"
+      ],
+      "source": "https://www.nuget.org/packages/HarfBuzzSharp.NativeAssets.Linux/8.3.1.1"
+    },
+    {
+      "package": "HarfBuzzSharp.NativeAssets.WebAssembly",
+      "version": "8.3.1.1",
+      "license": "MIT",
+      "notices": [
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-LICENSE.txt.txt",
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-THIRD-PARTY-NOTICES.txt.txt"
+      ],
+      "source": "https://www.nuget.org/packages/HarfBuzzSharp.NativeAssets.WebAssembly/8.3.1.1"
+    },
+    {
+      "package": "HarfBuzzSharp.NativeAssets.Win32",
+      "version": "8.3.1.1",
+      "license": "MIT",
+      "notices": [
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-LICENSE.txt.txt",
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-THIRD-PARTY-NOTICES.txt.txt"
+      ],
+      "source": "https://www.nuget.org/packages/HarfBuzzSharp.NativeAssets.Win32/8.3.1.1"
+    },
+    {
+      "package": "HarfBuzzSharp.NativeAssets.macOS",
+      "version": "8.3.1.1",
+      "license": "MIT",
+      "notices": [
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-LICENSE.txt.txt",
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-THIRD-PARTY-NOTICES.txt.txt"
+      ],
+      "source": "https://www.nuget.org/packages/HarfBuzzSharp.NativeAssets.macOS/8.3.1.1"
+    },
+    {
+      "package": "HarfBuzzSharp",
+      "version": "8.3.1.1",
+      "license": "MIT",
+      "notices": [
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-LICENSE.txt.txt"
+      ],
+      "source": "https://www.nuget.org/packages/HarfBuzzSharp/8.3.1.1"
+    },
+    {
+      "package": "MicroCom.Runtime",
+      "version": "0.11.0",
+      "license": "MIT",
+      "notices": [
+        "licenses/MicroCom.Runtime-0.11.0-LICENSE.txt"
+      ],
+      "source": "https://www.nuget.org/packages/MicroCom.Runtime/0.11.0"
+    },
+    {
+      "package": "SkiaSharp.NativeAssets.Linux",
+      "version": "2.88.9",
+      "license": "MIT",
+      "notices": [
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-LICENSE.txt.txt",
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-THIRD-PARTY-NOTICES.txt.txt"
+      ],
+      "source": "https://www.nuget.org/packages/SkiaSharp.NativeAssets.Linux/2.88.9"
+    },
+    {
+      "package": "SkiaSharp.NativeAssets.WebAssembly",
+      "version": "2.88.9",
+      "license": "MIT",
+      "notices": [
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-LICENSE.txt.txt",
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-THIRD-PARTY-NOTICES.txt.txt"
+      ],
+      "source": "https://www.nuget.org/packages/SkiaSharp.NativeAssets.WebAssembly/2.88.9"
+    },
+    {
+      "package": "SkiaSharp.NativeAssets.Win32",
+      "version": "2.88.9",
+      "license": "MIT",
+      "notices": [
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-LICENSE.txt.txt",
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-THIRD-PARTY-NOTICES.txt.txt"
+      ],
+      "source": "https://www.nuget.org/packages/SkiaSharp.NativeAssets.Win32/2.88.9"
+    },
+    {
+      "package": "SkiaSharp.NativeAssets.macOS",
+      "version": "2.88.9",
+      "license": "MIT",
+      "notices": [
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-LICENSE.txt.txt",
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-THIRD-PARTY-NOTICES.txt.txt"
+      ],
+      "source": "https://www.nuget.org/packages/SkiaSharp.NativeAssets.macOS/2.88.9"
+    },
+    {
+      "package": "SkiaSharp",
+      "version": "2.88.9",
+      "license": "MIT",
+      "notices": [
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-LICENSE.txt.txt",
+        "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-THIRD-PARTY-NOTICES.txt.txt"
+      ],
+      "source": "https://www.nuget.org/packages/SkiaSharp/2.88.9"
+    },
+    {
+      "package": "System.IO.Pipelines",
+      "version": "8.0.0",
+      "license": "MIT",
+      "notices": [
+        "licenses/System.IO.Pipelines-8.0.0-LICENSE.TXT.txt",
+        "licenses/System.IO.Pipelines-8.0.0-THIRD-PARTY-NOTICES.TXT.txt"
+      ],
+      "source": "https://www.nuget.org/packages/System.IO.Pipelines/8.0.0"
+    },
+    {
+      "package": "Tmds.DBus.Protocol",
+      "version": "0.21.3",
+      "license": "MIT",
+      "notices": [
+        "licenses/Tmds.DBus.Protocol-0.21.3-LICENSE.txt"
+      ],
+      "source": "https://www.nuget.org/packages/Tmds.DBus.Protocol/0.21.3"
+    },
+    {
+      "package": "Microsoft.NETCore.App.Runtime.win-x64",
+      "version": "8.0.31",
+      "license": "MIT; bundled components retain their own terms",
+      "notices": [
+        "licenses/System.IO.Pipelines-8.0.0-LICENSE.TXT.txt",
+        "licenses/dotnet-8.0.31-THIRD-PARTY-NOTICES.TXT.txt"
+      ],
+      "source": "https://github.com/dotnet/runtime"
+    },
+    {
+      "package": "Inter font (embedded in Avalonia.Fonts.Inter)",
+      "version": "as bundled by Avalonia 11.3.20",
+      "license": "OFL-1.1",
+      "notices": [
+        "licenses/Inter-OFL.txt"
+      ],
+      "source": "https://raw.githubusercontent.com/AvaloniaUI/Avalonia/11.3.20/src/Avalonia.Fonts.Inter/Assets/Inter-Regular.ttf"
+    },
+    {
+      "package": "Microsoft.NETCore.App.Runtime.win-x64",
+      "version": "8.0.34",
+      "license": "MIT; bundled components retain their own terms",
+      "notices": [
+        "licenses/System.IO.Pipelines-8.0.0-LICENSE.TXT.txt",
+        "licenses/dotnet-8.0.31-THIRD-PARTY-NOTICES.TXT.txt"
+      ],
+      "source": "https://api.nuget.org/v3-flatcontainer/microsoft.netcore.app.runtime.win-x64/8.0.34/microsoft.netcore.app.runtime.win-x64.8.0.34.nupkg"
+    }
+  ],
+  "noticeFiles": [
+    {
+      "path": "licenses/Avalonia.Angle.Windows.Natives-2.1.25547.20250602-LICENSE.txt",
+      "sha256": "54aff7276217df9f6b5181613999d208c9e40d2b1d51bf55217837e6871a4a63",
+      "source": "https://www.nuget.org/packages/Avalonia.Angle.Windows.Natives/2.1.25547.20250602 (package file LICENSE)"
+    },
+    {
+      "path": "licenses/Avalonia.BuildServices-11.3.2-LICENSE.txt",
+      "sha256": "213814d306090074d234d760239ff0f67eb9b8d20eefb4d5631bb39dbe0b769b",
+      "source": "https://raw.githubusercontent.com/AvaloniaUI/Avalonia/11.3.20/licence.md"
+    },
+    {
+      "path": "licenses/CommunityToolkit.Mvvm-8.4.0-License.md.txt",
+      "sha256": "651997ef19dbb9ecb8dd660dbc86444a65af21f18cfe08daa69bf201cd5cfdfc",
+      "source": "https://www.nuget.org/packages/CommunityToolkit.Mvvm/8.4.0 (package file License.md)"
+    },
+    {
+      "path": "licenses/CommunityToolkit.Mvvm-8.4.0-ThirdPartyNotices.txt.txt",
+      "sha256": "7774f8b0ab66bfb47ec154ce24a2d6d574febc44a74d940b8a037d1c56756163",
+      "source": "https://www.nuget.org/packages/CommunityToolkit.Mvvm/8.4.0 (package file ThirdPartyNotices.txt)"
+    },
+    {
+      "path": "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-LICENSE.txt.txt",
+      "sha256": "89101e35a8c66fd4d6dffc1763259161d35cb564c169714ec227a768c89f2938",
+      "source": "https://www.nuget.org/packages/HarfBuzzSharp.NativeAssets.Linux/8.3.1.1 (package file LICENSE.txt)"
+    },
+    {
+      "path": "licenses/HarfBuzzSharp.NativeAssets.Linux-8.3.1.1-THIRD-PARTY-NOTICES.txt.txt",
+      "sha256": "21504c46c4c58aa64c1055bd2dcbc5f9a136b4b8c412ed3cc6740e22c5b127f5",
+      "source": "https://www.nuget.org/packages/HarfBuzzSharp.NativeAssets.Linux/8.3.1.1 (package file THIRD-PARTY-NOTICES.txt)"
+    },
+    {
+      "path": "licenses/Inter-OFL.txt",
+      "sha256": "8c16cdb0475bf9841080b84096cf09891c2e9d154aa8ac8764597b79fd4d7189",
+      "source": "https://raw.githubusercontent.com/rsms/inter/353b61b9f4430d5f420d56605a6e7993e0941470/LICENSE.txt; font: https://raw.githubusercontent.com/AvaloniaUI/Avalonia/11.3.20/src/Avalonia.Fonts.Inter/Assets/Inter-Regular.ttf"
+    },
+    {
+      "path": "licenses/MicroCom.Runtime-0.11.0-LICENSE.txt",
+      "sha256": "6ee769c9ac4dac9abb16b98b1341e9528ff9f4ab685481410d3376d14148f3a9",
+      "source": "https://raw.githubusercontent.com/kekekeks/MicroCom/cd2fa3c89525fbe7b46bd13f9ec8c77bd829e815/LICENSE"
+    },
+    {
+      "path": "licenses/System.IO.Pipelines-8.0.0-LICENSE.TXT.txt",
+      "sha256": "d7a68596ab69b06f51ca278a6545148e4269a9381c26d597c13df5d88e08cf5b",
+      "source": "https://www.nuget.org/packages/System.IO.Pipelines/8.0.0 (package file LICENSE.TXT)"
+    },
+    {
+      "path": "licenses/System.IO.Pipelines-8.0.0-THIRD-PARTY-NOTICES.TXT.txt",
+      "sha256": "19c19dcac9f3ee6302cfbc6745bb8e79f08efc4c933eb8dc5509bf14b88347ec",
+      "source": "https://www.nuget.org/packages/System.IO.Pipelines/8.0.0 (package file THIRD-PARTY-NOTICES.TXT)"
+    },
+    {
+      "path": "licenses/Tmds.DBus.Protocol-0.21.3-LICENSE.txt",
+      "sha256": "aca3b49277abcc7886ccb2f115603a9f5b15fc3f96019a10c00f2974098b210c",
+      "source": "https://raw.githubusercontent.com/tmds/Tmds.DBus/8cb04f66c330b64244e996ff68f685f27f7381a0/COPYING"
+    },
+    {
+      "path": "licenses/dotnet-8.0.31-THIRD-PARTY-NOTICES.TXT.txt",
+      "sha256": "b60b2912da28eaa6518593c9e2efb5334ee062d3c42e80d8fdfa806b3dc52977",
+      "source": "https://www.nuget.org/packages/Microsoft.NETCore.App.Runtime.win-x64/8.0.31"
+    }
+  ]
+}

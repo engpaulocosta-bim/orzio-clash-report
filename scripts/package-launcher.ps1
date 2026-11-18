@@ -31,8 +31,14 @@ if (-not (Test-Path -LiteralPath $StagingDirectory -PathType Container)) {
 
 Write-Host 'Validating the staging tree...'
 
+& (Join-Path $PSScriptRoot 'verify-license-bundle.ps1') -Directory $StagingDirectory
+
 $requiredFiles = @(
+    'LICENSE',
+    'THIRD-PARTY-NOTICES.md',
+    'licenses/inventory.json',
     'OrzioClashReport.Launcher.Desktop.exe',
+    'OrzioClashReport.Launcher.Desktop.runtimeconfig.json',
     'engine/win-x64/orzioclash.exe',
     'engine/win-x64/engine-manifest.json'
 )

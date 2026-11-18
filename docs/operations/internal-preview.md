@@ -5,8 +5,9 @@ the source code.
 
 ## Status
 
-This is an internal controlled pilot, not a public release, and not a fully validated
-longitudinal MVP.
+This guide originated in the internal controlled pilot. The source is now a public
+MIT-licensed preview, not a fully validated longitudinal MVP. See README.md for the
+current desktop download and installed-machine evidence.
 
 Current source and package candidate version: `0.1.0-preview.3`. Release availability is
 determined by the matching Git tag and GitHub prerelease. This document describes the
@@ -30,7 +31,8 @@ project-wide identity graph or Clash Ledger, integrate persistent identities int
 longitudinal lifecycle, provide `Reopened`, infer chronology automatically, or assign clash
 responsibility automatically.
 
-Legal distribution terms remain an owner decision.
+The project code and documentation are licensed under the MIT license in the repository
+root. Third-party components retain their own terms; see THIRD-PARTY-NOTICES.md.
 
 ## Download and Verify
 

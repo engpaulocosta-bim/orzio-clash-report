@@ -105,4 +105,5 @@ paths, email addresses, or credentials.
 ## Distribution
 
 Distribution remains private and authorized by the owner.
-Legal distribution terms remain an owner decision.
+The project code and documentation are licensed under the MIT license in the repository
+root. Third-party components retain their own terms; see THIRD-PARTY-NOTICES.md.

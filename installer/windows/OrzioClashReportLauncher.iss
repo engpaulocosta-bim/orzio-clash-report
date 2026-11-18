@@ -92,6 +92,7 @@ Name: "{autodesktop}\{#LauncherName}"; Filename: "{app}\{#LauncherExeName}"; Tas
 Type: filesandordirs; Name: "{app}\engine"
 Type: filesandordirs; Name: "{app}\samples"
 Type: filesandordirs; Name: "{app}\docs"
+Type: filesandordirs; Name: "{app}\licenses"
 Type: dirifempty; Name: "{app}"
 
 [Code]

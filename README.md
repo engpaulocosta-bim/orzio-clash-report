@@ -1,5 +1,66 @@
 # OrzioClashReport
 
+An open-source desktop application and command-line engine for reviewing Navisworks
+Clash Detective XML exports. It produces local HTML reports, groups occurrences by
+explicit rules, records collapsed duplicates for audit, and supports snapshots and
+comparisons between declared revisions. Grouping does not mean that conflicts are resolved.
+
+**Public preview:** desktop launcher `0.2.3-launcher-preview.1`, engine `0.1.0-preview.3`.
+Licensed under [MIT](LICENSE). Third-party components retain their own
+[licenses and notices](THIRD-PARTY-NOTICES.md).
+
+## Download and try
+
+Download the Windows x64 setup, its `.sha256` file and update manifest from the
+[desktop 0.2.3 release](https://github.com/engpaulocosta-bim/orzio-clash-report/releases/tag/desktop-v0.2.3-launcher-preview.1).
+Compare the setup's SHA-256 with the checksum before running it:
+
+```powershell
+Get-FileHash .\orzio-clash-report-desktop-v0.2.3-launcher-preview.1-win-x64-setup.exe -Algorithm SHA256
+```
+
+The installer is unsigned. The desktop interface supports Portuguese and English,
+light and dark themes, and runs the packaged engine locally. Start with **Import XML**
+or **Quick report**; an anonymized example is included in the installed `samples` folder.
+The report opens in your browser. Navisworks is needed to produce the XML export,
+not to run the report application.
+
+For the first upgrade from desktop 0.2.2, use the verified official installer manually:
+that old updater has a Windows file-sharing defect fixed in 0.2.3.
+Existing release assets are immutable and predate the repository's MIT/notice update;
+the updated license bundle is included in future builds, not retroactively in those assets.
+
+## What is verified
+
+- Linux/Windows CI, deterministic fixture reports and Windows packaging pass.
+- Desktop 0.2.3 was installed and exercised on Windows at 125% scale; upgrade,
+  rollback and preservation of settings/history were checked. See the
+  [installed release evidence](docs/implementation-evidence/T17.md).
+- Single-run parsing, grouping and HTML were human-validated on one private real export.
+- Revision matching, lifecycle and continuity remain experimental: they have not been
+  validated against three real historical exports. Automated matches are suggestions;
+  persistent identity requires an explicit human decision.
+- A clean-machine evaluation remains separate from the installed-machine checks above.
+
+## Build from source
+
+Install the .NET SDK selected by `global.json`, then:
+
+```shell
+dotnet restore
+dotnet build -c Release --no-restore
+dotnet test -c Release --no-build
+dotnet run --project src/OrzioClashReport.Cli -- samples/sample-clash.xml -o report.html
+dotnet run --project src/OrzioClashReport.Launcher.Desktop
+```
+
+The supplied desktop installer targets Windows x64; other desktop platforms have not
+been verified. Report problems through [GitHub Issues](https://github.com/engpaulocosta-bim/orzio-clash-report/issues)
+using anonymized reproduction data. Follow [the contribution guide](CONTRIBUTING.md)
+and [security reporting guidance](SECURITY.md); never attach a client export or real model.
+
+## Engine and workflow reference
+
 OrzioClashReport reads clashes exported from Navisworks Clash Detective and supports two
 complementary workflows: a single-run HTML report grouped by clash test, discipline pair,
 and level, and a revision-aware comparison between two coordination runs with a
@@ -8,8 +69,8 @@ deterministic console summary and optional lifecycle HTML.
 Current source and package candidate version: `0.1.0-preview.3` for Windows `win-x64`.
 Release availability is determined by the matching Git tag and GitHub prerelease. This
 README describes the contents and behavior of version `0.1.0-preview.3` without asserting
-its current publication state. This remains an internal controlled pilot, not a public
-release, and not a fully validated longitudinal MVP. Single-run
+its current publication state. This public preview is not a fully validated longitudinal
+MVP. Historical controlled-pilot guides remain available below. Single-run
 parsing, grouping, and HTML were human-validated on one private real export. Longitudinal
 matching, lifecycle, continuity links, continuity paths, and longitudinal HTML have not
 been validated on three real historical exports and remain experimental.
@@ -179,7 +240,8 @@ Operational details for the read-only evidence-validation workflow live in
 Operational details for the standalone review report live in
 [docs/operations/identity-governance-review-report.md](docs/operations/identity-governance-review-report.md).
 
-Legal distribution terms remain an owner decision.
+The project code and documentation are licensed under the [MIT license](LICENSE).
+Third-party terms are listed in [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).
 
 Generate a report from a Clash Detective XML export:
 
@@ -729,11 +791,11 @@ by parsing and grouping tests. See [samples/README.md](samples/README.md).
   launcher's own suites are green, including headless tests that boot the real shell and
   integration tests that drive a real child process through success, failure, timeout,
   cancellation, oversized output and undecodable output.
-- **Desktop launcher, installed and run on Windows**: not yet. The Inno Setup script and
-  the publish, package and smoke scripts exist and are covered by contract tests. The
-  installer is compiled and checksum-verified by Windows GitHub Actions; actual installation,
-  in-place upgrade, and `scripts/smoke-launcher.ps1` on a clean Windows machine are still
-  pending human validation.
+- **Desktop launcher, installed and run on Windows**: yes, for 0.2.3 on the evaluation
+  machine, including native UI, verified official installation, upgrade/rollback and
+  state preservation. See [T17](docs/implementation-evidence/T17.md) and
+  [T18](docs/implementation-evidence/T18.md). A separate clean-machine smoke evaluation
+  remains pending; installed-machine checks do not imply that result.
 
 ## CI
 

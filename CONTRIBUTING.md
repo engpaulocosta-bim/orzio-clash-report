@@ -9,6 +9,9 @@ credentials or private project/company names. Use the synthetic/anonymized fixtu
 samples/ or create a minimal synthetic case. Review the whole staged diff before committing.
 Deleting sensitive material in a later commit does not remove it from Git history.
 
+The repository history was sanitized on 2026-11-18. If you cloned it before that rewrite,
+make a fresh clone; do not merge or push the old history into the cleaned repository.
+
 Contributions are submitted under the project's MIT license. Submit only material you
 have the right to contribute. Preserve third-party license/copyright notices; when a
 dependency or bundled runtime changes, update THIRD-PARTY-NOTICES.md and licenses/.

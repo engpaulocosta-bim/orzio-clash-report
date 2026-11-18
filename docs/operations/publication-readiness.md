@@ -21,7 +21,7 @@ negative checks refused altered/missing notices, unexpected files, path traversa
 an unlisted runtime version. A separate read-only Claude CLI audit found no blockers.
 The generated candidate was not installed over the user's official application.
 
-## Sensitive history: prepared locally, remote approval required
+## Sensitive history: branches/tags sanitized; PR cache cleanup pending
 
 A separate mirror of all server refs was sanitized using git-filter-repo 2.47.0.
 Exactly four original private blob versions were replaced with their already-anonymized
@@ -31,16 +31,16 @@ tip trees remain byte-identical. A scan of 1267 reachable file versions found no
 the identified private project/user markers or the credential formats checked.
 This is a scoped scan, not proof that arbitrary secrets cannot exist.
 
-Publishing that mirror changes commit/tag identifiers and requires explicit approval.
-Before execution, compare every remote ref with its recorded old SHA and abort on drift.
-Pause and restore the existing release workflows around the ref updates to avoid
-rerunning old tag releases. Use per-ref leases; do not use a blind mirror push, delete
-branches, overwrite release assets or relax repository protections.
+The owner approved publication and sanitation on 2026-11-18. All five branches and eight
+tags were updated atomically using explicit per-ref leases after checking remote drift.
+The three existing workflows were paused and restored; all are active. No branch was
+deleted, release binary overwritten or repository protection weakened.
 
-After approval, the documentation/license commit must be applied on the sanitized master
-ancestry before publication. Verify remote heads/tags, unchanged release-asset digests,
-tag ancestry, a fresh-clone scan and CI. Replace stale local clones rather than merging
-them into the cleaned history. Keep the private recovery bundle outside the public repo.
+The documentation/license commit uses the sanitized master ancestry. All 13 remote ref
+targets were verified. All 1808 tests passed in a fresh checkout, including byte-exact
+upstream notices across Git checkout. Release-asset digests remain unchanged. Replace
+stale local clones rather than merging them into the cleaned history. Keep the private
+recovery bundle outside the public repo.
 
 GitHub PR refs are read-only, and cached old commits may remain accessible after a push.
 The maintainer must request removal of sensitive cached views/PR refs through

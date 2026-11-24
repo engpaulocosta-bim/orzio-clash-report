@@ -501,7 +501,7 @@ namespace OrzioClashReport.Output.Html
         private static string FormatElement(ClashObject element)
         {
             var text = new StringBuilder();
-            text.Append(Encode(element.ElementId));
+            text.Append(Encode(element.ElementId ?? "GUID unavailable"));
 
             if (!string.IsNullOrWhiteSpace(element.ElementName))
             {

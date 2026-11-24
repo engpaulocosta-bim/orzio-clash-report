@@ -84,6 +84,49 @@ namespace OrzioClashReport.Tests
 
         private static readonly ConservativeClashLifecycleClassifier Classifier = new ConservativeClashLifecycleClassifier();
 
+        [Theory]
+        [InlineData("a", "b", "", "a", true, ClashLifecycleStatus.Unverifiable, ClashLifecycleStatus.Unverifiable)]
+        [InlineData("", "b", "a", "b", false, ClashLifecycleStatus.Unverifiable, ClashLifecycleStatus.Unverifiable)]
+        [InlineData("", "b", "", "b", false, ClashLifecycleStatus.Unverifiable, ClashLifecycleStatus.Unverifiable)]
+        [InlineData("", "", "", "", false, ClashLifecycleStatus.Unverifiable, ClashLifecycleStatus.Unverifiable)]
+        [InlineData("a", "b", "", "other", false, ClashLifecycleStatus.Resolved, ClashLifecycleStatus.Unverifiable)]
+        [InlineData("", "other", "a", "b", false, ClashLifecycleStatus.Unverifiable, ClashLifecycleStatus.New)]
+        public void MissingElementGuid_BlocksMatchingAndOnlyAffectedLifecycleClassifications(
+            string previousA, string previousB, string currentA, string currentB, bool swapped,
+            ClashLifecycleStatus previousStatus, ClashLifecycleStatus currentStatus)
+        {
+            var previous = MakeOccurrence("Test 1", Sigma, Alfa, previousA, previousB);
+            var current = MakeOccurrence("test 1", swapped ? Alfa : Sigma, swapped ? Sigma : Alfa, currentA, currentB);
+            var models = new[] { Sigma, Alfa };
+            var tests = new[] { StandardTest };
+            var previousRun = MakeRun("previous", models, tests, previous);
+            var currentRun = MakeRun("current", models, tests, current);
+            var comparison = new DeterministicClashRunComparer(new ConservativeClashMatcher()).Compare(previousRun, currentRun);
+
+            Assert.Empty(comparison.SelectedMatches);
+            Assert.Empty(comparison.AlternativeCandidates);
+            var lifecycle = Classifier.Classify(comparison);
+            var previousEntry = Assert.Single(lifecycle.Entries, e => e.PreviousIndex == 0);
+            var currentEntry = Assert.Single(lifecycle.Entries, e => e.CurrentIndex == 0);
+            Assert.Equal(previousStatus, previousEntry.Status);
+            Assert.Equal(currentStatus, currentEntry.Status);
+            Assert.All(lifecycle.Entries.Where(e => e.Status == ClashLifecycleStatus.Unverifiable), entry =>
+                Assert.Contains(entry.Evidence, evidence => evidence.Kind == ClashLifecycleEvidenceKind.ElementIdentityUnavailable
+                    && evidence.Verdict == ClashLifecycleEvidenceVerdict.BlocksClassification));
+        }
+
+        [Fact]
+        public void MissingElementGuid_IsUnverifiableAgainstAnExecutedZeroResultTest()
+        {
+            var models = new[] { Sigma, Alfa };
+            var tests = new[] { StandardTest };
+            var previousRun = MakeRun("previous", models, tests, MakeOccurrence("Test 1", Sigma, Alfa, "", "b"));
+            var currentRun = MakeRun("current", models, tests);
+            var comparison = new DeterministicClashRunComparer(new ConservativeClashMatcher()).Compare(previousRun, currentRun);
+
+            Assert.Equal(ClashLifecycleStatus.Unverifiable, Assert.Single(Classifier.Classify(comparison).Entries).Status);
+        }
+
         private static ClashLifecycleResult ClassifyWith(
             ConfigurableClashMatcher matcher, CoordinationRun previousRun, CoordinationRun currentRun)
         {

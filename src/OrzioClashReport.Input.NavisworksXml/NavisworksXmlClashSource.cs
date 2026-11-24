@@ -101,27 +101,19 @@ namespace OrzioClashReport.Input.NavisworksXml
                     $"Clash result '{name ?? guid ?? "(unnamed)"}' has {clashObjectElements.Count} clash objects; using the first two.");
             }
 
-            var elementA = ParseClashObject(clashObjectElements[0], name ?? guid);
-            var elementB = ParseClashObject(clashObjectElements[1], name ?? guid);
+            var elementA = ParseClashObject(clashObjectElements[0]);
+            var elementB = ParseClashObject(clashObjectElements[1]);
 
             return new ClashResult(name, status, distance, null, point, elementA, elementB, guid);
         }
 
-        private ClashObject ParseClashObject(XElement clashObjectElement, string? clashLabel)
+        private static ClashObject ParseClashObject(XElement clashObjectElement)
         {
             string? elementId = clashObjectElement
                 .Elements("objectattribute")
                 .FirstOrDefault(a => string.Equals((string?)a.Element("name"), "GUID", StringComparison.Ordinal))
                 ?.Element("value")
                 ?.Value;
-
-            if (string.IsNullOrEmpty(elementId))
-            {
-                _log.Error(
-                    $"Clash object in clash '{clashLabel ?? "(unnamed)"}' of '{_filePath}' has no GUID objectattribute.");
-                throw new InvalidOperationException(
-                    $"Clash object in clash '{clashLabel ?? "(unnamed)"}' of '{_filePath}' has no GUID objectattribute.");
-            }
 
             string? level = (string?)clashObjectElement.Element("layer");
 
@@ -146,7 +138,7 @@ namespace OrzioClashReport.Input.NavisworksXml
 
             string? sourceModel = ResolveSourceModel(properties);
 
-            return new ClashObject(elementId!, null, level, sourceModel, pathHierarchy, properties);
+            return new ClashObject(elementId, null, level, sourceModel, pathHierarchy, properties);
         }
 
         /// <summary>

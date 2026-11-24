@@ -15,6 +15,8 @@ namespace OrzioClashReport.Tests
         }
 
         public string Resolve(ClashObject element) =>
-            _disciplineByElementId.TryGetValue(element.ElementId, out var discipline) ? discipline : "Unknown";
+            element.ElementId != null && _disciplineByElementId.TryGetValue(element.ElementId, out var discipline)
+                ? discipline
+                : "Unknown";
     }
 }

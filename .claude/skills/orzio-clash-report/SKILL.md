@@ -252,6 +252,11 @@ it for the same revision-free model pair (direct or A/B-swapped); this is what l
 occurrence declared test still support `Resolved`/`New`. Raw `ClashStatus` never drives
 lifecycle. `Reopened` requires longer history and is out of scope.
 
+Unavailable element IDs block automatic matching. An unmatched occurrence is
+`Unverifiable` if its own IDs are incomplete or the opposite run has an incomplete
+occurrence in the same test and model pair whose available IDs do not rule it out.
+This check does not establish a match or substitute for manifest coverage.
+
 ## Revision-aware lifecycle HTML
 
 `HtmlLifecycleReportRenderer` lives in `OrzioClashReport.Output.Html` and consumes
@@ -296,7 +301,7 @@ The same run or same file may be supplied in both roles for synthetic smoke test
 
 ## Immutable coordination-run JSON snapshots
 
-A `CoordinationRun` may now be persisted as a deterministic schema-v1 JSON snapshot by
+A `CoordinationRun` may be persisted as a deterministic schema-v1 or schema-v2 JSON snapshot by
 `OrzioClashReport.Persistence.RunSnapshotJson` (net8.0, System.Text.Json). The public
 `JsonCoordinationRunSnapshotSerializer` exposes `Serialize`, `Parse`, `Save`, and `Load`.
 This is the single deliberate exception to the "no persistence/history/database" scope gate:
@@ -323,6 +328,11 @@ overwrites an existing path, and writes UTF-8 without a BOM. Snapshot `schemaVer
 only to the persistence adapter; it is unrelated to the run-manifest `schemaVersion`. The
 persistence adapter depends only on `Core` and never on the XML, run-manifest JSON, HTML, or
 CLI adapters.
+
+The writer uses v1 for fully identified runs and v2 when an element ID is unavailable.
+Both require the `elementId` property. V1 requires a string and v2 also accepts explicit
+JSON `null`. Existing v1 snapshots remain readable, with blank IDs treated as unavailable.
+Older engines reject v2 snapshots. Existing files are never migrated in place.
 
 ## Create-run snapshot CLI
 

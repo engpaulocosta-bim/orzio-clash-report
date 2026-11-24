@@ -69,7 +69,8 @@ namespace OrzioClashReport.Core.Grouping
             List<ClashCollapse> collapses)
         {
             var retained = new List<ClashResult>();
-            var pairGroups = clashes.GroupBy(c => MakeUnorderedPairKey(c.ElementA.ElementId, c.ElementB.ElementId));
+            var pairGroups = clashes.Where(c => c.HasElementIds)
+                .GroupBy(c => MakeUnorderedPairKey(c.ElementA.ElementId!, c.ElementB.ElementId!));
 
             foreach (var pairGroup in pairGroups)
             {
@@ -96,6 +97,7 @@ namespace OrzioClashReport.Core.Grouping
                 retained.AddRange(kept);
             }
 
+            retained.AddRange(clashes.Where(c => !c.HasElementIds));
             return retained;
         }
 

@@ -27,7 +27,8 @@ namespace OrzioClashReport.Persistence.RunSnapshotJson
     /// </summary>
     public sealed class JsonCoordinationRunSnapshotSerializer
     {
-        private const int SupportedSchemaVersion = 1;
+        private const int OriginalSchemaVersion = 1;
+        private const int NullableElementIdSchemaVersion = 2;
 
         private static readonly JsonSerializerOptions SerializerOptions = CreateSerializerOptions();
 
@@ -220,9 +221,15 @@ namespace OrzioClashReport.Persistence.RunSnapshotJson
             }
 
             var occurrenceDtos = new List<ClashOccurrenceSnapshotDto?>(run.Occurrences.Count);
+            int schemaVersion = OriginalSchemaVersion;
             for (int i = 0; i < run.Occurrences.Count; i++)
             {
                 ClashOccurrence occurrence = run.Occurrences[i];
+                if (!occurrence.Clash.HasElementIds)
+                {
+                    schemaVersion = NullableElementIdSchemaVersion;
+                }
+
                 occurrenceDtos.Add(new ClashOccurrenceSnapshotDto
                 {
                     ClashTestName = occurrence.ClashTestName,
@@ -234,7 +241,7 @@ namespace OrzioClashReport.Persistence.RunSnapshotJson
 
             return new CoordinationRunSnapshotDto
             {
-                SchemaVersion = SupportedSchemaVersion,
+                SchemaVersion = schemaVersion,
                 RunId = run.RunId,
                 CreatedAt = run.CreatedAt,
                 Models = modelDtos,
@@ -371,10 +378,11 @@ namespace OrzioClashReport.Persistence.RunSnapshotJson
                 throw new CoordinationRunSnapshotFormatException("Field 'schemaVersion' is required.");
             }
 
-            if (dto.SchemaVersion.Value != SupportedSchemaVersion)
+            int schemaVersion = dto.SchemaVersion.Value;
+            if (schemaVersion != OriginalSchemaVersion && schemaVersion != NullableElementIdSchemaVersion)
             {
                 throw new CoordinationRunSnapshotFormatException(
-                    $"Unsupported coordination run snapshot schemaVersion '{dto.SchemaVersion.Value}'. Supported version: {SupportedSchemaVersion}.");
+                    $"Unsupported coordination run snapshot schemaVersion '{schemaVersion}'. Supported versions: {OriginalSchemaVersion}, {NullableElementIdSchemaVersion}.");
             }
 
             if (dto.RunId == null)
@@ -431,7 +439,7 @@ namespace OrzioClashReport.Persistence.RunSnapshotJson
             var occurrences = new List<ClashOccurrence>(dto.Occurrences.Count);
             for (int i = 0; i < dto.Occurrences.Count; i++)
             {
-                occurrences.Add(BuildOccurrence(dto.Occurrences[i], i, manifest.Models));
+                occurrences.Add(BuildOccurrence(dto.Occurrences[i], i, manifest.Models, schemaVersion));
             }
 
             try
@@ -506,7 +514,7 @@ namespace OrzioClashReport.Persistence.RunSnapshotJson
         }
 
         private static ClashOccurrence BuildOccurrence(
-            ClashOccurrenceSnapshotDto? occurrenceDto, int index, IReadOnlyList<ModelRevision> models)
+            ClashOccurrenceSnapshotDto? occurrenceDto, int index, IReadOnlyList<ModelRevision> models, int schemaVersion)
         {
             if (occurrenceDto == null)
             {
@@ -521,7 +529,7 @@ namespace OrzioClashReport.Persistence.RunSnapshotJson
                 throw new CoordinationRunSnapshotFormatException($"Field 'occurrences[{index}].clash' is required.");
             }
 
-            ClashResult clash = BuildClashResult(occurrenceDto.Clash, index);
+            ClashResult clash = BuildClashResult(occurrenceDto.Clash, index, schemaVersion);
 
             try
             {
@@ -535,7 +543,7 @@ namespace OrzioClashReport.Persistence.RunSnapshotJson
             }
         }
 
-        private static ClashResult BuildClashResult(ClashResultSnapshotDto clashDto, int occurrenceIndex)
+        private static ClashResult BuildClashResult(ClashResultSnapshotDto clashDto, int occurrenceIndex, int schemaVersion)
         {
             if (clashDto.Status == null)
             {
@@ -555,8 +563,8 @@ namespace OrzioClashReport.Persistence.RunSnapshotJson
                     $"Field 'occurrences[{occurrenceIndex}].clash.elementB' is required.");
             }
 
-            ClashObject elementA = BuildClashObject(clashDto.ElementA, occurrenceIndex, "elementA");
-            ClashObject elementB = BuildClashObject(clashDto.ElementB, occurrenceIndex, "elementB");
+            ClashObject elementA = BuildClashObject(clashDto.ElementA, occurrenceIndex, "elementA", schemaVersion);
+            ClashObject elementB = BuildClashObject(clashDto.ElementB, occurrenceIndex, "elementB", schemaVersion);
             ClashPoint? point = BuildPoint(clashDto.Point, occurrenceIndex);
 
             try
@@ -606,13 +614,14 @@ namespace OrzioClashReport.Persistence.RunSnapshotJson
             return new ClashPoint(pointDto.X.Value, pointDto.Y.Value, pointDto.Z.Value);
         }
 
-        private static ClashObject BuildClashObject(ClashObjectSnapshotDto objectDto, int occurrenceIndex, string side)
+        private static ClashObject BuildClashObject(
+            ClashObjectSnapshotDto objectDto, int occurrenceIndex, string side, int schemaVersion)
         {
             string path = $"occurrences[{occurrenceIndex}].clash.{side}";
 
-            if (objectDto.ElementId == null)
+            if (schemaVersion == OriginalSchemaVersion && objectDto.ElementId == null)
             {
-                throw new CoordinationRunSnapshotFormatException($"Field '{path}.elementId' is required.");
+                throw new CoordinationRunSnapshotFormatException($"Field '{path}.elementId' must be a string in schema version 1.");
             }
 
             if (objectDto.PathHierarchy == null)

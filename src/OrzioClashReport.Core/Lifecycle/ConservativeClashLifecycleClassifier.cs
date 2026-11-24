@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using OrzioClashReport.Core.Abstractions;
 using OrzioClashReport.Core.Model;
+using static OrzioClashReport.Core.Matching.ConservativeClashMatcher;
 
 namespace OrzioClashReport.Core.Lifecycle
 {
@@ -15,7 +16,8 @@ namespace OrzioClashReport.Core.Lifecycle
     /// <see cref="ClashLifecycleStatus.Unverifiable"/>. An alternative whose spatial evidence explicitly
     /// contradicts is retained for audit but is not plausible competition. An unmatched previous occurrence becomes
     /// <see cref="ClashLifecycleStatus.Resolved"/> only when it has no competing alternative and both of its
-    /// revision-free <see cref="ModelIdentity"/> sides plus its clash test are observed in the current run;
+    /// revision-free <see cref="ModelIdentity"/> sides plus its clash test are observed in the current run,
+    /// and missing element identifiers do not prevent ruling out a counterpart;
     /// an unmatched current occurrence becomes <see cref="ClashLifecycleStatus.New"/> under the symmetric
     /// condition against the previous run. Anything else is <see cref="ClashLifecycleStatus.Unverifiable"/>.
     ///
@@ -24,7 +26,7 @@ namespace OrzioClashReport.Core.Lifecycle
     /// <see cref="RunManifest.ExecutedClashTests"/> explicitly declares a test with the same name (ordinal,
     /// case-insensitive) and the same revision-free model pair, direct or A/B-swapped -- never by scanning
     /// that run's occurrences. This is what lets a run prove it executed a test and got zero results: the
-    /// declaration alone is sufficient evidence, so an unmatched clash can be classified
+    /// declaration alone establishes coverage, so an identified unmatched clash can be classified
     /// <see cref="ClashLifecycleStatus.Resolved"/> or <see cref="ClashLifecycleStatus.New"/> even when the
     /// other run has no occurrence at all for that test and model pair.
     /// </para>
@@ -53,11 +55,14 @@ namespace OrzioClashReport.Core.Lifecycle
                 usedCurrentIndexes.Add(selected.CurrentIndex);
             }
 
+            var previousWithoutIds = matchResult.PreviousRun.Occurrences.Where(o => !o.Clash.HasElementIds).ToArray();
+            var currentWithoutIds = matchResult.CurrentRun.Occurrences.Where(o => !o.Clash.HasElementIds).ToArray();
+
             for (int previousIndex = 0; previousIndex < matchResult.PreviousRun.Occurrences.Count; previousIndex++)
             {
                 if (!usedPreviousIndexes.Contains(previousIndex))
                 {
-                    entries.Add(ClassifyUnmatchedPrevious(matchResult, previousIndex));
+                    entries.Add(ClassifyUnmatchedPrevious(matchResult, previousIndex, currentWithoutIds));
                 }
             }
 
@@ -65,7 +70,7 @@ namespace OrzioClashReport.Core.Lifecycle
             {
                 if (!usedCurrentIndexes.Contains(currentIndex))
                 {
-                    entries.Add(ClassifyUnmatchedCurrent(matchResult, currentIndex));
+                    entries.Add(ClassifyUnmatchedCurrent(matchResult, currentIndex, previousWithoutIds));
                 }
             }
 
@@ -102,6 +107,12 @@ namespace OrzioClashReport.Core.Lifecycle
                     ? $"{competingAlternatives} alternative candidate(s) share this match's previous or current index."
                     : "No alternative candidate shares this match's previous or current index."));
 
+            if (!selected.Assessment.PreviousOccurrence.Clash.HasElementIds
+                || !selected.Assessment.CurrentOccurrence.Clash.HasElementIds)
+            {
+                evidence.Add(MissingElementIdentity("An element identifier is unavailable on this selected pair."));
+            }
+
             var status = HasBlocker(evidence) ? ClashLifecycleStatus.Unverifiable : ClashLifecycleStatus.StillOpen;
 
             return new ClashLifecycleEntry(
@@ -114,12 +125,14 @@ namespace OrzioClashReport.Core.Lifecycle
                 evidence);
         }
 
-        private static ClashLifecycleEntry ClassifyUnmatchedPrevious(ClashRunMatchResult matchResult, int previousIndex)
+        private static ClashLifecycleEntry ClassifyUnmatchedPrevious(
+            ClashRunMatchResult matchResult, int previousIndex, IReadOnlyList<ClashOccurrence> currentWithoutIds)
         {
             var occurrence = matchResult.PreviousRun.Occurrences[previousIndex];
             var evidence = BuildUnmatchedEvidence(
                 occurrence,
                 otherRun: matchResult.CurrentRun,
+                otherWithoutIds: currentWithoutIds,
                 competingAlternatives: matchResult.AlternativeCandidates.Count(
                     a => IsPlausibleAlternative(a) && a.PreviousIndex == previousIndex),
                 slotLabel: "previous slot");
@@ -129,12 +142,14 @@ namespace OrzioClashReport.Core.Lifecycle
             return new ClashLifecycleEntry(status, previousIndex, null, occurrence, null, null, evidence);
         }
 
-        private static ClashLifecycleEntry ClassifyUnmatchedCurrent(ClashRunMatchResult matchResult, int currentIndex)
+        private static ClashLifecycleEntry ClassifyUnmatchedCurrent(
+            ClashRunMatchResult matchResult, int currentIndex, IReadOnlyList<ClashOccurrence> previousWithoutIds)
         {
             var occurrence = matchResult.CurrentRun.Occurrences[currentIndex];
             var evidence = BuildUnmatchedEvidence(
                 occurrence,
                 otherRun: matchResult.PreviousRun,
+                otherWithoutIds: previousWithoutIds,
                 competingAlternatives: matchResult.AlternativeCandidates.Count(
                     a => IsPlausibleAlternative(a) && a.CurrentIndex == currentIndex),
                 slotLabel: "current slot");
@@ -144,9 +159,10 @@ namespace OrzioClashReport.Core.Lifecycle
             return new ClashLifecycleEntry(status, null, currentIndex, null, occurrence, null, evidence);
         }
 
-        /// <summary>Builds the five evidence items shared by unmatched-previous and unmatched-current classification, checked against the occurrence's own run's opposite (<paramref name="otherRun"/>).</summary>
+        /// <summary>Builds the evidence for an unmatched occurrence against the opposite run.</summary>
         private static List<ClashLifecycleEvidence> BuildUnmatchedEvidence(
-            ClashOccurrence occurrence, CoordinationRun otherRun, int competingAlternatives, string slotLabel)
+            ClashOccurrence occurrence, CoordinationRun otherRun, IReadOnlyList<ClashOccurrence> otherWithoutIds,
+            int competingAlternatives, string slotLabel)
         {
             var evidence = new List<ClashLifecycleEvidence>();
 
@@ -176,8 +192,44 @@ namespace OrzioClashReport.Core.Lifecycle
                 ClashLifecycleEvidenceVerdict.SupportsClassification,
                 $"No selected match consumes this {slotLabel}."));
 
+            if (!occurrence.Clash.HasElementIds)
+            {
+                evidence.Add(MissingElementIdentity("An element identifier is unavailable on this occurrence."));
+            }
+            else if (otherWithoutIds.Count > 0 && otherWithoutIds.Any(other => CouldBeCounterpart(occurrence, other)))
+            {
+                evidence.Add(MissingElementIdentity(
+                    "An occurrence in the other run has an unavailable element identifier and cannot be ruled out as a counterpart."));
+            }
+
             return evidence;
         }
+
+        private static ClashLifecycleEvidence MissingElementIdentity(string description) =>
+            new ClashLifecycleEvidence(
+                ClashLifecycleEvidenceKind.ElementIdentityUnavailable,
+                ClashLifecycleEvidenceVerdict.BlocksClassification,
+                description);
+
+        private static bool CouldBeCounterpart(ClashOccurrence occurrence, ClashOccurrence other)
+        {
+            if (!string.Equals(occurrence.ClashTestName, other.ClashTestName, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            ModelAlignment alignment = DetermineModelAlignment(occurrence, other);
+            bool direct = (alignment == ModelAlignment.Direct || alignment == ModelAlignment.Ambiguous)
+                && KnownIdsAgree(occurrence.Clash.ElementA, other.Clash.ElementA)
+                && KnownIdsAgree(occurrence.Clash.ElementB, other.Clash.ElementB);
+            bool swapped = (alignment == ModelAlignment.Swapped || alignment == ModelAlignment.Ambiguous)
+                && KnownIdsAgree(occurrence.Clash.ElementA, other.Clash.ElementB)
+                && KnownIdsAgree(occurrence.Clash.ElementB, other.Clash.ElementA);
+            return direct || swapped;
+        }
+
+        private static bool KnownIdsAgree(ClashObject identified, ClashObject other) =>
+            other.ElementId == null || string.Equals(identified.ElementId?.Trim(), other.ElementId.Trim(), StringComparison.Ordinal);
 
         private static ClashLifecycleEvidence BuildModelIdentityPresenceEvidence(string sideLabel, ModelIdentity identity, CoordinationRun otherRun)
         {

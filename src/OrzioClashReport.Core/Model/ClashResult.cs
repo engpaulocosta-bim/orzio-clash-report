@@ -12,6 +12,7 @@ namespace OrzioClashReport.Core.Model
         public ClashPoint? Point { get; }
         public ClashObject ElementA { get; }
         public ClashObject ElementB { get; }
+        public bool HasElementIds => ElementA.ElementId != null && ElementB.ElementId != null;
         public string? Guid { get; }
 
         public ClashResult(

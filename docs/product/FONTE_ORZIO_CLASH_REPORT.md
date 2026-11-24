@@ -556,6 +556,8 @@ Regras do parser:
 - campos opcionais permanecem opcionais;
 - input malformado falha claramente;
 - ordem A/B é preservada;
+- GUID ausente, vazio ou só com espaços fica indisponível. O `pathlink` continua
+  disponível para agrupar por submodelo;
 - revisão não é inferida;
 - identidade persistente não é inferida;
 - erros não são engolidos.
@@ -589,7 +591,7 @@ pontos dentro da tolerância
 
 O primeiro clash encontrado é retido. Cada clash posterior colapsado permanece representado
 por um `ClashCollapse`, que preserva o clash test e as referências exatas ao clash retido e
-ao clash colapsado. Clashes sem ponto nunca são colapsados.
+ao clash colapsado. Clashes sem ponto ou sem o GUID de um dos elementos são sempre retidos.
 
 `GroupedClashReport` reconcilia obrigatoriamente:
 
@@ -650,6 +652,8 @@ Conteúdo atual:
 - raw count;
 - retained count;
 - collapsed count;
+- quantidade de registos de elementos sem GUID e de interferências afetadas, com aviso
+  e indicação `GUID unavailable` nas linhas correspondentes;
 - group count;
 - auditoria ordenada de cada clash colapsado, com clash test, nomes, GUIDs como evidência,
   element ids e pontos do retido e do colapsado;
@@ -756,6 +760,16 @@ Regras:
 - sem matching;
 - sem lifecycle;
 - sem identidade persistente.
+
+Snapshots com os dois GUIDs de elemento disponíveis em todas as ocorrências continuam em
+schema v1. Quando falta algum, o motor grava schema v2 com `elementId: null`. O leitor
+aceita as duas versões e trata strings vazias ou só com espaços como indisponíveis.
+A versão anterior do motor rejeita v2. Os ficheiros existentes permanecem como evidência
+imutável e podem ser conservados para rollback.
+
+Na comparação, faltas de GUID bloqueiam a correspondência automática. Uma ocorrência
+sem par fica `Unverifiable` se lhe faltar um GUID ou se a outra revisão contiver uma
+ocorrência incompleta compatível com o mesmo teste, par de modelos e IDs conhecidos.
 
 ---
 

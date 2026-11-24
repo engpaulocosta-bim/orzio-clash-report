@@ -87,6 +87,16 @@ namespace OrzioClashReport.Output.Html
                 .Append(" collapsed duplicates &rarr; ")
                 .Append(report.GroupCount.ToString(CultureInfo.InvariantCulture))
                 .Append(" groups</p>\n");
+            html.Append("<p class=\"guid-summary\">")
+                .Append(report.ElementsWithoutIdCount.ToString(CultureInfo.InvariantCulture))
+                .Append(" elements without GUID across ")
+                .Append(report.ClashesWithoutElementIdsCount.ToString(CultureInfo.InvariantCulture))
+                .Append(" clashes</p>\n");
+            if (report.ClashesWithoutElementIdsCount > 0)
+            {
+                html.Append("<p>Clashes with an unavailable element GUID are retained in their groups and excluded from automatic deduplication.</p>\n");
+            }
+
             html.Append("</header>\n");
         }
 
@@ -109,8 +119,8 @@ namespace OrzioClashReport.Output.Html
                 html.Append("<td>").Append(Encode(collapse.CollapsedClash.Name ?? "(unnamed)")).Append("</td>");
                 html.Append("<td>").Append(FormatOptionalText(collapse.RetainedClash.Guid)).Append("</td>");
                 html.Append("<td>").Append(FormatOptionalText(collapse.CollapsedClash.Guid)).Append("</td>");
-                html.Append("<td>").Append(Encode(collapse.CollapsedClash.ElementA.ElementId)).Append("</td>");
-                html.Append("<td>").Append(Encode(collapse.CollapsedClash.ElementB.ElementId)).Append("</td>");
+                html.Append("<td>").Append(Encode(collapse.CollapsedClash.ElementA.ElementId ?? "GUID unavailable")).Append("</td>");
+                html.Append("<td>").Append(Encode(collapse.CollapsedClash.ElementB.ElementId ?? "GUID unavailable")).Append("</td>");
                 html.Append("<td>").Append(FormatPoint(collapse.RetainedClash.Point)).Append("</td>");
                 html.Append("<td>").Append(FormatPoint(collapse.CollapsedClash.Point)).Append("</td>");
                 html.Append("</tr>\n");
@@ -150,8 +160,8 @@ namespace OrzioClashReport.Output.Html
                 html.Append("<td>").Append(Encode(clash.Status.ToString())).Append("</td>");
                 html.Append("<td>").Append(FormatDistance(clash.Distance)).Append("</td>");
                 html.Append("<td>").Append(FormatPoint(clash.Point)).Append("</td>");
-                html.Append("<td>").Append(Encode(clash.ElementA.ElementId)).Append("</td>");
-                html.Append("<td>").Append(Encode(clash.ElementB.ElementId)).Append("</td>");
+                html.Append("<td>").Append(Encode(clash.ElementA.ElementId ?? "GUID unavailable")).Append("</td>");
+                html.Append("<td>").Append(Encode(clash.ElementB.ElementId ?? "GUID unavailable")).Append("</td>");
                 html.Append("</tr>\n");
             }
 

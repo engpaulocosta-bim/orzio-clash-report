@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using OrzioClashReport.Core.Model;
 using OrzioClashReport.Core.Presentation;
 using OrzioClashReport.Output.Html;
@@ -67,6 +68,28 @@ namespace OrzioClashReport.Tests
             Assert.DoesNotContain("<script>alert('x')</script>", html, StringComparison.Ordinal);
             Assert.DoesNotContain("<img src=x onerror=alert(1)>", html, StringComparison.Ordinal);
             Assert.Contains(">Not provided<", html, StringComparison.Ordinal);
+        }
+
+        [Fact]
+        public void Render_ExplicitDecisionKeepsEndpointWithUnavailableGuid()
+        {
+            var runs = IdentityGovernanceReviewTestData.CreateRuns().ToArray();
+            var original = runs[0].Occurrences[0];
+            var clash = new ClashResult("Clash 1", ClashStatus.New, null, null, null,
+                new ClashObject(null, "Duct 01", null, null, null, null), original.Clash.ElementB, null);
+            runs[0] = new CoordinationRun(runs[0].Manifest, new[]
+            {
+                new ClashOccurrence(original.ClashTestName, clash, original.ModelA, original.ModelB)
+            });
+            var presentation = CreatePresentation(runs,
+                IdentityGovernanceReviewTestData.Confirm("decision-001", "run-001", 0, "run-002", 0));
+
+            string html = Sut().Render(presentation);
+
+            Assert.Contains(">GUID unavailable<", html, StringComparison.Ordinal);
+            Assert.Contains(">Duct 01<", html, StringComparison.Ordinal);
+            Assert.Contains(">B-001<", html, StringComparison.Ordinal);
+            Assert.Contains(">identity-001<", html, StringComparison.Ordinal);
         }
 
         [Fact]

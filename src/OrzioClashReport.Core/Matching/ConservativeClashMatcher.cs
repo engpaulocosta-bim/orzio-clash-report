@@ -22,7 +22,7 @@ namespace OrzioClashReport.Core.Matching
     {
         private const double PointTolerance = 1e-6;
 
-        private enum ModelAlignment
+        internal enum ModelAlignment
         {
             None,
             Direct,
@@ -184,7 +184,7 @@ namespace OrzioClashReport.Core.Matching
                 point.Value.Z)
             : null;
 
-        private static ModelAlignment DetermineModelAlignment(ClashOccurrence previous, ClashOccurrence current)
+        internal static ModelAlignment DetermineModelAlignment(ClashOccurrence previous, ClashOccurrence current)
         {
             bool direct = previous.ModelA.Identity.Equals(current.ModelA.Identity)
                 && previous.ModelB.Identity.Equals(current.ModelB.Identity);

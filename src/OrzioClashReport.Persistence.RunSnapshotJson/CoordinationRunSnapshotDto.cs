@@ -176,6 +176,7 @@ namespace OrzioClashReport.Persistence.RunSnapshotJson
     {
         [JsonPropertyName("elementId")]
         [JsonPropertyOrder(0)]
+        [JsonRequired]
         public string? ElementId { get; set; }
 
         [JsonPropertyName("elementName")]

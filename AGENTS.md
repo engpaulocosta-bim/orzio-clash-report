@@ -307,6 +307,11 @@ identities plus the clash test are observed in the current run. Unmatched curren
 `New` only under the symmetric conditions in the previous run. Raw `ClashStatus` never
 drives lifecycle. `Reopened` requires longer history and is out of scope.
 
+Unavailable element IDs block automatic matching. An unmatched occurrence is
+`Unverifiable` if its own IDs are incomplete or the opposite run has an incomplete
+occurrence in the same test and model pair whose available IDs do not rule it out.
+This check does not establish a match or substitute for manifest coverage.
+
 ## Revision-aware lifecycle HTML
 
 `HtmlLifecycleReportRenderer` lives in `OrzioClashReport.Output.Html` and consumes
@@ -363,7 +368,7 @@ run end to end in tests.
 
 ## Immutable coordination-run JSON snapshots
 
-A `CoordinationRun` may now be persisted as a deterministic schema-v1 JSON snapshot by
+A `CoordinationRun` may be persisted as a deterministic schema-v1 or schema-v2 JSON snapshot by
 `OrzioClashReport.Persistence.RunSnapshotJson` (`JsonCoordinationRunSnapshotSerializer` with
 `Serialize`/`Parse`/`Save`/`Load`). This is the one deliberate, narrow exception to the
 "no persistence/history/database" scope gate: single-run snapshot persistence, explicit
@@ -389,6 +394,10 @@ and databases still do not.
   before serialization.
 - Snapshot JSON property names are exact, case-sensitive camelCase; unknown and duplicate
   JSON properties are rejected (recursively). Timestamps require an explicit offset or `Z`.
+- The writer uses v1 for fully identified runs and v2 when an element ID is unavailable.
+  Both require the `elementId` property. V1 requires a string and v2 also accepts explicit
+  JSON `null`. Existing v1 snapshots remain readable, with blank IDs treated as unavailable.
+  Older engines reject v2 snapshots. Existing files are never migrated in place.
 - `Save` uses `FileMode.CreateNew` semantics and never overwrites an existing path, even with
   byte-identical content; there is no `--force` and no idempotent overwrite. It writes UTF-8
   without a BOM, and a serialization failure creates no file.

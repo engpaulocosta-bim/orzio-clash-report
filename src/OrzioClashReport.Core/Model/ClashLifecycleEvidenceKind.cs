@@ -16,6 +16,9 @@ namespace OrzioClashReport.Core.Model
         ModelIdentityPresence,
 
         /// <summary>Whether the clash test and revision-free model pair are explicitly declared as executed in the other run's manifest.</summary>
-        ClashTestPresence
+        ClashTestPresence,
+
+        /// <summary>Whether unavailable element identifiers prevent a safe lifecycle classification.</summary>
+        ElementIdentityUnavailable
     }
 }

@@ -22,13 +22,13 @@ namespace OrzioClashReport.Core.Model
 
         public string ModelBDisplay { get; }
 
-        public string ElementAId { get; }
+        public string? ElementAId { get; }
 
         public string? ElementAName { get; }
 
         public string? ElementALevel { get; }
 
-        public string ElementBId { get; }
+        public string? ElementBId { get; }
 
         public string? ElementBName { get; }
 
@@ -43,10 +43,10 @@ namespace OrzioClashReport.Core.Model
             ClashStatus clashStatus,
             string modelADisplay,
             string modelBDisplay,
-            string elementAId,
+            string? elementAId,
             string? elementAName,
             string? elementALevel,
-            string elementBId,
+            string? elementBId,
             string? elementBName,
             string? elementBLevel)
         {
@@ -66,10 +66,10 @@ namespace OrzioClashReport.Core.Model
             ClashStatus = clashStatus;
             ModelADisplay = RequireNonBlank(modelADisplay, nameof(modelADisplay));
             ModelBDisplay = RequireNonBlank(modelBDisplay, nameof(modelBDisplay));
-            ElementAId = RequireNonBlank(elementAId, nameof(elementAId));
+            ElementAId = NormalizeOptional(elementAId);
             ElementAName = NormalizeOptional(elementAName);
             ElementALevel = NormalizeOptional(elementALevel);
-            ElementBId = RequireNonBlank(elementBId, nameof(elementBId));
+            ElementBId = NormalizeOptional(elementBId);
             ElementBName = NormalizeOptional(elementBName);
             ElementBLevel = NormalizeOptional(elementBLevel);
         }

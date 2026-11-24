@@ -27,7 +27,7 @@ namespace OrzioClashReport.Tests
             return source.Read();
         }
 
-        private static string ClashObject(string guid) => $@"
+        private static string ClashObject(string? guid) => guid == null ? ClashObjectWithoutGuid : $@"
               <clashobject>
                 <objectattribute>
                   <name>GUID</name>
@@ -166,20 +166,28 @@ namespace OrzioClashReport.Tests
             Assert.Equal(ClashStatus.Unknown, clash.Status);
         }
 
-        [Fact]
-        public void Read_ClashObjectWithoutGuid_FailsClearly()
+        [Theory]
+        [InlineData("guid-a", "guid-b", "guid-a", "guid-b")]
+        [InlineData(null, "guid-b", null, "guid-b")]
+        [InlineData("guid-a", null, "guid-a", null)]
+        [InlineData(null, null, null, null)]
+        [InlineData("", "   ", null, null)]
+        public void Read_PreservesClashWithOrWithoutElementGuids(
+            string? guidA, string? guidB, string? expectedA, string? expectedB)
         {
             string xml = BuildExchange($@"
             <resultstatus>New</resultstatus>
             <clashobjects>
-              {ClashObjectWithoutGuid}
-              {ClashObject("guid-b")}
+              {ClashObject(guidA)}
+              {ClashObject(guidB)}
             </clashobjects>");
-            File.WriteAllText(_tempFilePath, xml);
-            var source = new NavisworksXmlClashSource(_tempFilePath, new RecordingAppLog());
+            var document = ReadXml(xml, out _);
 
-            var ex = Assert.Throws<InvalidOperationException>(() => source.Read());
-            Assert.Contains("GUID", ex.Message);
+            var clash = Assert.Single(Assert.Single(document.Batches).Clashes);
+            Assert.Equal(expectedA, clash.ElementA.ElementId);
+            Assert.Equal(expectedB, clash.ElementB.ElementId);
+            Assert.Equal("L1", clash.ElementA.Level);
+            Assert.Equal("L1", clash.ElementB.Level);
         }
 
         // --- SourceModel precedence: "Item Source File" wins, then "Item Source File Name", then null ---

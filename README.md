@@ -126,6 +126,10 @@ dotnet test
 
 ## Binary Quick Start
 
+The quick report keeps clashes with missing or blank element GUIDs in their usual groups
+and excludes them from automatic deduplication. The HTML shows the number of affected
+element records and clashes, alongside the reconciled raw, retained, and collapsed totals.
+
 The internal preview release ships as a Windows `win-x64` self-contained executable:
 `orzioclash.exe`. It is not a cross-platform binary. Other operating systems can still run
 from source with the .NET SDK.
@@ -934,7 +938,7 @@ There are two distinct JSON contracts, with distinct adapters, that must not be 
   explicit pre-assembly input contract: it manually declares models, revisions, and
   executed clash tests before the run is assembled.
 - **CoordinationRun snapshot JSON** (`OrzioClashReport.Persistence.RunSnapshotJson`,
-  `schemaVersion: 1`) is a post-assembly evidence snapshot: it persists an assembled
+  `schemaVersion: 1` or `2`) is a post-assembly evidence snapshot: it persists an assembled
   `CoordinationRun` so comparison and lifecycle can be recalculated later.
 
 These are different schemas and independent adapters. One contract's `schemaVersion` number
@@ -947,7 +951,14 @@ The public adapter is `JsonCoordinationRunSnapshotSerializer`, with four methods
 - `Save(CoordinationRun, filePath)`: writes a new immutable file.
 - `Load(filePath) -> CoordinationRun`: reads and rehydrates.
 
-Snapshot characteristics (`schemaVersion` 1):
+The writer uses schema v1 for fully identified runs and schema v2 when any element ID is
+unavailable. Both versions require the `elementId` property. V1 requires a string and v2
+also accepts explicit JSON `null`. The reader accepts existing v1 snapshots and interprets
+blank strings as unavailable. Saving that evidence to a new file emits v2 without changing
+the original. Older engines reject v2 snapshots. Use the updated engine for those files and
+keep existing snapshots for rollback. There is no in-place migration.
+
+Snapshot characteristics shared by both versions:
 
 1. The `models` array order is preserved.
 2. `executedClashTests` references models by `modelAIndex`/`modelBIndex`.
@@ -1229,15 +1240,16 @@ implements `IClashLifecycleClassifier`. It classifies every slot of an already-p
    observed in the current run.
 3. **`New`**: the symmetric rule for a current occurrence with no selected match, no
    alternative, and models plus clash test observed in the previous run.
-4. **`Unverifiable`**: anything that does not satisfy the rules above: `Low` confidence,
-   competing alternative candidate, missing model, or clash test not observed.
+4. **`Unverifiable`** covers low confidence, competing alternatives, missing model or test
+   coverage, and unavailable element IDs. An unmatched identified occurrence also stays
+   unverifiable when the other run contains a partially identified occurrence in the same
+   test and model pair whose available IDs do not rule it out. This check creates no match.
 5. Coverage is always revision-free: `ModelRevision.Revision`, `SourceFileName`,
    `SourceFilePath`, `ContentHash`, and `PublishedAt` never participate.
 6. A clash test is considered observed in a run only when that run's
    `RunManifest.ExecutedClashTests` explicitly declares that name, using ordinal
-   case-insensitive comparison, for the same `ModelIdentity` pair, direct or swapped. The
-   classifier never scans `CoordinationRun.Occurrences`. This is what allows a run to prove
-   that a test executed and returned zero clashes.
+   case-insensitive comparison, for the same `ModelIdentity` pair, direct or swapped.
+   Manifest coverage can therefore prove that a test executed and returned zero clashes.
 7. Raw `ClashStatus` from Clash Detective never participates in lifecycle decisions.
 8. `Reopened` does not exist. Distinguishing a genuinely new clash from a reopened clash
    requires more than two runs of history and remains out of scope.

@@ -284,8 +284,40 @@ namespace OrzioClashReport.Tests
         [Fact]
         public void Parse_UnsupportedSchemaVersion_ThrowsFormatException()
         {
-            var ex = Assert.Throws<CoordinationRunSnapshotFormatException>(() => Sut().Parse(Doc(schema: "2")));
-            Assert.Contains("Unsupported coordination run snapshot schemaVersion '2'", ex.Message, StringComparison.Ordinal);
+            var ex = Assert.Throws<CoordinationRunSnapshotFormatException>(() => Sut().Parse(Doc(schema: "3")));
+            Assert.Contains("Unsupported coordination run snapshot schemaVersion '3'", ex.Message, StringComparison.Ordinal);
+        }
+
+        [Theory]
+        [InlineData("1", "\"   \"")]
+        [InlineData("2", "null")]
+        public void Snapshot_RoundTripsUnavailableElementGuidAsExplicitNull(string schema, string elementIdJson)
+        {
+            var sut = Sut();
+            string input = Doc(schema: schema).Replace("\"elementId\": \"s-100\"", $"\"elementId\": {elementIdJson}", StringComparison.Ordinal);
+
+            string serialized = sut.Serialize(sut.Parse(input));
+            var clash = Assert.Single(sut.Parse(serialized).Occurrences).Clash;
+
+            Assert.Contains("\"schemaVersion\": 2", serialized, StringComparison.Ordinal);
+            Assert.Contains("\"elementId\": null", serialized, StringComparison.Ordinal);
+            Assert.Null(clash.ElementA.ElementId);
+            Assert.Equal("h-200", clash.ElementB.ElementId);
+            Assert.Equal("a.nwc", clash.ElementA.SourceModel);
+            Assert.Equal(new[] { "Project", "Structure" }, clash.ElementA.PathHierarchy);
+            Assert.Equal(serialized, sut.Serialize(sut.Parse(serialized)), StringComparer.Ordinal);
+        }
+
+        [Theory]
+        [InlineData("1", "\"elementId\": null, ")]
+        [InlineData("2", "")]
+        public void Parse_RejectsInvalidElementGuidRepresentation(string schema, string replacement)
+        {
+            string input = Doc(schema: schema).Replace("\"elementId\": \"s-100\", ", replacement, StringComparison.Ordinal);
+
+            var ex = Assert.Throws<CoordinationRunSnapshotFormatException>(() => Sut().Parse(input));
+
+            Assert.Contains("elementId", ex.Message, StringComparison.Ordinal);
         }
 
         [Fact]

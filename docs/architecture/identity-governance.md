@@ -35,6 +35,9 @@ snapshot vocabulary: `runId` plus preserved `occurrenceIndex` inside that run's 
 occurrence list. No fingerprint, inferred clash key, synthetic cross-run identity, or
 automatic left/right inversion is introduced.
 
+The endpoint remains addressable when an element GUID is unavailable. The review HTML
+shows the missing GUID, and persistent identity still requires the human decision.
+
 ## Provenance Rule
 
 `reviewerAlias` is an operational alias such as `coordinator-a`. The domain does not

@@ -16,6 +16,8 @@ namespace OrzioClashReport.Core.Model
         public int RetainedCount { get; }
         public int CollapsedCount => Collapses.Count;
         public int GroupCount => Groups.Count;
+        public int ElementsWithoutIdCount { get; }
+        public int ClashesWithoutElementIdsCount { get; }
 
         public GroupedClashReport(ClashReportDocument document, IReadOnlyList<ClashGroup>? groups, int rawCount)
             : this(document, groups, Array.Empty<ClashCollapse>(), rawCount)
@@ -39,6 +41,19 @@ namespace OrzioClashReport.Core.Model
                 ? Array.Empty<ClashCollapse>()
                 : new List<ClashCollapse>(collapses).AsReadOnly();
             RawCount = rawCount;
+
+            foreach (ClashBatch batch in Document.Batches)
+            {
+                foreach (ClashResult clash in batch.Clashes)
+                {
+                    if (!clash.HasElementIds)
+                    {
+                        ClashesWithoutElementIdsCount++;
+                        ElementsWithoutIdCount += (clash.ElementA.ElementId == null ? 1 : 0)
+                            + (clash.ElementB.ElementId == null ? 1 : 0);
+                    }
+                }
+            }
 
             for (int index = 0; index < Collapses.Count; index++)
             {

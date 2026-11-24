@@ -161,10 +161,10 @@ namespace OrzioClashReport.Output.Html
             AppendDefinitionRow(html, "Clash status", Encode(endpoint.ClashStatus.ToString()));
             AppendDefinitionRow(html, "Model A", Encode(endpoint.ModelADisplay));
             AppendDefinitionRow(html, "Model B", Encode(endpoint.ModelBDisplay));
-            AppendDefinitionRow(html, "Element A id", Encode(endpoint.ElementAId));
+            AppendDefinitionRow(html, "Element A id", Encode(endpoint.ElementAId ?? "GUID unavailable"));
             AppendDefinitionRow(html, "Element A name", FormatOptionalEncoded(endpoint.ElementAName));
             AppendDefinitionRow(html, "Element A level", FormatOptionalEncoded(endpoint.ElementALevel));
-            AppendDefinitionRow(html, "Element B id", Encode(endpoint.ElementBId));
+            AppendDefinitionRow(html, "Element B id", Encode(endpoint.ElementBId ?? "GUID unavailable"));
             AppendDefinitionRow(html, "Element B name", FormatOptionalEncoded(endpoint.ElementBName));
             AppendDefinitionRow(html, "Element B level", FormatOptionalEncoded(endpoint.ElementBLevel));
             html.Append("</dl>\n");
